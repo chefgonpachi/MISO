@@ -1,0 +1,428 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "addWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "accessControl",
+          "type": "address"
+        }
+      ],
+      "name": "initWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "isInWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "removeWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "67": "interfaces/IWhiteList.sol"
+  },
+  "ast": {
+    "absolutePath": "interfaces/IWhiteList.sol",
+    "exportedSymbols": {
+      "IWhiteList": [
+        16342
+      ]
+    },
+    "id": 16343,
+    "license": null,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 16317,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".9"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:67"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 16342,
+        "linearizedBaseContracts": [
+          16342
+        ],
+        "name": "IWhiteList",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "96bfc229",
+            "id": 16324,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isInWhiteList",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 16320,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16319,
+                  "mutability": "mutable",
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 16324,
+                  "src": "260:15:67",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 16318,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "260:7:67",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "259:17:67"
+            },
+            "returnParameters": {
+              "id": 16323,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16322,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 16324,
+                  "src": "300:4:67",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 16321,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "300:4:67",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "299:6:67"
+            },
+            "scope": 16342,
+            "src": "237:69:67",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "5e1045ec",
+            "id": 16330,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addWhiteList",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 16328,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16327,
+                  "mutability": "mutable",
+                  "name": "accounts",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 16330,
+                  "src": "333:27:67",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_calldata_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 16325,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "333:7:67",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 16326,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "333:9:67",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "332:29:67"
+            },
+            "returnParameters": {
+              "id": 16329,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "371:0:67"
+            },
+            "scope": 16342,
+            "src": "311:61:67",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "39745791",
+            "id": 16336,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeWhiteList",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 16334,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16333,
+                  "mutability": "mutable",
+                  "name": "accounts",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 16336,
+                  "src": "402:27:67",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_calldata_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 16331,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "402:7:67",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 16332,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "402:9:67",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "401:29:67"
+            },
+            "returnParameters": {
+              "id": 16335,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "440:0:67"
+            },
+            "scope": 16342,
+            "src": "377:64:67",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "ce83c50f",
+            "id": 16341,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initWhiteList",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 16339,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16338,
+                  "mutability": "mutable",
+                  "name": "accessControl",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 16341,
+                  "src": "469:21:67",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 16337,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "469:7:67",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "468:23:67"
+            },
+            "returnParameters": {
+              "id": 16340,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "501:0:67"
+            },
+            "scope": 16342,
+            "src": "446:56:67",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 16343,
+        "src": "210:295:67"
+      }
+    ],
+    "src": "0:506:67"
+  },
+  "bytecode": "",
+  "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.6.12"
+  },
+  "contractName": "IWhiteList",
+  "coverageMap": {
+    "branches": {},
+    "statements": {}
+  },
+  "dependencies": [],
+  "deployedBytecode": "",
+  "deployedSourceMap": "",
+  "language": "Solidity",
+  "natspec": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "offset": [
+    210,
+    505
+  ],
+  "opcodes": "",
+  "pcMap": {},
+  "sha1": "a7863d956b66e1e16b5f548f0187d39abfd05b6f",
+  "source": "pragma solidity ^0.6.9;\n\n// ----------------------------------------------------------------------------\n// White List interface\n// ----------------------------------------------------------------------------\n\ninterface IWhiteList {\n    function isInWhiteList(address account) external view returns (bool);\n    function addWhiteList(address[] calldata accounts) external ;\n    function removeWhiteList(address[] calldata accounts) external ;\n    function initWhiteList(address accessControl) external ;\n\n}\n",
+  "sourceMap": "",
+  "sourcePath": "interfaces/IWhiteList.sol",
+  "type": "interface"
+}

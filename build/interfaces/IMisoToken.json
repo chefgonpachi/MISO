@@ -1,0 +1,35 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "initToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "contractName": "IMisoToken",
+  "offset": [
+    25,
+    141
+  ],
+  "sha1": "896ba29638349fdfc1fe5a23ed6aee164a4ea7ae",
+  "source": "pragma solidity ^0.6.9;\n\ninterface IMisoToken {\n    function initToken(string memory _name, string memory _symbol, address owner) external;\n}",
+  "type": "interface"
+}

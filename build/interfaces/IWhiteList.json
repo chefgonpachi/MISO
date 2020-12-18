@@ -1,0 +1,70 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "addWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "accessControl",
+          "type": "address"
+        }
+      ],
+      "name": "initWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "isInWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "removeWhiteList",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "contractName": "IWhiteList",
+  "offset": [
+    210,
+    505
+  ],
+  "sha1": "a7863d956b66e1e16b5f548f0187d39abfd05b6f",
+  "source": "pragma solidity ^0.6.9;\n\n// ----------------------------------------------------------------------------\n// White List interface\n// ----------------------------------------------------------------------------\n\ninterface IWhiteList {\n    function isInWhiteList(address account) external view returns (bool);\n    function addWhiteList(address[] calldata accounts) external ;\n    function removeWhiteList(address[] calldata accounts) external ;\n    function initWhiteList(address accessControl) external ;\n\n}\n",
+  "type": "interface"
+}

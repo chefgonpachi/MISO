@@ -1,0 +1,36 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract ISafeGnosis",
+          "name": "masterCopy",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "createProxy",
+      "outputs": [
+        {
+          "internalType": "contract ISafeGnosis",
+          "name": "proxy",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "contractName": "IGnosisProxyFactory",
+  "offset": [
+    52,
+    202
+  ],
+  "sha1": "7d161b2ac22221a6102b6e885f20981fa45c34c4",
+  "source": "pragma solidity ^0.6.9;\nimport \"./ISafeGnosis.sol\";\ninterface IGnosisProxyFactory {\n    function createProxy(\n        ISafeGnosis masterCopy, bytes memory data) external returns(ISafeGnosis proxy);\n\n \n}\n\n",
+  "type": "interface"
+}

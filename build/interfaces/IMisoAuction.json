@@ -1,0 +1,65 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_funder",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_endDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentCurrency",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_minimumPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address payable",
+          "name": "_wallet",
+          "type": "address"
+        }
+      ],
+      "name": "initAuction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "contractName": "IMisoAuction",
+  "offset": [
+    25,
+    352
+  ],
+  "sha1": "a9faf74467ff524c37364aa799a0d89a9d8901d7",
+  "source": "pragma solidity ^0.6.9;\n\ninterface IMisoAuction {\n    function initAuction(\n        address _funder,\n        address _token,\n        uint256 _tokenSupply,\n        uint256 _startDate,\n        uint256 _endDate,\n        address _paymentCurrency,\n        uint256 _startPrice,\n        uint256 _minimumPrice,\n        address payable _wallet\n    ) external;\n}\n",
+  "type": "interface"
+}

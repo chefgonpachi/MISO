@@ -1,0 +1,60 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_funder",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tokenSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_endDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_rate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_goal",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address payable",
+          "name": "_wallet",
+          "type": "address"
+        }
+      ],
+      "name": "initCrowdsale",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "contractName": "IMisoCrowdsale",
+  "offset": [
+    25,
+    308
+  ],
+  "sha1": "9598b3d0ba77735fe885f8c8c6140b0029e244f1",
+  "source": "pragma solidity ^0.6.9;\n\ninterface IMisoCrowdsale {\n    function initCrowdsale(\n        address _funder,\n        address _token,\n        uint256 _tokenSupply,\n        uint256 _startDate,\n        uint256 _endDate,\n        uint256 _rate,\n        uint256 _goal,\n        address payable _wallet\n    ) external;\n}\n",
+  "type": "interface"
+}

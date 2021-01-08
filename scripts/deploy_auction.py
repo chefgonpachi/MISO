@@ -11,19 +11,19 @@ def main():
     mintable_token = deploy_mintable_token(miso_token_factory,mintable_token_template)
     
     
-    bokky_token_factory = deploy_bokky_token_factory()
-    bokky_fixed_token = deploy_bokky_fixed_token(bokky_token_factory)
+    token_factory = deploy_token_factory()
+    fixed_token = deploy_fixed_token(token_factory)
     
     dutch_auction_template = deploy_dutch_auction_template()
     auction_house = deploy_auction_house(dutch_auction_template)
-    bokky_fixed_token.approve(auction_house, AUCTION_TOKENS,{"from":accounts[0]}) 
+    fixed_token.approve(auction_house, AUCTION_TOKENS,{"from":accounts[0]}) 
 
 
     wallet = accounts[1]
     dutch_auction = deploy_dutch_auction(
         auction_house,
         dutch_auction_template,
-        bokky_fixed_token,
+        fixed_token,
         AUCTION_TOKENS,
         AUCTION_START,
         AUCTION_END,

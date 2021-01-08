@@ -1,60 +1,30 @@
 {
   "coverage": {
-    "DutchAuction": {
+    "Crowdsale": {
       "branches": {
-        "DutchAuction._addCommitment": [
-          1,
-          1,
-          2
-        ],
-        "DutchAuction._safeTransferFrom": [
-          1,
-          2,
-          3
-        ],
-        "DutchAuction._tokenPayment": [
-          1,
-          1,
-          1
-        ],
-        "DutchAuction.calculateCommitment": [
-          1,
-          0,
-          1
-        ],
-        "DutchAuction.clearingPrice": [
-          1,
-          1,
-          1
-        ],
-        "DutchAuction.commitEth": [
-          2,
-          1,
-          3
-        ],
-        "DutchAuction.commitTokensFrom": [
-          0,
-          0,
-          2
-        ],
-        "DutchAuction.finaliseAuction": [
-          1,
-          2,
-          3
-        ],
-        "DutchAuction.initAuction": [
+        "Crowdsale._preValidatePurchase": [
           4,
-          0,
+          4,
           4
         ],
-        "DutchAuction.priceFunction": [
+        "Crowdsale._safeTransferFrom": [
+          1,
           2,
-          2,
-          2
+          3
         ],
-        "DutchAuction.withdrawTokens": [
+        "Crowdsale.finalize": [
           3,
+          1,
+          4
+        ],
+        "Crowdsale.initCrowdsale": [
+          9,
+          1,
+          9
+        ],
+        "Crowdsale.withdrawTokens": [
           3,
+          2,
           3
         ],
         "SafeMath.add": [
@@ -69,7 +39,7 @@
         ],
         "SafeMath.mul": [
           2,
-          1,
+          0,
           2
         ],
         "SafeMath.sub": [
@@ -79,517 +49,289 @@
         ]
       },
       "statements": {
-        "DutchAuction.<receive>": [
-          1,
-          1
-        ],
-        "DutchAuction._addCommitment": [
-          4,
-          4
-        ],
-        "DutchAuction._safeTransferFrom": [
-          1,
-          1
-        ],
-        "DutchAuction._tokenPayment": [
-          2,
-          2
-        ],
-        "DutchAuction.auctionEnded": [
-          1,
-          1
-        ],
-        "DutchAuction.auctionSuccessful": [
-          1,
-          1
-        ],
-        "DutchAuction.calculateCommitment": [
-          1,
-          2
-        ],
-        "DutchAuction.clearingPrice": [
-          2,
-          2
-        ],
-        "DutchAuction.commitEth": [
-          2,
-          3
-        ],
-        "DutchAuction.commitTokens": [
-          0,
-          1
-        ],
-        "DutchAuction.commitTokensFrom": [
-          0,
-          3
-        ],
-        "DutchAuction.finaliseAuction": [
-          3,
-          5
-        ],
-        "DutchAuction.initAuction": [
-          15,
-          15
-        ],
-        "DutchAuction.priceFunction": [
-          3,
-          3
-        ],
-        "DutchAuction.tokenPrice": [
-          1,
-          1
-        ],
-        "DutchAuction.tokensClaimable": [
-          1,
-          1
-        ],
-        "DutchAuction.totalTokensCommitted": [
-          1,
-          1
-        ],
-        "DutchAuction.withdrawTokens": [
-          6,
-          6
-        ],
-        "SafeMath.add": [
-          1,
-          1
-        ],
-        "SafeMath.div": [
-          2,
-          2
-        ],
-        "SafeMath.mul": [
-          2,
-          2
-        ],
-        "SafeMath.sub": [
-          2,
-          2
-        ]
-      },
-      "totals": {
-        "branches": [
-          22,
-          14,
-          30
-        ],
-        "statements": [
-          52,
-          60
-        ]
-      }
-    },
-    "MISOAccessControls": {
-      "branches": {
-        "AccessControl._grantRole": [
-          0,
-          1,
-          1
-        ],
-        "AccessControl._revokeRole": [
-          0,
-          0,
-          1
-        ],
-        "AccessControl.grantRole": [
-          1,
-          0,
-          1
-        ],
-        "AccessControl.renounceRole": [
-          0,
-          0,
-          1
-        ],
-        "AccessControl.revokeRole": [
-          0,
-          0,
-          1
-        ],
-        "EnumerableSet._add": [
-          0,
-          1,
-          1
-        ],
-        "EnumerableSet._at": [
-          0,
-          0,
-          1
-        ],
-        "EnumerableSet._remove": [
-          0,
-          0,
-          1
-        ]
-      },
-      "statements": {
-        "AccessControl._grantRole": [
-          1,
-          1
-        ],
-        "AccessControl._revokeRole": [
-          0,
-          1
-        ],
-        "AccessControl.getRoleAdmin": [
-          0,
-          1
-        ],
-        "AccessControl.getRoleMember": [
-          0,
-          1
-        ],
-        "AccessControl.getRoleMemberCount": [
-          0,
-          1
-        ],
-        "AccessControl.grantRole": [
-          2,
-          2
-        ],
-        "AccessControl.hasRole": [
-          1,
-          1
-        ],
-        "AccessControl.renounceRole": [
-          0,
-          2
-        ],
-        "AccessControl.revokeRole": [
-          0,
-          1
-        ],
         "Context._msgSender": [
           1,
           1
         ],
-        "EnumerableSet._add": [
-          3,
+        "Crowdsale.<receive>": [
+          1,
+          1
+        ],
+        "Crowdsale._deliverTokens": [
+          1,
+          1
+        ],
+        "Crowdsale._forwardFunds": [
+          1,
+          1
+        ],
+        "Crowdsale._getTokenAmount": [
+          1,
+          1
+        ],
+        "Crowdsale._preValidatePurchase": [
+          4,
           4
         ],
-        "EnumerableSet._at": [
-          0,
-          2
-        ],
-        "EnumerableSet._contains": [
+        "Crowdsale._safeTransferFrom": [
           1,
           1
         ],
-        "EnumerableSet._length": [
-          0,
-          1
-        ],
-        "EnumerableSet._remove": [
-          0,
-          6
-        ],
-        "EnumerableSet.add": [
+        "Crowdsale.balanceOf": [
           1,
           1
         ],
-        "EnumerableSet.at": [
-          0,
-          1
-        ],
-        "EnumerableSet.contains": [
-          1,
-          1
-        ],
-        "EnumerableSet.length": [
-          0,
-          1
-        ],
-        "EnumerableSet.remove": [
-          0,
-          1
-        ],
-        "MISOAccessControls.addAdminRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.addMinterRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.addOperatorRole": [
-          2,
-          2
-        ],
-        "MISOAccessControls.addSmartContractRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.hasAdminRole": [
-          0,
-          1
-        ],
-        "MISOAccessControls.hasMinterRole": [
-          0,
-          1
-        ],
-        "MISOAccessControls.hasOperatorRole": [
-          1,
-          1
-        ],
-        "MISOAccessControls.hasSmartContractRole": [
-          0,
-          1
-        ],
-        "MISOAccessControls.removeAdminRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.removeMinterRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.removeOperatorRole": [
-          0,
-          2
-        ],
-        "MISOAccessControls.removeSmartContractRole": [
-          0,
-          2
-        ]
-      },
-      "totals": {
-        "branches": [
-          1,
-          2,
-          8
-        ],
-        "statements": [
-          14,
-          51
-        ]
-      }
-    },
-    "MISOLauncher": {
-      "branches": {
-        "MISOLauncher.<fallback>": [
-          0,
-          0,
-          1
-        ],
-        "MISOLauncher._setTokenPair": [
-          0,
-          1,
-          1
-        ],
-        "MISOLauncher.addLiquidityToPool": [
-          2,
-          2,
-          3
-        ],
-        "MISOLauncher.depositETH": [
-          1,
-          1,
-          1
-        ],
-        "MISOLauncher.depositTokens": [
-          1,
-          1,
-          1
-        ],
-        "MISOLauncher.getLPTokenPerEthUnit": [
-          0,
-          0,
-          2
-        ],
-        "MISOLauncher.getPairReserves": [
-          0,
-          0,
-          1
-        ],
-        "MISOLauncher.initMISOLauncher": [
-          1,
-          0,
-          1
-        ],
-        "MISOLauncher.sendLPTokens": [
-          0,
-          0,
-          2
-        ],
-        "SafeMathPlus.div": [
-          0,
-          0,
-          1
-        ],
-        "SafeMathPlus.min": [
-          0,
-          0,
-          1
-        ],
-        "SafeMathPlus.mul": [
-          0,
-          0,
-          2
-        ],
-        "SafeMathUniswap.add": [
-          0,
-          0,
-          1
-        ],
-        "SafeMathUniswap.mul": [
-          0,
-          0,
-          2
-        ],
-        "UniswapV2Library.getAmountOut": [
-          0,
-          0,
-          3
-        ],
-        "UniswapV2Library.sortTokens": [
-          0,
-          0,
-          3
-        ]
-      },
-      "statements": {
-        "MISOLauncher.<fallback>": [
-          0,
-          1
-        ],
-        "MISOLauncher._createPool": [
-          2,
-          2
-        ],
-        "MISOLauncher._setTokenPair": [
-          1,
-          3
-        ],
-        "MISOLauncher.addLiquidityToPool": [
+        "Crowdsale.buyTokens": [
           4,
-          5
+          4
         ],
-        "MISOLauncher.depositETH": [
-          1,
-          1
-        ],
-        "MISOLauncher.depositTokens": [
-          2,
-          2
-        ],
-        "MISOLauncher.getLPTokenPerEthUnit": [
-          0,
-          1
-        ],
-        "MISOLauncher.getPairReserves": [
-          0,
-          1
-        ],
-        "MISOLauncher.getTokenBalance": [
-          1,
-          1
-        ],
-        "MISOLauncher.getWethBalance": [
-          1,
-          1
-        ],
-        "MISOLauncher.initMISOLauncher": [
-          9,
-          9
-        ],
-        "MISOLauncher.sendLPTokens": [
-          0,
-          3
-        ]
-      },
-      "totals": {
-        "branches": [
-          5,
-          5,
-          26
-        ],
-        "statements": [
-          21,
-          30
-        ]
-      }
-    },
-    "MISOMarket": {
-      "branches": {
-        "MISOMarket.addAuctionTemplate": [
-          0,
-          0,
-          1
-        ],
-        "MISOMarket.createAuction": [
-          0,
-          0,
-          2
-        ],
-        "MISOMarket.createCrowdsale": [
-          0,
-          0,
-          2
-        ],
-        "MISOMarket.getTemplateId": [
-          0,
-          0,
-          1
-        ],
-        "MISOMarket.initMISOMarket": [
-          1,
-          0,
-          1
-        ],
-        "MISOMarket.removeAuctionTemplate": [
-          0,
-          0,
-          1
-        ]
-      },
-      "statements": {
-        "MISOMarket._addAuctionTemplate": [
-          3,
-          3
-        ],
-        "MISOMarket.addAuctionTemplate": [
-          0,
-          2
-        ],
-        "MISOMarket.createAuction": [
-          0,
-          8
-        ],
-        "MISOMarket.createCrowdsale": [
-          0,
-          8
-        ],
-        "MISOMarket.getAuctionTemplate": [
-          0,
-          1
-        ],
-        "MISOMarket.getTemplateId": [
-          0,
-          2
-        ],
-        "MISOMarket.initMISOMarket": [
-          7,
+        "Crowdsale.finalize": [
+          6,
           7
         ],
-        "MISOMarket.numberOfAuctions": [
+        "Crowdsale.goalReached": [
+          1,
+          1
+        ],
+        "Crowdsale.hasClosed": [
+          1,
+          1
+        ],
+        "Crowdsale.initCrowdsale": [
+          19,
+          19
+        ],
+        "Crowdsale.isOpen": [
+          1,
+          1
+        ],
+        "Crowdsale.withdrawTokens": [
+          5,
+          5
+        ],
+        "SafeMath.add": [
+          2,
+          2
+        ],
+        "SafeMath.div": [
+          2,
+          2
+        ],
+        "SafeMath.mul": [
+          1,
+          2
+        ],
+        "SafeMath.sub": [
+          2,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          25,
+          10,
+          28
+        ],
+        "statements": [
+          55,
+          57
+        ]
+      }
+    },
+    "FixedToken": {
+      "branches": {
+        "ERC20._approve": [
+          2,
+          0,
+          2
+        ],
+        "ERC20._initERC20": [
+          1,
           0,
           1
         ],
-        "MISOMarket.removeAuctionTemplate": [
+        "ERC20._mint": [
+          1,
+          0,
+          1
+        ],
+        "ERC20._transfer": [
+          2,
+          0,
+          2
+        ],
+        "FixedToken.initFixedTotalSupply": [
+          1,
+          1,
+          1
+        ],
+        "SafeMath.add": [
+          1,
+          0,
+          1
+        ],
+        "SafeMath.sub": [
+          1,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "Context._msgSender": [
+          1,
+          1
+        ],
+        "ERC20._approve": [
+          4,
+          4
+        ],
+        "ERC20._initERC20": [
+          5,
+          5
+        ],
+        "ERC20._mint": [
+          5,
+          5
+        ],
+        "ERC20._transfer": [
+          6,
+          6
+        ],
+        "ERC20.allowance": [
+          0,
+          1
+        ],
+        "ERC20.approve": [
+          2,
+          2
+        ],
+        "ERC20.balanceOf": [
+          1,
+          1
+        ],
+        "ERC20.decimals": [
+          0,
+          1
+        ],
+        "ERC20.decreaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.increaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.name": [
+          1,
+          1
+        ],
+        "ERC20.symbol": [
+          1,
+          1
+        ],
+        "ERC20.totalSupply": [
+          1,
+          1
+        ],
+        "ERC20.transfer": [
+          1,
+          1
+        ],
+        "ERC20.transferFrom": [
+          3,
+          3
+        ],
+        "FixedToken.initFixedTotalSupply": [
+          3,
+          3
+        ],
+        "FixedToken.initToken": [
+          1,
+          1
+        ],
+        "SafeMath.add": [
+          2,
+          2
+        ],
+        "SafeMath.sub": [
+          1,
+          1
+        ]
+      },
+      "totals": {
+        "branches": [
+          9,
+          1,
+          9
+        ],
+        "statements": [
+          38,
+          42
+        ]
+      }
+    },
+    "MISOLiquidityLauncher": {
+      "branches": {
+        "MISOLiquidityLauncher.addLiquidityLauncherTemplate": [
+          1,
+          0,
+          1
+        ],
+        "MISOLiquidityLauncher.getTemplateId": [
+          0,
+          0,
+          1
+        ],
+        "MISOLiquidityLauncher.initMISOLiquidityLauncher": [
+          1,
+          0,
+          1
+        ],
+        "MISOLiquidityLauncher.removeLiquidityLauncherTemplate": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "MISOLiquidityLauncher.addLiquidityLauncherTemplate": [
+          4,
+          4
+        ],
+        "MISOLiquidityLauncher.createLiquidityLauncher": [
+          5,
+          5
+        ],
+        "MISOLiquidityLauncher.getLiquidityLauncherTemplate": [
+          0,
+          1
+        ],
+        "MISOLiquidityLauncher.getTemplateId": [
+          0,
+          2
+        ],
+        "MISOLiquidityLauncher.initMISOLiquidityLauncher": [
+          4,
+          4
+        ],
+        "MISOLiquidityLauncher.numberOfLiquidityLauncherContracts": [
+          0,
+          1
+        ],
+        "MISOLiquidityLauncher.removeLiquidityLauncherTemplate": [
           0,
           4
         ]
       },
       "totals": {
         "branches": [
-          1,
+          2,
           0,
-          8
+          4
         ],
         "statements": [
-          10,
-          36
+          13,
+          21
         ]
       }
     },
@@ -597,7 +339,7 @@
       "branches": {
         "MISOTokenFactory.addTokenTemplate": [
           1,
-          0,
+          1,
           1
         ],
         "MISOTokenFactory.getTemplateId": [
@@ -611,7 +353,7 @@
           1
         ],
         "MISOTokenFactory.removeTokenTemplate": [
-          0,
+          1,
           0,
           1
         ]
@@ -622,7 +364,7 @@
           4
         ],
         "MISOTokenFactory.createToken": [
-          0,
+          6,
           6
         ],
         "MISOTokenFactory.getTemplateId": [
@@ -638,22 +380,22 @@
           4
         ],
         "MISOTokenFactory.numberOfTokens": [
-          0,
+          1,
           1
         ],
         "MISOTokenFactory.removeTokenTemplate": [
-          0,
+          4,
           4
         ]
       },
       "totals": {
         "branches": [
-          3,
-          1,
+          4,
+          2,
           4
         ],
         "statements": [
-          11,
+          22,
           22
         ]
       }
@@ -966,7 +708,7 @@
           1
         ],
         "Owned.owner": [
-          1,
+          0,
           1
         ],
         "Owned.transferOwnership": [
@@ -1001,124 +743,228 @@
           25
         ],
         "statements": [
-          57,
+          56,
           107
         ]
       }
     },
-    "UniswapV2Factory": {
+    "PointList": {
       "branches": {
-        "UniswapV2Factory.createPair": [
-          4,
-          0,
-          4
-        ],
-        "UniswapV2Factory.setFeeTo": [
-          0,
+        "PointList.initPointList": [
+          1,
           0,
           1
         ],
-        "UniswapV2Factory.setFeeToSetter": [
-          0,
+        "PointList.setPoints": [
+          1,
+          1,
+          2
+        ],
+        "SafeMath.add": [
+          1,
           0,
           1
         ],
-        "UniswapV2Factory.setMigrator": [
-          0,
+        "SafeMath.sub": [
+          1,
           0,
           1
         ]
       },
       "statements": {
-        "UniswapV2Factory.allPairsLength": [
-          0,
-          1
-        ],
-        "UniswapV2Factory.createPair": [
-          8,
-          8
-        ],
-        "UniswapV2Factory.pairCodeHash": [
-          0,
-          1
-        ],
-        "UniswapV2Factory.setFeeTo": [
-          0,
-          2
-        ],
-        "UniswapV2Factory.setFeeToSetter": [
-          0,
-          2
-        ],
-        "UniswapV2Factory.setMigrator": [
-          0,
-          2
-        ]
-      },
-      "totals": {
-        "branches": [
-          4,
-          0,
-          7
-        ],
-        "statements": [
-          8,
-          16
-        ]
-      }
-    },
-    "WETH9": {
-      "branches": {
-        "WETH9.transferFrom": [
-          2,
-          0,
-          4
-        ],
-        "WETH9.withdraw": [
-          0,
-          0,
-          1
-        ]
-      },
-      "statements": {
-        "WETH9.<receive>": [
-          0,
-          1
-        ],
-        "WETH9.approve": [
-          0,
+        "PointList.initPointList": [
+          3,
           3
         ],
-        "WETH9.deposit": [
+        "PointList.isInPointList": [
+          1,
+          1
+        ],
+        "PointList.setPoints": [
+          6,
+          6
+        ],
+        "SafeMath.add": [
           2,
           2
         ],
-        "WETH9.totalSupply": [
-          1,
-          1
-        ],
-        "WETH9.transfer": [
-          1,
-          1
-        ],
-        "WETH9.transferFrom": [
-          5,
-          7
-        ],
-        "WETH9.withdraw": [
-          0,
-          4
+        "SafeMath.sub": [
+          2,
+          2
         ]
       },
       "totals": {
         "branches": [
-          2,
-          0,
+          4,
+          1,
           5
         ],
         "statements": [
-          9,
-          19
+          14,
+          14
+        ]
+      }
+    },
+    "PoolLiquidity": {
+      "branches": {
+        "PoolLiquidity.<fallback>": [
+          0,
+          0,
+          1
+        ],
+        "PoolLiquidity._setTokenPair": [
+          0,
+          0,
+          1
+        ],
+        "PoolLiquidity.addLiquidityToPool": [
+          0,
+          0,
+          4
+        ],
+        "PoolLiquidity.depositETH": [
+          0,
+          1,
+          3
+        ],
+        "PoolLiquidity.depositTokens": [
+          0,
+          0,
+          3
+        ],
+        "PoolLiquidity.getLPTokenPerEthUnit": [
+          0,
+          0,
+          2
+        ],
+        "PoolLiquidity.getPairReserves": [
+          0,
+          0,
+          1
+        ],
+        "PoolLiquidity.initPoolLiquidity": [
+          0,
+          0,
+          2
+        ],
+        "PoolLiquidity.sendLPTokens": [
+          0,
+          0,
+          2
+        ],
+        "PoolLiquidity.withdrawTokens": [
+          0,
+          0,
+          3
+        ],
+        "SafeMathPlus.add": [
+          0,
+          0,
+          1
+        ],
+        "SafeMathPlus.div": [
+          0,
+          0,
+          1
+        ],
+        "SafeMathPlus.min": [
+          0,
+          0,
+          1
+        ],
+        "SafeMathPlus.mul": [
+          0,
+          0,
+          2
+        ],
+        "SafeMathUniswap.add": [
+          0,
+          0,
+          1
+        ],
+        "SafeMathUniswap.mul": [
+          0,
+          0,
+          2
+        ],
+        "UniswapV2Library.getAmountOut": [
+          0,
+          0,
+          3
+        ],
+        "UniswapV2Library.sortTokens": [
+          0,
+          0,
+          3
+        ]
+      },
+      "statements": {
+        "PoolLiquidity.<fallback>": [
+          0,
+          1
+        ],
+        "PoolLiquidity._createPool": [
+          0,
+          2
+        ],
+        "PoolLiquidity._setTokenPair": [
+          0,
+          3
+        ],
+        "PoolLiquidity.addLiquidityToPool": [
+          0,
+          9
+        ],
+        "PoolLiquidity.depositETH": [
+          1,
+          3
+        ],
+        "PoolLiquidity.depositTokens": [
+          0,
+          4
+        ],
+        "PoolLiquidity.getLPTokenAddress": [
+          0,
+          1
+        ],
+        "PoolLiquidity.getLPTokenPerEthUnit": [
+          0,
+          1
+        ],
+        "PoolLiquidity.getPairReserves": [
+          0,
+          1
+        ],
+        "PoolLiquidity.getTokenBalance": [
+          0,
+          1
+        ],
+        "PoolLiquidity.getWethBalance": [
+          0,
+          1
+        ],
+        "PoolLiquidity.initPoolLiquidity": [
+          0,
+          13
+        ],
+        "PoolLiquidity.sendLPTokens": [
+          0,
+          3
+        ],
+        "PoolLiquidity.withdrawTokens": [
+          0,
+          3
+        ]
+      },
+      "totals": {
+        "branches": [
+          0,
+          1,
+          36
+        ],
+        "statements": [
+          1,
+          46
         ]
       }
     }
@@ -1129,140 +975,140 @@
         "0": [],
         "13": [
           [
-            6489,
-            6500,
-            "red",
+            6400,
+            6411,
+            "green",
             ""
           ],
           [
-            6609,
-            6627,
-            "red",
+            6520,
+            6538,
+            "yellow",
             ""
           ],
           [
-            6677,
-            6690,
-            "red",
+            6588,
+            6601,
+            "green",
             ""
           ],
           [
-            7192,
+            7130,
+            7140,
+            "yellow",
+            ""
+          ],
+          [
+            7191,
             7202,
             "yellow",
             ""
           ],
           [
-            7253,
-            7264,
+            7408,
+            7421,
             "yellow",
             ""
           ],
           [
-            7375,
-            7388,
-            "yellow",
-            ""
-          ],
-          [
-            7561,
-            7577,
+            7594,
+            7610,
             "orange",
             ""
           ],
           [
-            2487,
-            2499,
-            "yellow",
-            ""
-          ],
-          [
-            2553,
-            2582,
-            "yellow",
-            ""
-          ],
-          [
-            2649,
-            2670,
-            "yellow",
-            ""
-          ],
-          [
-            2737,
-            2746,
-            "yellow",
-            ""
-          ],
-          [
-            2789,
-            2810,
-            "yellow",
-            ""
-          ],
-          [
-            2870,
-            2890,
-            "yellow",
-            ""
-          ],
-          [
-            2949,
-            2965,
-            "yellow",
-            ""
-          ],
-          [
-            3016,
-            3025,
-            "yellow",
-            ""
-          ],
-          [
-            3248,
-            3286,
-            "yellow",
-            ""
-          ],
-          [
-            1198,
-            1206,
-            "red",
-            ""
-          ],
-          [
-            4968,
-            4993,
-            "yellow",
-            ""
-          ],
-          [
-            5058,
-            5072,
-            "yellow",
-            ""
-          ],
-          [
-            5190,
-            5246,
+            2358,
+            2370,
             "green",
             ""
           ],
           [
-            10598,
-            10605,
+            2424,
+            2453,
             "yellow",
             ""
           ],
           [
-            10610,
-            10626,
+            2520,
+            2541,
+            "yellow",
+            ""
+          ],
+          [
+            2608,
+            2617,
+            "yellow",
+            ""
+          ],
+          [
+            2660,
+            2681,
+            "yellow",
+            ""
+          ],
+          [
+            2741,
+            2761,
+            "yellow",
+            ""
+          ],
+          [
+            2820,
+            2836,
+            "yellow",
+            ""
+          ],
+          [
+            2887,
+            2896,
+            "yellow",
+            ""
+          ],
+          [
+            3119,
+            3157,
+            "yellow",
+            ""
+          ],
+          [
+            4824,
+            4832,
+            "green",
+            ""
+          ],
+          [
+            4879,
+            4904,
+            "green",
+            ""
+          ],
+          [
+            4969,
+            4983,
+            "green",
+            ""
+          ],
+          [
+            5101,
+            5157,
+            "green",
+            ""
+          ],
+          [
+            10631,
+            10638,
+            "yellow",
+            ""
+          ],
+          [
+            10643,
+            10659,
             "orange",
             ""
           ],
           [
-            10630,
-            10654,
+            10663,
+            10687,
             "yellow",
             ""
           ]
@@ -1289,21 +1135,13 @@
           [
             3826,
             3831,
-            "red",
+            "yellow",
             ""
           ],
           [
             1859,
             1865,
             "yellow",
-            ""
-          ]
-        ],
-        "9": [
-          [
-            2260,
-            2279,
-            "red",
             ""
           ]
         ]
@@ -1415,7 +1253,7 @@
           [
             3243,
             3271,
-            "green",
+            "orange",
             ""
           ],
           [
@@ -1496,7 +1334,7 @@
       },
       "FixedToken": {
         "0": [],
-        "24": [
+        "27": [
           [
             9713,
             9732,
@@ -1534,14 +1372,6 @@
             ""
           ]
         ],
-        "27": [
-          [
-            472,
-            484,
-            "yellow",
-            ""
-          ]
-        ],
         "3": [
           [
             1859,
@@ -1556,35 +1386,17 @@
             ""
           ]
         ],
-        "50": [
+        "30": [
           [
-            315,
-            324,
-            "red",
-            ""
-          ],
-          [
-            918,
-            940,
-            "red",
-            ""
-          ],
-          [
-            813,
-            822,
-            "red",
-            ""
-          ],
-          [
+            400,
             412,
-            424,
-            "yellow",
+            "green",
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": []
+        "60": [],
+        "66": []
       },
       "MISOAccessControls": {
         "0": [],
@@ -1620,7 +1432,6 @@
             ""
           ]
         ],
-        "10": [],
         "6": [],
         "7": [
           [
@@ -1641,234 +1452,98 @@
             "red",
             ""
           ]
-        ]
+        ],
+        "9": []
       },
-      "MISOLauncher": {
-        "17": [
+      "MISOLiquidityLauncher": {
+        "19": [
           [
-            1380,
-            1407,
-            "red",
-            ""
-          ],
-          [
-            1509,
-            1522,
-            "green",
-            ""
-          ],
-          [
-            3641,
-            3683,
-            "red",
-            ""
-          ],
-          [
-            3852,
-            3865,
-            "red",
-            ""
-          ],
-          [
-            973,
-            985,
+            1677,
+            1719,
             "yellow",
             ""
           ],
           [
-            2748,
-            2790,
-            "green",
-            ""
-          ],
-          [
-            3222,
-            3238,
-            "orange",
-            ""
-          ],
-          [
-            3242,
-            3257,
-            "orange",
-            ""
-          ],
-          [
-            4477,
-            4501,
+            2136,
+            2178,
             "red",
             ""
           ],
           [
-            4610,
-            4634,
+            3054,
+            3095,
             "red",
             ""
           ],
           [
-            1684,
-            1694,
-            "green",
-            ""
-          ],
-          [
-            2513,
-            2531,
+            959,
+            971,
             "yellow",
             ""
-          ],
-          [
-            5200,
-            5224,
-            "red",
-            ""
           ]
         ],
-        "33": [
-          [
-            2292,
-            2304,
-            "red",
-            ""
-          ],
-          [
-            2370,
-            2383,
-            "red",
-            ""
-          ],
-          [
-            2387,
-            2401,
-            "red",
-            ""
-          ],
-          [
-            398,
-            414,
-            "red",
-            ""
-          ],
-          [
-            485,
-            500,
-            "red",
-            ""
-          ],
-          [
-            556,
-            576,
-            "red",
-            ""
-          ]
-        ],
-        "46": [
-          [
-            505,
-            511,
-            "red",
-            ""
-          ],
-          [
-            515,
-            535,
-            "red",
-            ""
-          ],
-          [
-            240,
-            256,
-            "red",
-            ""
-          ]
-        ],
-        "51": [
-          [
-            923,
-            929,
-            "red",
-            ""
-          ],
-          [
-            1008,
-            1018,
-            "red",
-            ""
-          ],
-          [
-            1990,
-            1996,
-            "red",
-            ""
-          ],
-          [
-            1334,
-            1339,
-            "red",
-            ""
-          ]
-        ]
+        "52": []
       },
       "MISOMarket": {
-        "18": [
+        "20": [
           [
-            2087,
-            2155,
-            "red",
+            2096,
+            2164,
+            "yellow",
             ""
           ],
           [
-            2175,
-            2223,
-            "red",
+            2184,
+            2232,
+            "yellow",
             ""
           ],
           [
-            3546,
-            3588,
-            "red",
+            3555,
+            3597,
+            "yellow",
             ""
           ],
           [
-            3821,
-            3863,
+            3830,
+            3872,
             "red",
             ""
           ],
           [
             1168,
             1180,
-            "yellow",
-            ""
-          ],
-          [
-            4743,
-            4782,
             "red",
             ""
           ],
           [
-            3074,
-            3142,
+            4752,
+            4791,
+            "green",
+            ""
+          ],
+          [
+            3083,
+            3151,
             "red",
             ""
           ],
           [
-            3162,
-            3212,
+            3171,
+            3221,
             "red",
             ""
           ]
         ],
         "3": [],
-        "49": []
+        "52": []
       },
       "MISOTokenFactory": {
-        "19": [
+        "22": [
           [
             1648,
             1690,
-            "yellow",
+            "green",
             ""
           ],
           [
@@ -1878,19 +1553,19 @@
             ""
           ],
           [
-            2018,
-            2060,
-            "red",
+            2062,
+            2104,
+            "yellow",
             ""
           ],
           [
-            2800,
-            2835,
+            2903,
+            2938,
             "green",
             ""
           ]
         ],
-        "49": []
+        "52": []
       },
       "MintableToken": {
         "0": [],
@@ -1926,7 +1601,7 @@
             ""
           ]
         ],
-        "24": [
+        "27": [
           [
             9713,
             9732,
@@ -1970,8 +1645,8 @@
             ""
           ]
         ],
-        "25": [],
-        "26": [
+        "28": [],
+        "29": [
           [
             772,
             781,
@@ -1979,7 +1654,21 @@
             ""
           ]
         ],
-        "28": [
+        "3": [
+          [
+            1859,
+            1865,
+            "yellow",
+            ""
+          ],
+          [
+            986,
+            992,
+            "yellow",
+            ""
+          ]
+        ],
+        "31": [
           [
             1766,
             1800,
@@ -1999,21 +1688,7 @@
             ""
           ]
         ],
-        "3": [
-          [
-            1859,
-            1865,
-            "yellow",
-            ""
-          ],
-          [
-            986,
-            992,
-            "yellow",
-            ""
-          ]
-        ],
-        "50": [
+        "53": [
           [
             918,
             940,
@@ -2033,9 +1708,9 @@
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": [],
+        "60": [],
+        "66": [],
         "7": [
           [
             4517,
@@ -2065,9 +1740,271 @@
           ]
         ]
       },
+      "PointList": {
+        "10": [
+          [
+            788,
+            800,
+            "yellow",
+            ""
+          ],
+          [
+            1195,
+            1237,
+            "yellow",
+            ""
+          ],
+          [
+            1556,
+            1580,
+            "yellow",
+            ""
+          ]
+        ],
+        "3": [
+          [
+            986,
+            992,
+            "yellow",
+            ""
+          ],
+          [
+            1859,
+            1865,
+            "yellow",
+            ""
+          ]
+        ]
+      },
+      "PoolLiquidity": {
+        "16": [
+          [
+            2107,
+            2134,
+            "red",
+            ""
+          ],
+          [
+            2553,
+            2579,
+            "orange",
+            ""
+          ],
+          [
+            2622,
+            2641,
+            "red",
+            ""
+          ],
+          [
+            2683,
+            2696,
+            "red",
+            ""
+          ],
+          [
+            4263,
+            4305,
+            "red",
+            ""
+          ],
+          [
+            4474,
+            4487,
+            "red",
+            ""
+          ],
+          [
+            4653,
+            4677,
+            "red",
+            ""
+          ],
+          [
+            4770,
+            4785,
+            "red",
+            ""
+          ],
+          [
+            4916,
+            4931,
+            "red",
+            ""
+          ],
+          [
+            3204,
+            3230,
+            "red",
+            ""
+          ],
+          [
+            3423,
+            3463,
+            "red",
+            ""
+          ],
+          [
+            3698,
+            3714,
+            "red",
+            ""
+          ],
+          [
+            3718,
+            3733,
+            "red",
+            ""
+          ],
+          [
+            1524,
+            1536,
+            "red",
+            ""
+          ],
+          [
+            1852,
+            1887,
+            "red",
+            ""
+          ],
+          [
+            6085,
+            6109,
+            "red",
+            ""
+          ],
+          [
+            6218,
+            6242,
+            "red",
+            ""
+          ],
+          [
+            2858,
+            2868,
+            "red",
+            ""
+          ],
+          [
+            2926,
+            2952,
+            "red",
+            ""
+          ],
+          [
+            2995,
+            3014,
+            "red",
+            ""
+          ],
+          [
+            5348,
+            5366,
+            "red",
+            ""
+          ],
+          [
+            6808,
+            6832,
+            "red",
+            ""
+          ]
+        ],
+        "36": [
+          [
+            2292,
+            2304,
+            "red",
+            ""
+          ],
+          [
+            2370,
+            2383,
+            "red",
+            ""
+          ],
+          [
+            2387,
+            2401,
+            "red",
+            ""
+          ],
+          [
+            398,
+            414,
+            "red",
+            ""
+          ],
+          [
+            485,
+            500,
+            "red",
+            ""
+          ],
+          [
+            556,
+            576,
+            "red",
+            ""
+          ]
+        ],
+        "49": [
+          [
+            505,
+            511,
+            "red",
+            ""
+          ],
+          [
+            515,
+            535,
+            "red",
+            ""
+          ],
+          [
+            240,
+            256,
+            "red",
+            ""
+          ]
+        ],
+        "54": [
+          [
+            444,
+            450,
+            "red",
+            ""
+          ],
+          [
+            923,
+            929,
+            "red",
+            ""
+          ],
+          [
+            1008,
+            1018,
+            "red",
+            ""
+          ],
+          [
+            1990,
+            1996,
+            "red",
+            ""
+          ],
+          [
+            1334,
+            1339,
+            "red",
+            ""
+          ]
+        ]
+      },
       "SushiToken": {
         "0": [],
-        "24": [
+        "27": [
           [
             9713,
             9732,
@@ -2105,122 +2042,6 @@
             ""
           ]
         ],
-        "29": [
-          [
-            5540,
-            5566,
-            "red",
-            ""
-          ],
-          [
-            5681,
-            5698,
-            "red",
-            ""
-          ],
-          [
-            5790,
-            5853,
-            "red",
-            ""
-          ],
-          [
-            5989,
-            6036,
-            "red",
-            ""
-          ],
-          [
-            6337,
-            6364,
-            "red",
-            ""
-          ],
-          [
-            6424,
-            6450,
-            "red",
-            ""
-          ],
-          [
-            4908,
-            4924,
-            "red",
-            ""
-          ],
-          [
-            4257,
-            4280,
-            "red",
-            ""
-          ],
-          [
-            4342,
-            4370,
-            "red",
-            ""
-          ],
-          [
-            4428,
-            4441,
-            "red",
-            ""
-          ],
-          [
-            7158,
-            7174,
-            "red",
-            ""
-          ],
-          [
-            7178,
-            7188,
-            "red",
-            ""
-          ],
-          [
-            7208,
-            7228,
-            "red",
-            ""
-          ],
-          [
-            7374,
-            7387,
-            "red",
-            ""
-          ],
-          [
-            7601,
-            7621,
-            "red",
-            ""
-          ],
-          [
-            7767,
-            7780,
-            "red",
-            ""
-          ],
-          [
-            8282,
-            8298,
-            "red",
-            ""
-          ],
-          [
-            8302,
-            8367,
-            "red",
-            ""
-          ],
-          [
-            8792,
-            8801,
-            "red",
-            ""
-          ]
-        ],
         "3": [
           [
             1859,
@@ -2235,7 +2056,123 @@
             ""
           ]
         ],
-        "50": [
+        "32": [
+          [
+            5626,
+            5652,
+            "red",
+            ""
+          ],
+          [
+            5767,
+            5784,
+            "red",
+            ""
+          ],
+          [
+            5876,
+            5939,
+            "red",
+            ""
+          ],
+          [
+            6075,
+            6122,
+            "red",
+            ""
+          ],
+          [
+            6423,
+            6450,
+            "red",
+            ""
+          ],
+          [
+            6510,
+            6536,
+            "red",
+            ""
+          ],
+          [
+            4994,
+            5010,
+            "red",
+            ""
+          ],
+          [
+            4343,
+            4366,
+            "red",
+            ""
+          ],
+          [
+            4428,
+            4456,
+            "red",
+            ""
+          ],
+          [
+            4514,
+            4527,
+            "red",
+            ""
+          ],
+          [
+            7244,
+            7260,
+            "red",
+            ""
+          ],
+          [
+            7264,
+            7274,
+            "red",
+            ""
+          ],
+          [
+            7294,
+            7314,
+            "red",
+            ""
+          ],
+          [
+            7460,
+            7473,
+            "red",
+            ""
+          ],
+          [
+            7687,
+            7707,
+            "red",
+            ""
+          ],
+          [
+            7853,
+            7866,
+            "red",
+            ""
+          ],
+          [
+            8368,
+            8384,
+            "red",
+            ""
+          ],
+          [
+            8388,
+            8453,
+            "red",
+            ""
+          ],
+          [
+            8878,
+            8887,
+            "red",
+            ""
+          ]
+        ],
+        "53": [
           [
             315,
             324,
@@ -2261,95 +2198,9 @@
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": []
-      },
-      "UniswapV2Factory": {
-        "31": [],
-        "32": [
-          [
-            2003,
-            2028,
-            "red",
-            ""
-          ],
-          [
-            2178,
-            2203,
-            "red",
-            ""
-          ],
-          [
-            919,
-            935,
-            "yellow",
-            ""
-          ],
-          [
-            1015,
-            1030,
-            "yellow",
-            ""
-          ],
-          [
-            1086,
-            1106,
-            "yellow",
-            ""
-          ],
-          [
-            1152,
-            1189,
-            "yellow",
-            ""
-          ],
-          [
-            1840,
-            1865,
-            "red",
-            ""
-          ]
-        ],
-        "34": [],
-        "40": [],
-        "45": [],
-        "46": [],
-        "48": []
-      },
-      "WETH9": {
-        "53": [
-          [
-            2175,
-            2196,
-            "yellow",
-            ""
-          ],
-          [
-            2212,
-            2229,
-            "orange",
-            ""
-          ],
-          [
-            2233,
-            2271,
-            "red",
-            ""
-          ],
-          [
-            2295,
-            2328,
-            "red",
-            ""
-          ],
-          [
-            1490,
-            1518,
-            "red",
-            ""
-          ]
-        ]
+        "60": [],
+        "66": []
       }
     },
     "statements": {
@@ -2364,284 +2215,290 @@
         ],
         "13": [
           [
-            8607,
-            8630,
+            8640,
+            8663,
+            "green",
+            ""
+          ],
+          [
+            3742,
+            3786,
+            "green",
+            ""
+          ],
+          [
+            3898,
+            3955,
+            "green",
+            ""
+          ],
+          [
+            3990,
+            4026,
+            "green",
+            ""
+          ],
+          [
+            4087,
+            4153,
+            "green",
+            ""
+          ],
+          [
+            9489,
+            9521,
+            "green",
+            ""
+          ],
+          [
+            8981,
+            9046,
+            "green",
+            ""
+          ],
+          [
+            6392,
+            6437,
+            "green",
+            ""
+          ],
+          [
+            6512,
+            6574,
+            "green",
+            ""
+          ],
+          [
+            6711,
+            6751,
+            "green",
+            ""
+          ],
+          [
+            6842,
+            6875,
+            "green",
+            ""
+          ],
+          [
+            6895,
+            6920,
+            "green",
+            ""
+          ],
+          [
+            7122,
+            7173,
+            "green",
+            ""
+          ],
+          [
+            7183,
+            7228,
+            "green",
+            ""
+          ],
+          [
+            7437,
+            7452,
+            "green",
+            ""
+          ],
+          [
+            7527,
+            7570,
+            "green",
+            ""
+          ],
+          [
+            7626,
+            7662,
             "red",
             ""
           ],
           [
-            3864,
-            3908,
+            7683,
+            7699,
             "green",
             ""
           ],
           [
-            4020,
-            4077,
+            7710,
+            7735,
             "green",
             ""
           ],
           [
-            4112,
-            4148,
+            8810,
+            8834,
             "green",
             ""
           ],
           [
-            4209,
-            4275,
+            9236,
+            9260,
             "green",
             ""
           ],
           [
-            9456,
-            9488,
+            2350,
+            2405,
             "green",
             ""
           ],
           [
-            8948,
-            9013,
+            2416,
+            2502,
             "green",
             ""
           ],
           [
-            6481,
-            6526,
-            "red",
-            ""
-          ],
-          [
-            6601,
-            6663,
-            "red",
-            ""
-          ],
-          [
-            6773,
-            6813,
-            "red",
-            ""
-          ],
-          [
-            6904,
-            6937,
-            "red",
-            ""
-          ],
-          [
-            6957,
-            6982,
-            "red",
-            ""
-          ],
-          [
-            7184,
-            7235,
+            2512,
+            2590,
             "green",
             ""
           ],
           [
-            7245,
-            7290,
+            2600,
+            2642,
             "green",
             ""
           ],
           [
-            7404,
-            7419,
+            2652,
+            2723,
             "green",
             ""
           ],
           [
-            7494,
-            7537,
+            2733,
+            2802,
             "green",
             ""
           ],
           [
-            7593,
-            7629,
-            "red",
-            ""
-          ],
-          [
-            7650,
-            7666,
+            2812,
+            2869,
             "green",
             ""
           ],
           [
-            7677,
-            7702,
+            2879,
+            2921,
             "green",
             ""
           ],
           [
-            8777,
-            8801,
+            2932,
+            2946,
             "green",
             ""
           ],
           [
-            9203,
-            9227,
+            2956,
+            2978,
             "green",
             ""
           ],
           [
-            2479,
-            2534,
+            2988,
+            3006,
             "green",
             ""
           ],
           [
-            2545,
-            2631,
+            3016,
+            3028,
             "green",
             ""
           ],
           [
-            2641,
-            2719,
+            3038,
+            3054,
             "green",
             ""
           ],
           [
-            2729,
-            2771,
+            3064,
+            3078,
             "green",
             ""
           ],
           [
-            2781,
-            2852,
+            3088,
+            3100,
             "green",
             ""
           ],
           [
-            2862,
-            2931,
+            3111,
+            3232,
             "green",
             ""
           ],
           [
-            2941,
-            2998,
+            3251,
+            3299,
             "green",
             ""
           ],
           [
-            3008,
-            3050,
+            3309,
+            3327,
             "green",
             ""
           ],
           [
-            3061,
-            3075,
+            3337,
+            3354,
             "green",
             ""
           ],
           [
-            3085,
-            3107,
+            4816,
+            4861,
             "green",
             ""
           ],
           [
-            3117,
-            3135,
+            4871,
+            4951,
             "green",
             ""
           ],
           [
-            3145,
-            3157,
+            4961,
+            5013,
             "green",
             ""
           ],
           [
-            3167,
-            3183,
+            5093,
+            5198,
             "green",
             ""
           ],
           [
-            3193,
-            3207,
+            8105,
+            8131,
             "green",
             ""
           ],
           [
-            3217,
-            3229,
+            5703,
+            5749,
             "green",
             ""
           ],
           [
-            3240,
-            3361,
+            8269,
+            8307,
             "green",
             ""
           ],
           [
-            3380,
-            3428,
-            "green",
-            ""
-          ],
-          [
-            3438,
-            3456,
-            "green",
-            ""
-          ],
-          [
-            3466,
-            3483,
-            "green",
-            ""
-          ],
-          [
-            4960,
-            5040,
-            "green",
-            ""
-          ],
-          [
-            5050,
-            5102,
-            "green",
-            ""
-          ],
-          [
-            5182,
-            5287,
-            "green",
-            ""
-          ],
-          [
-            8072,
-            8098,
-            "green",
-            ""
-          ],
-          [
-            5792,
-            5838,
-            "red",
-            ""
-          ],
-          [
-            8236,
-            8274,
-            "green",
-            ""
-          ],
-          [
-            10590,
-            10656,
+            10623,
+            10689,
             "green",
             ""
           ]
@@ -2662,13 +2519,13 @@
           [
             3178,
             3224,
-            "red",
+            "green",
             ""
           ],
           [
             3818,
             3846,
-            "red",
+            "green",
             ""
           ],
           [
@@ -2695,8 +2552,7 @@
             "green",
             ""
           ]
-        ],
-        "9": []
+        ]
       },
       "DutchAuction": {
         "14": [
@@ -2961,7 +2817,7 @@
           [
             3287,
             3304,
-            "green",
+            "red",
             ""
           ],
           [
@@ -3073,7 +2929,7 @@
             ""
           ]
         ],
-        "24": [
+        "27": [
           [
             2518,
             2530,
@@ -3279,38 +3135,6 @@
             ""
           ]
         ],
-        "27": [
-          [
-            464,
-            485,
-            "green",
-            ""
-          ],
-          [
-            495,
-            513,
-            "green",
-            ""
-          ],
-          [
-            523,
-            554,
-            "green",
-            ""
-          ],
-          [
-            315,
-            332,
-            "green",
-            ""
-          ],
-          [
-            342,
-            368,
-            "green",
-            ""
-          ]
-        ],
         "3": [
           [
             1851,
@@ -3331,83 +3155,35 @@
             ""
           ]
         ],
-        "50": [
+        "30": [
           [
-            910,
-            941,
-            "red",
-            ""
-          ],
-          [
-            951,
-            994,
-            "red",
-            ""
-          ],
-          [
-            1004,
-            1039,
-            "red",
-            ""
-          ],
-          [
-            1049,
-            1070,
-            "red",
-            ""
-          ],
-          [
-            621,
-            634,
+            392,
+            413,
             "green",
             ""
           ],
           [
-            702,
-            729,
+            423,
+            441,
             "green",
             ""
           ],
           [
-            805,
-            823,
-            "red",
-            ""
-          ],
-          [
-            833,
-            853,
-            "red",
-            ""
-          ],
-          [
-            404,
-            425,
+            451,
+            482,
             "green",
             ""
           ],
           [
-            435,
-            468,
-            "green",
-            ""
-          ],
-          [
-            478,
-            496,
-            "green",
-            ""
-          ],
-          [
-            506,
-            551,
+            279,
+            305,
             "green",
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": []
+        "60": [],
+        "66": []
       },
       "MISOAccessControls": {
         "0": [
@@ -3486,7 +3262,124 @@
             ""
           ]
         ],
-        "10": [
+        "6": [],
+        "7": [
+          [
+            4950,
+            4998,
+            "green",
+            ""
+          ],
+          [
+            6178,
+            6225,
+            "red",
+            ""
+          ],
+          [
+            5497,
+            5550,
+            "green",
+            ""
+          ],
+          [
+            5720,
+            5746,
+            "red",
+            ""
+          ],
+          [
+            1732,
+            1755,
+            "green",
+            ""
+          ],
+          [
+            1890,
+            1930,
+            "green",
+            ""
+          ],
+          [
+            1944,
+            1955,
+            "green",
+            ""
+          ],
+          [
+            1986,
+            1998,
+            "red",
+            ""
+          ],
+          [
+            5262,
+            5313,
+            "red",
+            ""
+          ],
+          [
+            4509,
+            4582,
+            "red",
+            ""
+          ],
+          [
+            4592,
+            4617,
+            "red",
+            ""
+          ],
+          [
+            3865,
+            3896,
+            "green",
+            ""
+          ],
+          [
+            4059,
+            4084,
+            "red",
+            ""
+          ],
+          [
+            3245,
+            3283,
+            "red",
+            ""
+          ],
+          [
+            3349,
+            3392,
+            "red",
+            ""
+          ],
+          [
+            3498,
+            3515,
+            "red",
+            ""
+          ],
+          [
+            3583,
+            3609,
+            "red",
+            ""
+          ],
+          [
+            3624,
+            3635,
+            "red",
+            ""
+          ],
+          [
+            3666,
+            3678,
+            "red",
+            ""
+          ]
+        ],
+        "9": [
           [
             2310,
             2347,
@@ -3607,657 +3500,403 @@
             "green",
             ""
           ]
-        ],
-        "6": [],
-        "7": [
-          [
-            4950,
-            4998,
-            "green",
-            ""
-          ],
-          [
-            6178,
-            6225,
-            "red",
-            ""
-          ],
-          [
-            5497,
-            5550,
-            "green",
-            ""
-          ],
-          [
-            5720,
-            5746,
-            "red",
-            ""
-          ],
-          [
-            1732,
-            1755,
-            "green",
-            ""
-          ],
-          [
-            1890,
-            1930,
-            "green",
-            ""
-          ],
-          [
-            1944,
-            1955,
-            "green",
-            ""
-          ],
-          [
-            1986,
-            1998,
-            "red",
-            ""
-          ],
-          [
-            5262,
-            5313,
-            "red",
-            ""
-          ],
-          [
-            4509,
-            4582,
-            "red",
-            ""
-          ],
-          [
-            4592,
-            4617,
-            "red",
-            ""
-          ],
-          [
-            3865,
-            3896,
-            "green",
-            ""
-          ],
-          [
-            4059,
-            4084,
-            "red",
-            ""
-          ],
-          [
-            3245,
-            3283,
-            "red",
-            ""
-          ],
-          [
-            3349,
-            3392,
-            "red",
-            ""
-          ],
-          [
-            3498,
-            3515,
-            "red",
-            ""
-          ],
-          [
-            3583,
-            3609,
-            "red",
-            ""
-          ],
-          [
-            3624,
-            3635,
-            "red",
-            ""
-          ],
-          [
-            3666,
-            3678,
-            "red",
-            ""
-          ]
         ]
       },
-      "MISOLauncher": {
-        "17": [
+      "MISOLiquidityLauncher": {
+        "19": [
           [
-            1423,
-            1435,
+            2671,
+            2707,
             "red",
             ""
           ],
           [
-            1539,
-            1572,
+            1656,
+            1820,
             "green",
             ""
           ],
           [
-            3620,
-            3758,
+            1874,
+            1894,
+            "green",
+            ""
+          ],
+          [
+            1904,
+            1953,
+            "green",
+            ""
+          ],
+          [
+            1963,
+            2021,
+            "green",
+            ""
+          ],
+          [
+            2806,
+            2829,
             "red",
             ""
           ],
           [
-            3844,
-            3905,
+            2115,
+            2282,
             "red",
             ""
           ],
           [
-            3915,
-            3964,
+            2292,
+            2345,
             "red",
             ""
           ],
           [
-            965,
-            986,
-            "green",
+            2414,
+            2457,
+            "red",
             ""
           ],
           [
-            996,
-            1048,
-            "green",
-            ""
-          ],
-          [
-            1058,
-            1080,
-            "green",
-            ""
-          ],
-          [
-            1090,
-            1109,
-            "green",
-            ""
-          ],
-          [
-            1119,
-            1156,
-            "green",
-            ""
-          ],
-          [
-            1166,
-            1182,
-            "green",
-            ""
-          ],
-          [
-            1192,
-            1207,
-            "green",
-            ""
-          ],
-          [
-            1217,
-            1235,
-            "green",
+            2467,
+            2519,
+            "red",
             ""
           ],
           [
             1245,
-            1326,
+            1298,
             "green",
             ""
           ],
           [
-            1979,
-            2016,
+            1308,
+            1362,
             "green",
             ""
           ],
           [
-            2096,
-            2132,
+            1372,
+            1422,
             "green",
             ""
           ],
           [
-            2727,
-            2871,
+            1432,
+            1465,
             "green",
             ""
           ],
           [
-            3273,
-            3281,
-            "red",
-            ""
-          ],
-          [
-            3301,
-            3351,
+            1475,
+            1567,
             "green",
             ""
           ],
           [
-            3361,
-            3409,
+            3115,
+            3123,
+            "red",
+            ""
+          ],
+          [
+            3032,
+            3035,
+            "red",
+            ""
+          ],
+          [
+            951,
+            972,
             "green",
             ""
           ],
           [
-            3478,
-            3539,
-            "green",
-            ""
-          ],
-          [
-            4706,
-            4812,
-            "red",
-            ""
-          ],
-          [
-            1676,
-            1734,
-            "green",
-            ""
-          ],
-          [
-            1744,
-            1797,
-            "green",
-            ""
-          ],
-          [
-            2547,
-            2567,
-            "green",
-            ""
-          ],
-          [
-            2587,
-            2607,
-            "red",
-            ""
-          ],
-          [
-            2617,
-            2637,
-            "red",
-            ""
-          ],
-          [
-            5168,
-            5270,
-            "red",
-            ""
-          ],
-          [
-            2268,
-            2333,
-            "green",
-            ""
-          ],
-          [
-            2343,
-            2363,
-            "green",
-            ""
-          ]
-        ],
-        "33": [
-          [
-            2284,
-            2352,
-            "red",
-            ""
-          ],
-          [
-            2362,
-            2446,
-            "red",
-            ""
-          ],
-          [
-            2633,
-            2668,
-            "red",
-            ""
-          ],
-          [
-            390,
-            456,
-            "red",
-            ""
-          ],
-          [
-            466,
-            538,
-            "red",
-            ""
-          ],
-          [
-            548,
-            611,
-            "red",
-            ""
-          ]
-        ],
-        "46": [
-          [
-            497,
-            560,
-            "red",
-            ""
-          ],
-          [
-            232,
-            281,
-            "red",
-            ""
-          ]
-        ],
-        "51": [
-          [
-            1163,
-            1209,
-            "red",
-            ""
-          ],
-          [
-            1326,
-            1354,
-            "red",
-            ""
-          ],
-          [
-            945,
-            953,
-            "red",
-            ""
-          ],
-          [
+            982,
             1000,
-            1056,
-            "red",
+            "green",
             ""
           ],
           [
-            1986,
-            2004,
-            "red",
+            1010,
+            1062,
+            "green",
+            ""
+          ],
+          [
+            1072,
+            1114,
+            "green",
             ""
           ]
-        ]
+        ],
+        "52": []
       },
       "MISOMarket": {
-        "18": [
+        "20": [
           [
-            4539,
-            4575,
+            4548,
+            4584,
+            "green",
+            ""
+          ],
+          [
+            4921,
+            4943,
             "red",
             ""
           ],
           [
-            4912,
-            4934,
+            1825,
+            1877,
+            "green",
+            ""
+          ],
+          [
+            1887,
+            1942,
+            "green",
+            ""
+          ],
+          [
+            1952,
+            2034,
+            "green",
+            ""
+          ],
+          [
+            2044,
+            2078,
+            "green",
+            ""
+          ],
+          [
+            2088,
+            2165,
+            "green",
+            ""
+          ],
+          [
+            2176,
+            2233,
+            "green",
+            ""
+          ],
+          [
+            2243,
+            2393,
+            "green",
+            ""
+          ],
+          [
+            2403,
+            2486,
+            "green",
+            ""
+          ],
+          [
+            3534,
+            3677,
+            "green",
+            ""
+          ],
+          [
+            3687,
+            3717,
+            "green",
+            ""
+          ],
+          [
+            3809,
+            3955,
             "red",
             ""
           ],
           [
-            1816,
-            1868,
+            3965,
+            4017,
             "red",
             ""
           ],
           [
-            1878,
-            1933,
+            4085,
+            4127,
             "red",
             ""
           ],
           [
-            1943,
-            2025,
-            "red",
-            ""
-          ],
-          [
-            2035,
-            2069,
-            "red",
-            ""
-          ],
-          [
-            2079,
-            2156,
-            "red",
-            ""
-          ],
-          [
-            2167,
-            2224,
-            "red",
-            ""
-          ],
-          [
-            2234,
-            2384,
-            "red",
-            ""
-          ],
-          [
-            2394,
-            2477,
-            "red",
-            ""
-          ],
-          [
-            3525,
-            3668,
-            "red",
-            ""
-          ],
-          [
-            3678,
-            3708,
-            "red",
-            ""
-          ],
-          [
-            3800,
-            3946,
-            "red",
-            ""
-          ],
-          [
-            3956,
-            4008,
-            "red",
-            ""
-          ],
-          [
-            4076,
-            4118,
-            "red",
-            ""
-          ],
-          [
-            4128,
-            4178,
+            4137,
+            4187,
             "red",
             ""
           ],
           [
             1160,
             1181,
-            "green",
+            "red",
             ""
           ],
           [
             1191,
             1243,
-            "green",
+            "red",
             ""
           ],
           [
             1254,
             1275,
-            "green",
+            "red",
             ""
           ],
           [
             1343,
             1377,
-            "green",
+            "red",
             ""
           ],
           [
             1324,
             1327,
+            "red",
+            ""
+          ],
+          [
+            1406,
+            1424,
+            "red",
+            ""
+          ],
+          [
+            1434,
+            1465,
+            "red",
+            ""
+          ],
+          [
+            4811,
+            4819,
             "green",
             ""
           ],
           [
-            1397,
-            1415,
+            4730,
+            4733,
             "green",
             ""
           ],
           [
-            1425,
-            1456,
+            2806,
+            2858,
+            "red",
+            ""
+          ],
+          [
+            2868,
+            2925,
+            "red",
+            ""
+          ],
+          [
+            2935,
+            3019,
+            "red",
+            ""
+          ],
+          [
+            3029,
+            3065,
+            "red",
+            ""
+          ],
+          [
+            3075,
+            3152,
+            "red",
+            ""
+          ],
+          [
+            3163,
+            3222,
+            "red",
+            ""
+          ],
+          [
+            3232,
+            3356,
+            "red",
+            ""
+          ],
+          [
+            3366,
+            3451,
+            "red",
+            ""
+          ],
+          [
+            4267,
+            4286,
             "green",
             ""
           ],
           [
-            4802,
-            4810,
-            "red",
-            ""
-          ],
-          [
-            4721,
-            4724,
-            "red",
-            ""
-          ],
-          [
-            2797,
-            2849,
-            "red",
-            ""
-          ],
-          [
-            2859,
-            2916,
-            "red",
-            ""
-          ],
-          [
-            2926,
-            3010,
-            "red",
-            ""
-          ],
-          [
-            3020,
-            3056,
-            "red",
-            ""
-          ],
-          [
-            3066,
-            3143,
-            "red",
-            ""
-          ],
-          [
-            3154,
-            3213,
-            "red",
-            ""
-          ],
-          [
-            3223,
-            3347,
-            "red",
-            ""
-          ],
-          [
-            3357,
-            3442,
-            "red",
-            ""
-          ],
-          [
-            4258,
-            4277,
+            4296,
+            4343,
             "green",
             ""
           ],
           [
-            4287,
-            4334,
-            "green",
-            ""
-          ],
-          [
-            4344,
-            4399,
+            4353,
+            4408,
             "green",
             ""
           ]
         ],
         "3": [],
-        "49": []
+        "52": []
       },
       "MISOTokenFactory": {
-        "19": [
+        "22": [
           [
-            2508,
-            2541,
+            2552,
+            2585,
             "green",
             ""
           ],
           [
             1195,
             1245,
-            "red",
+            "green",
             ""
           ],
           [
             1255,
             1303,
-            "red",
+            "green",
             ""
           ],
           [
             1313,
             1348,
-            "red",
+            "green",
             ""
           ],
           [
             1358,
             1385,
-            "red",
+            "green",
             ""
           ],
           [
             1395,
             1450,
-            "red",
+            "green",
             ""
           ],
           [
             1460,
             1550,
-            "red",
+            "green",
             ""
           ],
           [
@@ -4267,20 +3906,20 @@
             ""
           ],
           [
-            1784,
-            1801,
+            1828,
+            1845,
             "green",
             ""
           ],
           [
-            1811,
-            1854,
+            1855,
+            1898,
             "green",
             ""
           ],
           [
-            1864,
-            1915,
+            1908,
+            1959,
             "green",
             ""
           ],
@@ -4309,49 +3948,49 @@
             ""
           ],
           [
-            1997,
-            2147,
-            "red",
-            ""
-          ],
-          [
-            2157,
-            2207,
-            "red",
-            ""
-          ],
-          [
-            2273,
-            2313,
-            "red",
-            ""
-          ],
-          [
-            2323,
-            2371,
-            "red",
-            ""
-          ],
-          [
-            2855,
-            2863,
+            2041,
+            2191,
             "green",
             ""
           ],
           [
-            2778,
-            2781,
+            2201,
+            2251,
             "green",
             ""
           ],
           [
-            2620,
-            2640,
-            "red",
+            2317,
+            2357,
+            "green",
+            ""
+          ],
+          [
+            2367,
+            2415,
+            "green",
+            ""
+          ],
+          [
+            2958,
+            2966,
+            "green",
+            ""
+          ],
+          [
+            2881,
+            2884,
+            "green",
+            ""
+          ],
+          [
+            2664,
+            2684,
+            "green",
             ""
           ]
         ],
-        "49": []
+        "52": []
       },
       "MintableToken": {
         "0": [
@@ -4430,7 +4069,7 @@
             ""
           ]
         ],
-        "24": [
+        "27": [
           [
             2518,
             2530,
@@ -4666,7 +4305,7 @@
             ""
           ]
         ],
-        "25": [
+        "28": [
           [
             496,
             523,
@@ -4686,7 +4325,7 @@
             ""
           ]
         ],
-        "26": [
+        "29": [
           [
             709,
             753,
@@ -4700,7 +4339,27 @@
             ""
           ]
         ],
-        "28": [
+        "3": [
+          [
+            1851,
+            1880,
+            "green",
+            ""
+          ],
+          [
+            1398,
+            1448,
+            "red",
+            ""
+          ],
+          [
+            978,
+            1024,
+            "green",
+            ""
+          ]
+        ],
+        "31": [
           [
             1758,
             1852,
@@ -4774,27 +4433,7 @@
             ""
           ]
         ],
-        "3": [
-          [
-            1851,
-            1880,
-            "green",
-            ""
-          ],
-          [
-            1398,
-            1448,
-            "red",
-            ""
-          ],
-          [
-            978,
-            1024,
-            "green",
-            ""
-          ]
-        ],
-        "50": [
+        "53": [
           [
             910,
             941,
@@ -4822,7 +4461,7 @@
           [
             621,
             634,
-            "green",
+            "red",
             ""
           ],
           [
@@ -4868,9 +4507,9 @@
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": [],
+        "60": [],
+        "66": [],
         "7": [
           [
             6178,
@@ -5020,6 +4659,472 @@
           ]
         ]
       },
+      "PointList": {
+        "10": [
+          [
+            780,
+            824,
+            "green",
+            ""
+          ],
+          [
+            834,
+            886,
+            "green",
+            ""
+          ],
+          [
+            896,
+            914,
+            "green",
+            ""
+          ],
+          [
+            1005,
+            1031,
+            "green",
+            ""
+          ],
+          [
+            1174,
+            1307,
+            "green",
+            ""
+          ],
+          [
+            1317,
+            1346,
+            "green",
+            ""
+          ],
+          [
+            1600,
+            1624,
+            "green",
+            ""
+          ],
+          [
+            1642,
+            1699,
+            "green",
+            ""
+          ],
+          [
+            1717,
+            1768,
+            "green",
+            ""
+          ],
+          [
+            1394,
+            1397,
+            "green",
+            ""
+          ]
+        ],
+        "3": [
+          [
+            978,
+            1024,
+            "green",
+            ""
+          ],
+          [
+            1035,
+            1043,
+            "green",
+            ""
+          ],
+          [
+            1398,
+            1448,
+            "green",
+            ""
+          ],
+          [
+            1851,
+            1880,
+            "green",
+            ""
+          ]
+        ]
+      },
+      "PoolLiquidity": {
+        "16": [
+          [
+            2150,
+            2162,
+            "red",
+            ""
+          ],
+          [
+            2545,
+            2604,
+            "green",
+            ""
+          ],
+          [
+            2614,
+            2669,
+            "red",
+            ""
+          ],
+          [
+            2713,
+            2746,
+            "red",
+            ""
+          ],
+          [
+            4242,
+            4380,
+            "red",
+            ""
+          ],
+          [
+            4466,
+            4527,
+            "red",
+            ""
+          ],
+          [
+            4537,
+            4586,
+            "red",
+            ""
+          ],
+          [
+            2269,
+            2306,
+            "red",
+            ""
+          ],
+          [
+            4645,
+            4707,
+            "red",
+            ""
+          ],
+          [
+            4802,
+            4845,
+            "red",
+            ""
+          ],
+          [
+            4948,
+            4989,
+            "red",
+            ""
+          ],
+          [
+            2386,
+            2422,
+            "red",
+            ""
+          ],
+          [
+            3196,
+            3256,
+            "red",
+            ""
+          ],
+          [
+            3415,
+            3495,
+            "red",
+            ""
+          ],
+          [
+            3749,
+            3757,
+            "red",
+            ""
+          ],
+          [
+            3777,
+            3827,
+            "red",
+            ""
+          ],
+          [
+            3837,
+            3885,
+            "red",
+            ""
+          ],
+          [
+            3954,
+            4015,
+            "red",
+            ""
+          ],
+          [
+            4025,
+            4071,
+            "red",
+            ""
+          ],
+          [
+            4081,
+            4116,
+            "red",
+            ""
+          ],
+          [
+            4126,
+            4161,
+            "red",
+            ""
+          ],
+          [
+            5584,
+            5604,
+            "red",
+            ""
+          ],
+          [
+            1516,
+            1537,
+            "red",
+            ""
+          ],
+          [
+            1547,
+            1599,
+            "red",
+            ""
+          ],
+          [
+            1609,
+            1631,
+            "red",
+            ""
+          ],
+          [
+            1641,
+            1660,
+            "red",
+            ""
+          ],
+          [
+            1670,
+            1707,
+            "red",
+            ""
+          ],
+          [
+            1717,
+            1733,
+            "red",
+            ""
+          ],
+          [
+            1743,
+            1758,
+            "red",
+            ""
+          ],
+          [
+            1768,
+            1786,
+            "red",
+            ""
+          ],
+          [
+            1796,
+            1834,
+            "red",
+            ""
+          ],
+          [
+            1844,
+            1888,
+            "red",
+            ""
+          ],
+          [
+            1898,
+            1931,
+            "red",
+            ""
+          ],
+          [
+            1941,
+            1961,
+            "red",
+            ""
+          ],
+          [
+            1971,
+            2053,
+            "red",
+            ""
+          ],
+          [
+            6314,
+            6420,
+            "red",
+            ""
+          ],
+          [
+            2850,
+            2908,
+            "red",
+            ""
+          ],
+          [
+            2918,
+            2977,
+            "red",
+            ""
+          ],
+          [
+            2987,
+            3042,
+            "red",
+            ""
+          ],
+          [
+            3052,
+            3105,
+            "red",
+            ""
+          ],
+          [
+            5382,
+            5402,
+            "red",
+            ""
+          ],
+          [
+            5422,
+            5442,
+            "red",
+            ""
+          ],
+          [
+            5452,
+            5472,
+            "red",
+            ""
+          ],
+          [
+            6776,
+            6878,
+            "red",
+            ""
+          ],
+          [
+            5103,
+            5168,
+            "red",
+            ""
+          ],
+          [
+            5178,
+            5198,
+            "red",
+            ""
+          ]
+        ],
+        "36": [
+          [
+            2284,
+            2352,
+            "red",
+            ""
+          ],
+          [
+            2362,
+            2446,
+            "red",
+            ""
+          ],
+          [
+            2633,
+            2668,
+            "red",
+            ""
+          ],
+          [
+            390,
+            456,
+            "red",
+            ""
+          ],
+          [
+            466,
+            538,
+            "red",
+            ""
+          ],
+          [
+            548,
+            611,
+            "red",
+            ""
+          ]
+        ],
+        "49": [
+          [
+            497,
+            560,
+            "red",
+            ""
+          ],
+          [
+            232,
+            281,
+            "red",
+            ""
+          ]
+        ],
+        "54": [
+          [
+            436,
+            482,
+            "red",
+            ""
+          ],
+          [
+            492,
+            500,
+            "red",
+            ""
+          ],
+          [
+            1163,
+            1209,
+            "red",
+            ""
+          ],
+          [
+            1326,
+            1354,
+            "red",
+            ""
+          ],
+          [
+            945,
+            953,
+            "red",
+            ""
+          ],
+          [
+            1000,
+            1056,
+            "red",
+            ""
+          ],
+          [
+            1986,
+            2004,
+            "red",
+            ""
+          ]
+        ]
+      },
       "SushiToken": {
         "0": [
           [
@@ -5029,7 +5134,7 @@
             ""
           ]
         ],
-        "24": [
+        "27": [
           [
             2518,
             2530,
@@ -5235,188 +5340,6 @@
             ""
           ]
         ],
-        "29": [
-          [
-            547,
-            566,
-            "red",
-            ""
-          ],
-          [
-            576,
-            628,
-            "red",
-            ""
-          ],
-          [
-            2702,
-            2730,
-            "red",
-            ""
-          ],
-          [
-            2931,
-            2970,
-            "red",
-            ""
-          ],
-          [
-            5532,
-            5611,
-            "red",
-            ""
-          ],
-          [
-            5714,
-            5722,
-            "red",
-            ""
-          ],
-          [
-            5869,
-            5920,
-            "red",
-            ""
-          ],
-          [
-            6052,
-            6060,
-            "red",
-            ""
-          ],
-          [
-            6384,
-            6399,
-            "red",
-            ""
-          ],
-          [
-            6470,
-            6484,
-            "red",
-            ""
-          ],
-          [
-            6523,
-            6541,
-            "red",
-            ""
-          ],
-          [
-            6575,
-            6615,
-            "red",
-            ""
-          ],
-          [
-            313,
-            330,
-            "green",
-            ""
-          ],
-          [
-            340,
-            366,
-            "green",
-            ""
-          ],
-          [
-            4901,
-            4975,
-            "red",
-            ""
-          ],
-          [
-            4249,
-            4324,
-            "red",
-            ""
-          ],
-          [
-            4334,
-            4410,
-            "red",
-            ""
-          ],
-          [
-            4420,
-            4485,
-            "red",
-            ""
-          ],
-          [
-            4495,
-            4533,
-            "red",
-            ""
-          ],
-          [
-            7511,
-            7568,
-            "red",
-            ""
-          ],
-          [
-            7904,
-            7961,
-            "red",
-            ""
-          ],
-          [
-            6876,
-            6909,
-            "red",
-            ""
-          ],
-          [
-            6920,
-            6979,
-            "red",
-            ""
-          ],
-          [
-            6990,
-            7050,
-            "red",
-            ""
-          ],
-          [
-            8383,
-            8440,
-            "red",
-            ""
-          ],
-          [
-            8471,
-            8543,
-            "red",
-            ""
-          ],
-          [
-            8557,
-            8601,
-            "red",
-            ""
-          ],
-          [
-            8622,
-            8678,
-            "red",
-            ""
-          ],
-          [
-            8784,
-            8816,
-            "red",
-            ""
-          ],
-          [
-            8826,
-            8842,
-            "red",
-            ""
-          ]
-        ],
         "3": [
           [
             1851,
@@ -5437,7 +5360,189 @@
             ""
           ]
         ],
-        "50": [
+        "32": [
+          [
+            633,
+            652,
+            "red",
+            ""
+          ],
+          [
+            662,
+            714,
+            "red",
+            ""
+          ],
+          [
+            2788,
+            2816,
+            "red",
+            ""
+          ],
+          [
+            3017,
+            3056,
+            "red",
+            ""
+          ],
+          [
+            5618,
+            5697,
+            "red",
+            ""
+          ],
+          [
+            5800,
+            5808,
+            "red",
+            ""
+          ],
+          [
+            5955,
+            6006,
+            "red",
+            ""
+          ],
+          [
+            6138,
+            6146,
+            "red",
+            ""
+          ],
+          [
+            6470,
+            6485,
+            "red",
+            ""
+          ],
+          [
+            6556,
+            6570,
+            "red",
+            ""
+          ],
+          [
+            6609,
+            6627,
+            "red",
+            ""
+          ],
+          [
+            6661,
+            6701,
+            "red",
+            ""
+          ],
+          [
+            399,
+            416,
+            "green",
+            ""
+          ],
+          [
+            426,
+            452,
+            "green",
+            ""
+          ],
+          [
+            4987,
+            5061,
+            "red",
+            ""
+          ],
+          [
+            4335,
+            4410,
+            "red",
+            ""
+          ],
+          [
+            4420,
+            4496,
+            "red",
+            ""
+          ],
+          [
+            4506,
+            4571,
+            "red",
+            ""
+          ],
+          [
+            4581,
+            4619,
+            "red",
+            ""
+          ],
+          [
+            7597,
+            7654,
+            "red",
+            ""
+          ],
+          [
+            7990,
+            8047,
+            "red",
+            ""
+          ],
+          [
+            6962,
+            6995,
+            "red",
+            ""
+          ],
+          [
+            7006,
+            7065,
+            "red",
+            ""
+          ],
+          [
+            7076,
+            7136,
+            "red",
+            ""
+          ],
+          [
+            8469,
+            8526,
+            "red",
+            ""
+          ],
+          [
+            8557,
+            8629,
+            "red",
+            ""
+          ],
+          [
+            8643,
+            8687,
+            "red",
+            ""
+          ],
+          [
+            8708,
+            8764,
+            "red",
+            ""
+          ],
+          [
+            8870,
+            8902,
+            "red",
+            ""
+          ],
+          [
+            8912,
+            8928,
+            "red",
+            ""
+          ]
+        ],
+        "53": [
           [
             910,
             941,
@@ -5511,233 +5616,9 @@
             ""
           ]
         ],
-        "57": [],
         "6": [],
-        "61": []
-      },
-      "UniswapV2Factory": {
-        "31": [],
-        "32": [
-          [
-            1995,
-            2053,
-            "red",
-            ""
-          ],
-          [
-            2063,
-            2083,
-            "red",
-            ""
-          ],
-          [
-            644,
-            666,
-            "red",
-            ""
-          ],
-          [
-            745,
-            795,
-            "red",
-            ""
-          ],
-          [
-            2170,
-            2228,
-            "red",
-            ""
-          ],
-          [
-            2238,
-            2264,
-            "red",
-            ""
-          ],
-          [
-            911,
-            970,
-            "green",
-            ""
-          ],
-          [
-            1078,
-            1134,
-            "green",
-            ""
-          ],
-          [
-            1144,
-            1216,
-            "green",
-            ""
-          ],
-          [
-            1492,
-            1538,
-            "green",
-            ""
-          ],
-          [
-            1548,
-            1578,
-            "green",
-            ""
-          ],
-          [
-            1588,
-            1618,
-            "green",
-            ""
-          ],
-          [
-            1673,
-            1692,
-            "green",
-            ""
-          ],
-          [
-            1702,
-            1757,
-            "green",
-            ""
-          ],
-          [
-            1832,
-            1890,
-            "red",
-            ""
-          ],
-          [
-            1900,
-            1914,
-            "red",
-            ""
-          ]
-        ],
-        "34": [],
-        "40": [],
-        "45": [],
-        "46": [],
-        "48": []
-      },
-      "WETH9": {
-        "53": [
-          [
-            1281,
-            1290,
-            "red",
-            ""
-          ],
-          [
-            1346,
-            1380,
-            "green",
-            ""
-          ],
-          [
-            1390,
-            1425,
-            "green",
-            ""
-          ],
-          [
-            1819,
-            1851,
-            "red",
-            ""
-          ],
-          [
-            1861,
-            1896,
-            "red",
-            ""
-          ],
-          [
-            1906,
-            1917,
-            "red",
-            ""
-          ],
-          [
-            1706,
-            1734,
-            "green",
-            ""
-          ],
-          [
-            2167,
-            2197,
-            "green",
-            ""
-          ],
-          [
-            2287,
-            2329,
-            "red",
-            ""
-          ],
-          [
-            2343,
-            2376,
-            "red",
-            ""
-          ],
-          [
-            2397,
-            2418,
-            "green",
-            ""
-          ],
-          [
-            2428,
-            2449,
-            "green",
-            ""
-          ],
-          [
-            2460,
-            2488,
-            "green",
-            ""
-          ],
-          [
-            2499,
-            2510,
-            "green",
-            ""
-          ],
-          [
-            1482,
-            1519,
-            "red",
-            ""
-          ],
-          [
-            1529,
-            1557,
-            "red",
-            ""
-          ],
-          [
-            1567,
-            1591,
-            "red",
-            ""
-          ],
-          [
-            1601,
-            1633,
-            "red",
-            ""
-          ],
-          [
-            2003,
-            2044,
-            "green",
-            ""
-          ]
-        ]
+        "60": [],
+        "66": []
       }
     }
   },

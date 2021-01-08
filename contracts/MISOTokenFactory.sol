@@ -47,6 +47,7 @@ contract MISOTokenFactory is CloneFactory {
             accessControls.hasOperatorRole(msg.sender),
             "MISOTokenFactory.addTokenTemplate: Sender must be operator"
         );
+        // GP: Check exisiting / duplicates
         tokenTemplateId++;
         tokenTemplates[tokenTemplateId] = _template;
         emit TokenTemplateAdded(_template, tokenTemplateId);
@@ -72,6 +73,7 @@ contract MISOTokenFactory is CloneFactory {
         return tokens.length;
     }
 
+    // GP: Replace this with a mapping to avoid gas limits
     function getTemplateId(address _tokenTemplate) public view returns (uint256) {
         for(uint i = 1; i <= tokenTemplateId; i++) {
             if(tokenTemplates[i] == _tokenTemplate) {

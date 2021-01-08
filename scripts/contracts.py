@@ -1,11 +1,12 @@
 from brownie import *
 from .settings import *
 from .contract_addresses import *
+import time
 
 def load_accounts():
     if network.show_active() == 'mainnet':
         # replace with your keys
-        accounts.load("digitalax")
+        accounts.load("miso")
     # add accounts if active network is goerli
     if network.show_active() in ['goerli', 'ropsten','kovan','rinkeby']:
         # 0x2A40019ABd4A61d71aBB73968BaB068ab389a636
@@ -13,25 +14,35 @@ def load_accounts():
         # 0x1F3389Fc75Bf55275b03347E4283f24916F402f7
         accounts.add('fa3c06c67426b848e6cef377a2dbd2d832d3718999fbe377236676c9216d8ec0')
 
-def deploy_bokky_token_factory():
-    bokky_token_factory_address = CONTRACTS[network.show_active()]["bokky_token_factory"]
-    if bokky_token_factory_address == '':
-        bokky_token_factory = BokkyPooBahsFixedSupplyTokenFactory.deploy({'from': accounts[0]})
+def deploy_access_control(operator):
+    access_control_address = CONTRACTS[network.show_active()]["access_control"]
+    if access_control_address == '':
+        access_control = MISOAccessControls.deploy({'from': accounts[0]})
+        access_control.addOperatorRole(operator, {'from': accounts[0]})
     else:
-        bokky_token_factory = BokkyPooBahsFixedSupplyTokenFactory.at(bokky_token_factory_address)
-    return bokky_token_factory
+        access_control = MISOAccessControls.at(access_control_address)
+    return access_control
 
-def deploy_bokky_fixed_token(bokky_token_factory):
-    tx = bokky_token_factory.deployTokenContract(SYMBOL,NAME,18,AUCTION_TOKENS,{'from':accounts[0],"value":"0.02 ethers"})
-    bokky_fixed_token = FixedSupplyToken.at(web3.toChecksumAddress(tx.events['TokenDeployed']['token']))
-   # print("FixedSupplyToken deployed at: " + str(bokky_fixed_token))
-    return bokky_fixed_token
+def deploy_user_access_control(operator):
+    access_control = MISOAccessControls.deploy({'from': accounts[0]})
+    access_control.addOperatorRole(operator, {'from': accounts[0]})
+    return access_control
 
-def deploy_miso_token_factory():
+
+def deploy_weth_token():
+    weth_token_address = CONTRACTS[network.show_active()]["weth_token"]
+    if weth_token_address == '':
+        weth_token = WETH9.deploy({"from":accounts[0]})
+    else:
+        weth_token = WETH9.at(weth_token_address)
+    return weth_token
+
+
+def deploy_miso_token_factory(access_control):
     miso_token_factory_address = CONTRACTS[network.show_active()]["miso_token_factory"]
     if miso_token_factory_address == '':
         miso_token_factory = MISOTokenFactory.deploy({"from":accounts[0]})
-        tx = miso_token_factory.initMISO({"from":accounts[0]})
+        tx = miso_token_factory.initMISOTokenFactory(access_control, {"from":accounts[0]})
         assert 'MisoInitTokenFactory' in tx.events
     else:
         miso_token_factory = MISOTokenFactory.at(miso_token_factory_address)
@@ -64,17 +75,74 @@ def deploy_dutch_auction_template():
         dutch_auction_template = DutchAuction.at(dutch_auction_template_address)
     return dutch_auction_template
 
-def deploy_auction_house(dutch_auction_template):
-    auction_house_address = CONTRACTS[network.show_active()]["auction_house"]
-    if auction_house_address == '':
-        auction_house = MISOMarket.deploy({"from":accounts[0]})
-        ##dutch_auction_template in list req or not?
-        auction_house._initMISO([dutch_auction_template],{"from":accounts[0]})
+def deploy_crowdsale_template():
+    crowdsale_template_address = CONTRACTS[network.show_active()]["crowdsale_template"]
+    if crowdsale_template_address == '':
+        crowdsale_template = Crowdsale.deploy({"from":accounts[0]})
     else:
-        auction_house = MISOMarket.at(auction_house_address)
-    return auction_house
+        crowdsale_template = Crowdsale.at(crowdsale_template_address)
+    return crowdsale_template
 
-def deploy_dutch_auction(auction_house,
+
+def deploy_miso_market(access_control, templates):
+    miso_market_address = CONTRACTS[network.show_active()]["miso_market"]
+    if miso_market_address == '':
+        miso_market = MISOMarket.deploy({"from":accounts[0]})
+        miso_market.initMISOMarket(access_control, templates)
+
+    else:
+        miso_market = MISOMarket.at(miso_market_address)
+    return miso_market
+
+def deploy_uniswap_factory():
+    uniswap_factory_address = CONTRACTS[network.show_active()]["uniswap_factory"]
+    if uniswap_factory_address == '':
+        uniswap_factory = UniswapV2Factory.deploy(accounts[0], {"from":accounts[0]})
+    else:
+        uniswap_factory = UniswapV2Factory.at(uniswap_factory_address)
+    return uniswap_factory
+
+
+def deploy_pool_liquidity_template():
+    pool_liquidity_template_address = CONTRACTS[network.show_active()]["pool_liquidity_template"]
+    if pool_liquidity_template_address == '':
+        pool_liquidity_template = PoolLiquidity.deploy({"from":accounts[0]})
+    else:
+        pool_liquidity_template = PoolLiquidity.at(pool_liquidity_template_address)
+    return pool_liquidity_template
+
+def deploy_miso_launcher(access_control):
+    miso_launcher_address = CONTRACTS[network.show_active()]["miso_launcher"]
+    if miso_launcher_address == '':
+        miso_launcher = MISOLiquidityLauncher.deploy({"from":accounts[0]})
+        time.sleep(1) 
+        miso_launcher.initMISOLiquidityLauncher(access_control)
+
+    else:
+        miso_launcher = MISOLiquidityLauncher.at(miso_launcher_address)
+    return miso_launcher
+
+
+def deploy_masterchef_template():
+    masterchef_template_address = CONTRACTS[network.show_active()]["masterchef_template"]
+    if masterchef_template_address == '':
+        masterchef_template = MasterChef.deploy({"from":accounts[0]})
+    else:
+        masterchef_template = MasterChef.at(masterchef_template_address)
+    return masterchef_template
+
+def deploy_farm_factory(access_control):
+    farm_factory_address = CONTRACTS[network.show_active()]["farm_factory"]
+    if farm_factory_address == '':
+        farm_factory = MISOFarmFactory.deploy({"from":accounts[0]})        
+        time.sleep(1) 
+        farm_factory.initMISOFarmFactory(access_control)
+
+    else:
+        farm_factory = MISOFarmFactory.at(farm_factory_address)
+    return farm_factory
+
+def deploy_dutch_auction(miso_market,
                         dutch_auction_template,
                         token_address,
                         auction_tokens,
@@ -86,9 +154,9 @@ def deploy_dutch_auction(auction_house,
                         wallet):
     dutch_auction_address = CONTRACTS[network.show_active()]["dutch_auction"]
     if dutch_auction_address == '':
-        tx1 = auction_house.addAuctionTemplate(dutch_auction_template,{"from":accounts[0]})
+        tx1 = miso_market.addAuctionTemplate(dutch_auction_template,{"from":accounts[0]})
         template_id = tx1.events["AuctionTemplateAdded"]["templateId"]
-        tx2 = auction_house.createAuction(token_address,
+        tx2 = miso_market.createAuction(token_address,
                                          auction_tokens,
                                          auction_start,
                                          auction_end,

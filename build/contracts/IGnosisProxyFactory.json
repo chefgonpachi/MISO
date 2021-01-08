@@ -26,21 +26,21 @@
     }
   ],
   "allSourcePaths": {
-    "58": "interfaces/IGnosisProxyFactory.sol"
+    "61": "interfaces/IGnosisProxyFactory.sol"
   },
   "ast": {
     "absolutePath": "interfaces/IGnosisProxyFactory.sol",
     "exportedSymbols": {
       "IGnosisProxyFactory": [
-        17959
+        18898
       ]
     },
-    "id": 17960,
+    "id": 18899,
     "license": null,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 17948,
+        "id": 18887,
         "literals": [
           "solidity",
           "^",
@@ -48,16 +48,16 @@
           ".9"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:58"
+        "src": "0:23:61"
       },
       {
         "absolutePath": "interfaces/ISafeGnosis.sol",
         "file": "./ISafeGnosis.sol",
-        "id": 17949,
+        "id": 18888,
         "nodeType": "ImportDirective",
-        "scope": 17960,
-        "sourceUnit": 18008,
-        "src": "24:27:58",
+        "scope": 18899,
+        "sourceUnit": 18947,
+        "src": "24:27:61",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -68,9 +68,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 17959,
+        "id": 18898,
         "linearizedBaseContracts": [
-          17959
+          18898
         ],
         "name": "IGnosisProxyFactory",
         "nodeType": "ContractDefinition",
@@ -79,7 +79,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "61b69abd",
-            "id": 17958,
+            "id": 18897,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -87,33 +87,33 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 17954,
+              "id": 18893,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 17951,
+                  "id": 18890,
                   "mutability": "mutable",
                   "name": "masterCopy",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 17958,
-                  "src": "118:22:58",
+                  "scope": 18897,
+                  "src": "118:22:61",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ISafeGnosis_$18007",
+                    "typeIdentifier": "t_contract$_ISafeGnosis_$18946",
                     "typeString": "contract ISafeGnosis"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 17950,
+                    "id": 18889,
                     "name": "ISafeGnosis",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 18007,
-                    "src": "118:11:58",
+                    "referencedDeclaration": 18946,
+                    "src": "118:11:61",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ISafeGnosis_$18007",
+                      "typeIdentifier": "t_contract$_ISafeGnosis_$18946",
                       "typeString": "contract ISafeGnosis"
                     }
                   },
@@ -122,13 +122,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 17953,
+                  "id": 18892,
                   "mutability": "mutable",
                   "name": "data",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 17958,
-                  "src": "142:17:58",
+                  "scope": 18897,
+                  "src": "142:17:61",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -136,10 +136,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 17952,
+                    "id": 18891,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "142:5:58",
+                    "src": "142:5:61",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -149,36 +149,36 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "108:52:58"
+              "src": "108:52:61"
             },
             "returnParameters": {
-              "id": 17957,
+              "id": 18896,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 17956,
+                  "id": 18895,
                   "mutability": "mutable",
                   "name": "proxy",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 17958,
-                  "src": "178:17:58",
+                  "scope": 18897,
+                  "src": "178:17:61",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ISafeGnosis_$18007",
+                    "typeIdentifier": "t_contract$_ISafeGnosis_$18946",
                     "typeString": "contract ISafeGnosis"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 17955,
+                    "id": 18894,
                     "name": "ISafeGnosis",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 18007,
-                    "src": "178:11:58",
+                    "referencedDeclaration": 18946,
+                    "src": "178:11:61",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ISafeGnosis_$18007",
+                      "typeIdentifier": "t_contract$_ISafeGnosis_$18946",
                       "typeString": "contract ISafeGnosis"
                     }
                   },
@@ -186,20 +186,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "177:19:58"
+              "src": "177:19:61"
             },
-            "scope": 17959,
-            "src": "88:109:58",
+            "scope": 18898,
+            "src": "88:109:61",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 17960,
-        "src": "52:150:58"
+        "scope": 18899,
+        "src": "52:150:61"
       }
     ],
-    "src": "0:204:58"
+    "src": "0:204:61"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",

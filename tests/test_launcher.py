@@ -9,16 +9,16 @@ def isolation(fn_isolation):
     pass
 
 @pytest.fixture(scope='function')
-def depositEth(launcher, weth_token):
+def depositEth(pool_liquidity, weth_token):
     assert weth_token.balance() == 0
     deposit_amount = 10 * TENPOW18
-    launcher.depositETH({"from": accounts[0], "value": deposit_amount})
+    pool_liquidity.depositETH({"from": accounts[0], "value": deposit_amount})
     assert weth_token.balance() == deposit_amount
     assert weth_token.totalSupply() == deposit_amount
-    assert launcher.getWethBalance() == deposit_amount
+    assert pool_liquidity.getWethBalance() == deposit_amount
 
 @pytest.fixture(scope='function')
-def depositTokens(launcher, mintable_token):
+def depositTokens(pool_liquidity, mintable_token):
     assert mintable_token.balance() == 0
     
     amount_to_mint = 1000 * TENPOW18
@@ -26,21 +26,21 @@ def depositTokens(launcher, mintable_token):
     assert mintable_token.balanceOf(accounts[0]) == amount_to_mint
 
     deposit_amount = amount_to_mint
-    mintable_token.approve(launcher, deposit_amount, {"from": accounts[0]})
-    tx = launcher.depositTokens(deposit_amount, {"from": accounts[0]})
+    mintable_token.approve(pool_liquidity, deposit_amount, {"from": accounts[0]})
+    tx = pool_liquidity.depositTokens(deposit_amount, {"from": accounts[0]})
     assert "Transfer" in tx.events
-    assert launcher.getTokenBalance() == deposit_amount
+    assert pool_liquidity.getTokenBalance() == deposit_amount
 
-def test_addLiquidityToPool(launcher, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
-    tx = launcher.addLiquidityToPool({"from": accounts[0]})
+def test_addLiquidityToPool(pool_liquidity, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
+    tx = pool_liquidity.addLiquidityToPool({"from": accounts[0]})
     print("liquidity:", tx.return_value)
-    assert launcher.getTokenBalance() == 0
-    assert launcher.getWethBalance() == 0
-    factory = UniswapV2Factory.at(launcher.factory())
+    assert pool_liquidity.getTokenBalance() == 0
+    assert pool_liquidity.getWethBalance() == 0
+    factory = UniswapV2Factory.at(pool_liquidity.factory())
 
-    print("pair:", factory.getPair(launcher.token(), launcher.WETH()))
+    print("pair:", factory.getPair(pool_liquidity.token(), pool_liquidity.WETH()))
     
-def test_addLiquidityToPoolFromNotOperator(launcher, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
+def test_addLiquidityToPoolFromNotOperator(pool_liquidity, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
     with reverts():
-        launcher.addLiquidityToPool({"from": accounts[1]})
+        pool_liquidity.addLiquidityToPool({"from": accounts[1]})
     

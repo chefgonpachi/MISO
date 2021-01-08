@@ -2,37 +2,62 @@ pragma solidity ^0.6.9;
 
 
 
+import "../Access/MISOAccessControls.sol";
+import "../Utils/SafeMathPlus.sol";
+import "../UniswapV2/UniswapV2Library.sol";
+
+import "../UniswapV2/interfaces/IUniswapV2Pair.sol";
+import "../UniswapV2/interfaces/IUniswapV2Factory.sol";
+import "../../interfaces/IWETH9.sol";
+import "../../interfaces/IERC20.sol";
 
 
-import "./Access/MISOAccessControls.sol";
-import "./Utils/SafeMathPlus.sol";
-import "./UniswapV2/UniswapV2Library.sol";
+// GP: Have more than one depositor
+// GP: Deposit from / track contributors
+// GP: Send LP tokens to contributors 
 
-import "./UniswapV2/interfaces/IUniswapV2Pair.sol";
-import "./UniswapV2/interfaces/IUniswapV2Factory.sol";
-import "../interfaces/IWETH9.sol";
-import "../interfaces/IERC20.sol";
 
-contract MISOLauncher  {
+contract PoolLiquidity  {
 
     using SafeMathPlus for uint256;
-   
+
+    uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
+
     IERC20 public token;
     IWETH public WETH;
     IUniswapV2Factory public factory;
     MISOAccessControls public accessControls;
-    // MISOTokenLocker public tokenLocker;
 
     address public tokenWETHPair;
     address public wallet;
     bool private initialised;
+    uint256 public deadline;
+    uint256 public locktime;
+    uint256 public unlock;
+    uint256 public expiry;
 
-    event MisoInitLauncher(address indexed token1, address indexed token2, address factory, address sender);
-   
+    uint256 public liquidityAdded;
+    
+    event InitPoolLiquidity(address indexed token1, address indexed token2, address factory, address sender);
+    event LiquidityAdded(uint256 liquidity);
+
     constructor() public {
     }
 
-    function initMISOLauncher(address _accessControls, address _token, address _WETH, address _factory, address _owner, address _wallet) external {
+    function initPoolLiquidity(
+            address _accessControls,
+            address _token,
+            address _WETH,
+            address _factory,
+            address _owner,
+            address _wallet,
+            uint256 _duration,
+            uint256 _launchwindow,
+            uint256 _deadline,
+            uint256 _locktime
+    )
+        external
+    {
         require(!initialised);
         accessControls = MISOAccessControls(_accessControls);
         token = IERC20(_token);
@@ -41,7 +66,11 @@ contract MISOLauncher  {
         wallet = _wallet;
         _setTokenPair();
         initialised = true;
-        emit MisoInitLauncher(address(_token), address(_WETH), address(_factory), _owner);
+        deadline = block.timestamp + _deadline;
+        require(_launchwindow > 2 * SECONDS_PER_DAY);
+        expiry = deadline + _launchwindow;
+        locktime = _locktime;
+        emit InitPoolLiquidity(address(_token), address(_WETH), address(_factory), _owner);
     }
 
     fallback() external payable {
@@ -50,19 +79,8 @@ contract MISOLauncher  {
         }
     }
 
-    function depositETH() public payable {
-        if (msg.value > 0 ) {
-            WETH.deposit{value : msg.value}();
-        }
-    }
 
-    function depositTokens(uint256 amount) external returns (bool success) {
-        require(amount > 0, "Token amount must be greater than 0");
-        token.transferFrom(msg.sender, address(this), amount); 
-    }
-
-    // function withdrawTokens() external {}  // GP: Not sure if nessasary / + admin permissions / emergency senarios 
-
+    // Getters
     function getTokenBalance() public view returns (uint256) {
          return token.balanceOf(address(this));
     }
@@ -70,9 +88,73 @@ contract MISOLauncher  {
     function getWethBalance() public view returns (uint256) {
          return WETH.balanceOf(address(this));
     }
-
     // function getTokenPrice() external returns (uint256) {}
 
+
+    function depositETH() public payable {
+        require(block.timestamp < deadline, "Deadline has expired");
+        require(liquidityAdded == 0, "Liquidity already added");
+        if (msg.value > 0 ) {
+            WETH.deposit{value : msg.value}();
+        }
+    }
+
+    function depositTokens(uint256 amount) external returns (bool success) {
+        require(amount > 0, "Token amount must be greater than 0");
+        require(block.timestamp < deadline, "Deadline has expired");
+        require(liquidityAdded == 0, "Liquidity already added");
+        token.transferFrom(msg.sender, address(this), amount); 
+    }
+
+    function addLiquidityToPool() external returns (uint256 liquidity) {
+        require(block.timestamp > deadline, "Deposits still active");
+        /// GP: Check both tokens from the factory
+
+        uint256 tokenAmount = getTokenBalance();
+        uint256 wethAmount = getWethBalance();
+
+        require(IERC20(tokenWETHPair).totalSupply() == 0, "Cannot add to a liquid pair");
+
+        /// GP: Should we think about what happens if this is used to top up an exisiting pool?
+        /// GP: and if pool already exists, could be able to zap either tokens or eth to LP
+        if (tokenAmount == 0 || wethAmount == 0) {
+            return 0;
+        }
+        assert(token.transfer(tokenWETHPair, tokenAmount));
+        assert(WETH.transfer(tokenWETHPair, wethAmount));
+
+        // GP: Check this will return number of LP tokens
+        liquidity = IUniswapV2Pair(tokenWETHPair).mint(address(this));
+        liquidityAdded = liquidityAdded.add(liquidity);
+        unlock = block.timestamp + locktime;
+        emit LiquidityAdded(liquidityAdded);
+    }
+
+    function sendLPTokens() external returns (uint256 amount) {
+        require(
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOLaucher.sendLPTokens: Sender must be operator"
+        );
+        uint256 liquidity = IERC20(tokenWETHPair).balanceOf(address(this));
+        require(liquidity > 0, "Token amount must be greater than 0");
+        IERC20(tokenWETHPair).transfer(wallet, liquidity);
+    }
+
+
+    function withdrawTokens() external {
+        require(block.timestamp > expiry, "Timer has not yet expired");
+        uint256 tokenAmount = getTokenBalance();
+        if (tokenAmount > 0 ) {
+            assert(token.transfer(wallet, tokenAmount));
+        }
+        uint256 wethAmount = getWethBalance();
+        if (tokenAmount > 0 ) {
+            assert(WETH.transfer(wallet, wethAmount));
+        }
+    }
+
+
+    /// @dev helper functions
     function _createPool() internal returns (address) {
         tokenWETHPair = factory.createPair(address(token), address(WETH));
         return tokenWETHPair;
@@ -87,41 +169,11 @@ contract MISOLauncher  {
         return tokenWETHPair;
     }
 
-    function addLiquidityToPool() external returns (uint256 liquidity) {
-        require(
-            accessControls.hasOperatorRole(msg.sender),
-            "MISOLaucher.addLiquidityToPool: Sender must be operator"
-        );
-        /// GP: Check both tokens from the factory
-
-        uint256 tokenAmount = getTokenBalance();
-        uint256 wethAmount = getWethBalance();
-
-        /// GP: Should we think about what happens if this is used to top up an exisiting pool?
-        /// GP: and if pool already exists, could be able to zap either tokens or eth to LP
-        if (tokenAmount == 0 || wethAmount == 0) {
-            return 0;
-        }
-        assert(token.transfer(tokenWETHPair, tokenAmount));
-        assert(WETH.transfer(tokenWETHPair, wethAmount));
-
-        // GP: Check this will return number of LP tokens
-        liquidity = IUniswapV2Pair(tokenWETHPair).mint(address(this));
+    /// @dev getter functions
+    function getLPTokenAddress() public view returns (address) {
+        return tokenWETHPair;
     }
 
-    function sendLPTokens() external returns (uint256 amount) {
-        require(
-            accessControls.hasOperatorRole(msg.sender),
-            "MISOLaucher.sendLPTokens: Sender must be operator"
-        );
-        uint256 liquidity = IERC20(tokenWETHPair).balanceOf(address(this));
-        require(liquidity > 0, "Token amount must be greater than 0");
-        IERC20(tokenWETHPair).transfer(wallet, liquidity);
-    }
-
-
-
-    /// @dev helper functions
     function getLPTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity) {
         (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
         uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveWeth, reserveTokens);

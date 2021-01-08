@@ -10,7 +10,13 @@ from settings import *
 # MISOAccessControls
 ######################################
 @pytest.fixture(scope='module', autouse=True)
-def access_controls(MISOAccessControls):
+def miso_access_controls(MISOAccessControls):
+    access_controls = MISOAccessControls.deploy({'from': accounts[0]})
+    access_controls.addOperatorRole(accounts[0], {'from': accounts[0]})
+    return access_controls
+
+@pytest.fixture(scope='module', autouse=True)
+def public_access_controls(MISOAccessControls):
     access_controls = MISOAccessControls.deploy({'from': accounts[0]})
     access_controls.addOperatorRole(accounts[0], {'from': accounts[0]})
     return access_controls
@@ -19,12 +25,12 @@ def access_controls(MISOAccessControls):
 # MISOTokenFactory
 ######################################
 @pytest.fixture(scope='module', autouse=True)
-def token_factory(MISOTokenFactory, access_controls, fixed_token, mintable_token):
+def token_factory(MISOTokenFactory, miso_access_controls, fixed_token_template, mintable_token_template):
     token_factory = MISOTokenFactory.deploy({'from': accounts[0]})
-    token_factory.initMISOTokenFactory(access_controls, {'from': accounts[0]})
+    token_factory.initMISOTokenFactory(miso_access_controls, {'from': accounts[0]})
     
-    fixed_token_tx = token_factory.addTokenTemplate(fixed_token, {"from": accounts[0]})
-    mintable_token_tx = token_factory.addTokenTemplate(mintable_token, {"from": accounts[0]})
+    fixed_token_tx = token_factory.addTokenTemplate(fixed_token_template, {"from": accounts[0]})
+    mintable_token_tx = token_factory.addTokenTemplate(mintable_token_template, {"from": accounts[0]})
     assert "TokenTemplateAdded" in fixed_token_tx.events
     assert "TokenTemplateAdded" in mintable_token_tx.events
     assert token_factory.tokenTemplateId() == 2
@@ -49,13 +55,19 @@ def fixed_token(FixedToken):
     fixed_token.initToken(name, symbol, owner, {'from': owner})
     assert fixed_token.name() == name
     assert fixed_token.symbol() == symbol
-    assert fixed_token.owner() == owner
+    # assert fixed_token.owner() == owner
+    # changed to access controls
 
     fixed_token.initFixedTotalSupply(AUCTION_TOKENS, {'from': owner})
     assert fixed_token.totalSupply() == AUCTION_TOKENS
     assert fixed_token.balanceOf(owner) == AUCTION_TOKENS
 
     return fixed_token
+
+@pytest.fixture(scope='module', autouse=True)
+def fixed_token_template(FixedToken):
+    fixed_token_template = FixedToken.deploy({'from': accounts[0]})
+    return fixed_token_template
 
 
     
@@ -73,10 +85,18 @@ def mintable_token(MintableToken):
     mintable_token.initToken(name, symbol, owner, {'from': owner})
     assert mintable_token.name() == name
     assert mintable_token.symbol() == symbol
-    assert mintable_token.owner() == owner
+    # assert mintable_token.owner() == owner
+    # changed to access controls
 
     return mintable_token
     
+@pytest.fixture(scope='module', autouse=True)
+def mintable_token_template(MintableToken):
+    mintable_token_template = MintableToken.deploy({'from': accounts[0]})
+    return mintable_token_template
+
+
+
 #####################################
 # SushiToken
 ######################################
@@ -108,11 +128,11 @@ def weth_token(WETH9):
 # MISOMarket
 ######################################
 @pytest.fixture(scope='module', autouse=True)
-def auction_factory(MISOMarket, access_controls, fixed_token, mintable_token, sushi_token):
+def auction_factory(MISOMarket, miso_access_controls, fixed_token, mintable_token, sushi_token):
     auction_factory = MISOMarket.deploy({'from': accounts[0]})
 
-    auction_factory.initMISOMarket(access_controls, [fixed_token, mintable_token, sushi_token], {'from': accounts[0]})
-    # assert access_controls.hasAdminRole(accounts[0]) == True 
+    auction_factory.initMISOMarket(miso_access_controls, [fixed_token, mintable_token, sushi_token], {'from': accounts[0]})
+    # assert miso_access_controls.hasAdminRole(accounts[0]) == True 
 
     return auction_factory
 
@@ -135,18 +155,24 @@ def dutch_auction(DutchAuction, fixed_token):
     chain.sleep(10)
     return dutch_auction 
 
+@pytest.fixture(scope='module', autouse=True)
+def dutch_auction_template(DutchAuction):
+    dutch_auction_template = DutchAuction.deploy({"from": accounts[0]})
+    return dutch_auction_template
+
 #####################################
 # Crowdsale
 ######################################
 @pytest.fixture(scope='module', autouse=True)
 def crowdsale(Crowdsale, mintable_token):
+    crowdsale = Crowdsale.deploy({"from": accounts[0]})
     mintable_token.mint(accounts[0], AUCTION_TOKENS, {"from": accounts[0]})
     assert mintable_token.balanceOf(accounts[0]) == AUCTION_TOKENS
 
     start_time = chain.time() + 10
     end_time = start_time + CROWDSALE_TIME
-    wallet = accounts[2]
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
+    wallet = accounts[4]
+    
 
     mintable_token.approve(crowdsale, AUCTION_TOKENS, {"from": accounts[0]})
     crowdsale.initCrowdsale(accounts[0], mintable_token, CROWDSALE_TOKENS, start_time, end_time, CROWDSALE_RATE, CROWDSALE_GOAL, wallet, {"from": accounts[0]})
@@ -162,19 +188,40 @@ def uniswap_factory(UniswapV2Factory):
     uniswap_factory = UniswapV2Factory.deploy(accounts[0], {"from": accounts[0]})
     return uniswap_factory
 
+
+#####################################
+# Point List
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def point_list(PointList, public_access_controls):
+    point_list = PointList.deploy({"from": accounts[0]})
+    point_list.initPointList(public_access_controls, {"from": accounts[0]})
+    return point_list
+
+
 #####################################
 # MISOLauncher
 ######################################
-@pytest.fixture(scope='module', autouse=True)
-def launcher(MISOLauncher, access_controls, mintable_token, weth_token, uniswap_factory):
-    launcher = MISOLauncher.deploy({"from": accounts[0]})
-    owner = accounts[0]
-    wallet = accounts[1]
-    launcher.initMISOLauncher(access_controls, mintable_token, weth_token, uniswap_factory, owner, wallet)
-    # assert launcher.accessControls() == access_controls
-    # assert launcher.token() == mintable_token
-    # assert launcher.WETH() == weth_token
-    # assert launcher.factory() == uniswap_factory
-    # assert launcher.wallet() == wallet
 
+@pytest.fixture(scope='module', autouse=True)
+def pool_liquidity_template(PoolLiquidity):
+    pool_liquidity_template = PoolLiquidity.deploy({"from": accounts[0]})
+    return pool_liquidity_template
+
+
+@pytest.fixture(scope='module', autouse=True)
+def launcher(MISOLiquidityLauncher, miso_access_controls,pool_liquidity_template):
+    launcher = MISOLiquidityLauncher.deploy({"from": accounts[0]})
+    launcher.initMISOLiquidityLauncher(miso_access_controls)
+    assert launcher.accessControls() == miso_access_controls
+
+    launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
     return launcher
+
+@pytest.fixture(scope='module', autouse=True)
+def pool_liquidity(PoolLiquidity, launcher):
+    template_id = 1
+    tx = launcher.createLiquidityLauncher(template_id, {"from": accounts[0]})
+    pool_liquidity = PoolLiquidity.at(web3.toChecksumAddress(tx.events['LiquidityLauncherCreated']['addr']))
+
+    return pool_liquidity

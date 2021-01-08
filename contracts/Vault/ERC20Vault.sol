@@ -1,6 +1,5 @@
 pragma solidity ^0.6.9;
 
-import "../Tokens/BokkyPooBahsFixedSupplyTokenFactory.sol";
 import "../Utils/Owned.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/SafeMathPlus.sol";

@@ -41,9 +41,6 @@ def main():
     gnosis_vault.initGnosisVault(gnosis_safe,proxy_factory,{"from":accounts[0]})
     
     
-    """ bokky_token_factory = deploy_bokky_token_factory()
-    bokky_fixed_token = deploy_bokky_fixed_token(bokky_token_factory) """
-
     owners = [accounts[0],accounts[1]]
     threshold = 1
     delegate_to = ZERO_ADDRESS

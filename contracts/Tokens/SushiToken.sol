@@ -6,6 +6,8 @@ import "../Utils/Owned.sol";
 import "../../interfaces/IMisoToken.sol";
 
 
+// GP: Change this to access control, remove owner, and set the minter role for mint
+
 // SushiToken with Governance.
 contract SushiToken is Owned, ERC20, IMisoToken {
 

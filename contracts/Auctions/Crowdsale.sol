@@ -3,9 +3,10 @@ pragma solidity ^0.6.9;
 import "../../interfaces/IERC20.sol";
 import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+//MZ: commented out non rentrant
+//import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Crowdsale is Context, ReentrancyGuard {
+contract Crowdsale is Context /* ReentrancyGuard */ {
     using SafeMath for uint256;
 
     // The token being sold
@@ -31,13 +32,6 @@ contract Crowdsale is Context, ReentrancyGuard {
     // the balances of accounts
     mapping(address => uint256) private balances;
 
-    /**
-     * @dev Reverts if not in crowdsale time range.
-     */
-    modifier onlyWhileOpen {
-        require(isOpen(), "TimedCrowdsale: not open");
-        _;
-    }
 
     /**
      * Event for token purchase logging
@@ -106,7 +100,7 @@ contract Crowdsale is Context, ReentrancyGuard {
      * another `nonReentrant` function.
      * @param beneficiary Recipient of the token purchase
      */
-    function buyTokens(address beneficiary) public payable nonReentrant {
+    function buyTokens(address beneficiary) public payable /* nonReentrant */  {
         uint256 weiAmount = msg.value;
         _preValidatePurchase(beneficiary, weiAmount);
 
@@ -133,8 +127,8 @@ contract Crowdsale is Context, ReentrancyGuard {
     function _preValidatePurchase(address beneficiary, uint256 weiAmount)
         internal
         view
-        onlyWhileOpen
     {
+        require(isOpen(), "TimedCrowdsale: not open");
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: weiAmount is 0");
         uint256 totalTokens = IERC20(token).balanceOf(address(this));
@@ -168,6 +162,7 @@ contract Crowdsale is Context, ReentrancyGuard {
      * @dev Withdraw tokens only after crowdsale ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
+    // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
     function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
         require(hasClosed(), "Crowdsale: not closed");
         
@@ -175,7 +170,7 @@ contract Crowdsale is Context, ReentrancyGuard {
         require(claimerBalance > 0, "Crowdsale: claimer balance is 0");
 
         if(goalReached()) {
-            uint256 tokenAmount = _getTokenAmount(claimerBalance);
+            uint256 tokenAmount =  claimerBalance;
             _deliverTokens(beneficiary, tokenAmount);
         } else {
             uint256 claimAmount = claimerBalance.div(rate);
@@ -192,7 +187,7 @@ contract Crowdsale is Context, ReentrancyGuard {
         require(!finalized, "Crowdsale: already finalized");
         require(hasClosed(), "Crowdsale: not closed");
         uint256 unsoldTokens = IERC20(token).balanceOf(address(this));
-
+        //GP: Check if the amount weiRaised() not reached, if the funds are able to be refunded
         if(goalReached()) {
             _forwardFunds();
             uint256 soldTokens = _getTokenAmount(weiRaised);

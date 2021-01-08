@@ -3,6 +3,7 @@ pragma solidity ^0.6.9;
 // ----------------------------------------------------------------------------
 // BokkyPooBah's White List
 //
+//
 // Enjoy.
 //
 // (c) BokkyPooBah / Bok Consulting Pty Ltd. The MIT Licence.

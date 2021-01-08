@@ -43,6 +43,7 @@ contract MISOMarket is CloneFactory {
         for(uint i = 0; i < _templates.length; i++) {
             _addAuctionTemplate(_templates[i]);
         }
+        
         initialised = true;
         emit MisoInitMarket(msg.sender);
     }

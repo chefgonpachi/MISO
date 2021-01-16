@@ -12,6 +12,8 @@ contract MISOAccessControls is AccessControl {
     bytes32 public constant SMART_CONTRACT_ROLE = keccak256("SMART_CONTRACT_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
+    bool private initialised;
+
     /// @notice Events for adding and removing various roles
     event AdminRoleGranted(
         address indexed beneficiary,
@@ -57,7 +59,12 @@ contract MISOAccessControls is AccessControl {
      * @notice The deployer is automatically given the admin role which will allow them to then grant roles to other addresses
      */
     constructor() public {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    }
+
+    function initAccessControls(address _admin) external {
+        require(!initialised, "Already initialised");
+        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
+        initialised = true;
     }
 
     /////////////

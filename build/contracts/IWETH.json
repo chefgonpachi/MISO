@@ -46,29 +46,29 @@
     }
   ],
   "allSourcePaths": {
-    "47": "contracts/UniswapV2/interfaces/IWETH.sol"
+    "48": "contracts/UniswapV2/interfaces/IWETH.sol"
   },
   "ast": {
     "absolutePath": "contracts/UniswapV2/interfaces/IWETH.sol",
     "exportedSymbols": {
       "IWETH": [
-        14763
+        15472
       ]
     },
-    "id": 14764,
+    "id": 15473,
     "license": null,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 14745,
+        "id": 15454,
         "literals": [
           "solidity",
-          ">=",
-          "0.5",
-          ".0"
+          "^",
+          "0.6",
+          ".9"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:47"
+        "src": "0:23:48"
       },
       {
         "abstract": false,
@@ -77,9 +77,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 14763,
+        "id": 15472,
         "linearizedBaseContracts": [
-          14763
+          15472
         ],
         "name": "IWETH",
         "nodeType": "ContractDefinition",
@@ -88,7 +88,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "d0e30db0",
-            "id": 14748,
+            "id": 15457,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -96,19 +96,19 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 14746,
+              "id": 15455,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "64:2:47"
+              "src": "63:2:48"
             },
             "returnParameters": {
-              "id": 14747,
+              "id": 15456,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "83:0:47"
+              "src": "82:0:48"
             },
-            "scope": 14763,
-            "src": "48:36:47",
+            "scope": 15472,
+            "src": "47:36:48",
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
@@ -117,7 +117,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "a9059cbb",
-            "id": 14757,
+            "id": 15466,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -125,18 +125,18 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 14753,
+              "id": 15462,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 14750,
+                  "id": 15459,
                   "mutability": "mutable",
                   "name": "to",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 14757,
-                  "src": "107:10:47",
+                  "scope": 15466,
+                  "src": "106:10:48",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -144,10 +144,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 14749,
+                    "id": 15458,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "107:7:47",
+                    "src": "106:7:48",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -159,13 +159,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 14752,
+                  "id": 15461,
                   "mutability": "mutable",
                   "name": "value",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 14757,
-                  "src": "119:10:47",
+                  "scope": 15466,
+                  "src": "118:10:48",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -173,10 +173,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 14751,
+                    "id": 15460,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "119:4:47",
+                    "src": "118:4:48",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -186,21 +186,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "106:24:47"
+              "src": "105:24:48"
             },
             "returnParameters": {
-              "id": 14756,
+              "id": 15465,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 14755,
+                  "id": 15464,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 14757,
-                  "src": "149:4:47",
+                  "scope": 15466,
+                  "src": "148:4:48",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -208,10 +208,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 14754,
+                    "id": 15463,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "149:4:47",
+                    "src": "148:4:48",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -221,10 +221,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "148:6:47"
+              "src": "147:6:48"
             },
-            "scope": 14763,
-            "src": "89:66:47",
+            "scope": 15472,
+            "src": "88:66:48",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -233,7 +233,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "2e1a7d4d",
-            "id": 14762,
+            "id": 15471,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -241,18 +241,18 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 14760,
+              "id": 15469,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 14759,
+                  "id": 15468,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 14762,
-                  "src": "178:4:47",
+                  "scope": 15471,
+                  "src": "177:4:48",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -260,10 +260,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 14758,
+                    "id": 15467,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "178:4:47",
+                    "src": "177:4:48",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -273,26 +273,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "177:6:47"
+              "src": "176:6:48"
             },
             "returnParameters": {
-              "id": 14761,
+              "id": 15470,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "192:0:47"
+              "src": "191:0:48"
             },
-            "scope": 14763,
-            "src": "160:33:47",
+            "scope": 15472,
+            "src": "159:33:48",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 14764,
-        "src": "26:169:47"
+        "scope": 15473,
+        "src": "25:169:48"
       }
     ],
-    "src": "0:195:47"
+    "src": "0:194:48"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -302,7 +302,7 @@
       "enabled": true,
       "runs": 200
     },
-    "version": "0.6.12"
+    "version": "0.6.12+commit.27d51765"
   },
   "contractName": "IWETH",
   "coverageMap": {
@@ -319,13 +319,13 @@
     "version": 1
   },
   "offset": [
-    26,
-    195
+    25,
+    194
   ],
   "opcodes": "",
   "pcMap": {},
-  "sha1": "9a49a134614e4c8e27ca70d1f840aeede71ff73b",
-  "source": "pragma solidity >=0.5.0;\n\ninterface IWETH {\n    function deposit() external payable;\n    function transfer(address to, uint value) external returns (bool);\n    function withdraw(uint) external;\n}",
+  "sha1": "01e1b9ba3eed13b6f7710271bec6d1868176edca",
+  "source": "pragma solidity ^0.6.9;\n\ninterface IWETH {\n    function deposit() external payable;\n    function transfer(address to, uint value) external returns (bool);\n    function withdraw(uint) external;\n}",
   "sourceMap": "",
   "sourcePath": "contracts/UniswapV2/interfaces/IWETH.sol",
   "type": "interface"

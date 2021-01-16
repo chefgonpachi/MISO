@@ -26,6 +26,9 @@ contract DutchAuction {
     mapping(address => uint256) public commitments;
     mapping(address => uint256) public claimed;
 
+    // MISOMarket template id
+    uint256 public constant marketTemplate = 2;
+
     event AddedCommitment(address addr, uint256 commitment);
 
     /// @dev Init function
@@ -243,7 +246,7 @@ contract DutchAuction {
     //--------------------------------------------------------
 
     // There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-    // I'm trying to make it a habit to put external calls last (reentrancy)
+    // Im trying to make it a habit to put external calls last (reentrancy)
     // You can put this in an internal function if you like.
     function _safeTransfer(address token, address to, uint256 amount) internal {
         // solium-disable-next-line security/no-low-level-calls

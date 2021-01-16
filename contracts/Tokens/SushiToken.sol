@@ -2,22 +2,28 @@ pragma solidity 0.6.12;
 
 
 import "./ERC20.sol";
-import "../Utils/Owned.sol";
 import "../../interfaces/IMisoToken.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 
 // GP: Change this to access control, remove owner, and set the minter role for mint
 
 // SushiToken with Governance.
-contract SushiToken is Owned, ERC20, IMisoToken {
+contract SushiToken is AccessControl, ERC20, IMisoToken {
 
-    function initToken(string memory _name, string memory _symbol, address owner) external override {
-        _initOwned(owner);
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) external override {
+        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
+        _setupRole(MINTER_ROLE, _owner);
         _initERC20(_name, _symbol);
+        _mint(msg.sender, _initialSupply);
+
     }
 
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
-    function mint(address _to, uint256 _amount) public onlyOwner {
+    function mint(address _to, uint256 _amount) public  {
+        require(hasRole(MINTER_ROLE, _msgSender()), "SushiToken: must have minter role to mint");
         _mint(_to, _amount);
         _moveDelegates(address(0), _delegates[_to], _amount);
     }

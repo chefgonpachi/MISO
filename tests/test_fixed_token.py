@@ -16,20 +16,12 @@ def init_fixed_token(fixed_token):
     name = "Fixed Token"
     symbol = "FXT"
     owner = accounts[0]
+    fixed_supply = 100000 * 10 ** 18
 
-    fixed_token.initToken(name, symbol, owner, {'from': owner})
+    fixed_token.initToken(name, symbol, owner, fixed_supply, {'from': owner})
     assert fixed_token.name() == name
     assert fixed_token.symbol() == symbol
     assert fixed_token.owner() == owner
-
-    fixed_supply = 100000 * 10 ** 18
-
-    fixed_token.initFixedTotalSupply(fixed_supply, {'from': owner})
     assert fixed_token.totalSupply() == fixed_supply
     assert fixed_token.balanceOf(owner) == fixed_supply
 
-def test_init_again(fixed_token):
-    owner = accounts[0]
-    fixed_supply = 100000 * 10 ** 18
-    with reverts():
-        fixed_token.initFixedTotalSupply(fixed_supply, {'from': owner})

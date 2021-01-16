@@ -8,39 +8,46 @@ from settings import *
 def isolation(fn_isolation):
     pass
 
-@pytest.fixture(scope='function')
-def depositEth(pool_liquidity, weth_token):
-    assert weth_token.balance() == 0
-    deposit_amount = 10 * TENPOW18
-    pool_liquidity.depositETH({"from": accounts[0], "value": deposit_amount})
-    assert weth_token.balance() == deposit_amount
-    assert weth_token.totalSupply() == deposit_amount
-    assert pool_liquidity.getWethBalance() == deposit_amount
-
-@pytest.fixture(scope='function')
-def depositTokens(pool_liquidity, mintable_token):
-    assert mintable_token.balance() == 0
-    
-    amount_to_mint = 1000 * TENPOW18
-    mintable_token.mint(accounts[0], amount_to_mint, {'from': accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == amount_to_mint
-
-    deposit_amount = amount_to_mint
-    mintable_token.approve(pool_liquidity, deposit_amount, {"from": accounts[0]})
-    tx = pool_liquidity.depositTokens(deposit_amount, {"from": accounts[0]})
-    assert "Transfer" in tx.events
-    assert pool_liquidity.getTokenBalance() == deposit_amount
-
-def test_addLiquidityToPool(pool_liquidity, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
-    tx = pool_liquidity.addLiquidityToPool({"from": accounts[0]})
-    print("liquidity:", tx.return_value)
-    assert pool_liquidity.getTokenBalance() == 0
-    assert pool_liquidity.getWethBalance() == 0
-    factory = UniswapV2Factory.at(pool_liquidity.factory())
-
-    print("pair:", factory.getPair(pool_liquidity.token(), pool_liquidity.WETH()))
-    
-def test_addLiquidityToPoolFromNotOperator(pool_liquidity, UniswapV2Pair, UniswapV2Factory, depositEth, depositTokens):
+def test_launcher_add_template_not_operator(launcher,pool_liquidity_template):
     with reverts():
-        pool_liquidity.addLiquidityToPool({"from": accounts[1]})
+        launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[5]} )
+
+def test_launcher_get_template(launcher, pool_liquidity_template):
+    launcher_template = launcher.getLiquidityLauncherTemplate(1,{"from":accounts[0]})
+    assert pool_liquidity_template == launcher_template
+
+
+# def test_launcher_number_of_liquidity_launcher_contracts(launcher,pool_liquidity_template_2):
+#     tx = launcher.addLiquidityLauncherTemplate(pool_liquidity_template_2, {"from": accounts[0]} )
+#     assert "LiquidityTemplateAdded" in tx.events
+#     template_id = 2
+#     tx = launcher.createLiquidityLauncher(template_id, {"from": accounts[0]})
+#     number_of_contracts = launcher.numberOfLiquidityLauncherContracts({"from":accounts[0]})
+#     assert number_of_contracts == 2
     
+
+########### Template Id Test ##################################
+def test_launcher_get_template_id(launcher, pool_liquidity_template_2):
+    tx = launcher.addLiquidityLauncherTemplate(pool_liquidity_template_2, {"from": accounts[0]} )
+    assert "LiquidityTemplateAdded" in tx.events
+
+    template_id = launcher.getTemplateId(pool_liquidity_template_2,{"from":accounts[0]})
+    assert template_id == 2
+
+
+########## Remove Template Test#####################
+def test_launcher_remove_template(launcher,pool_liquidity_template_2):
+    tx = launcher.addLiquidityLauncherTemplate(pool_liquidity_template_2, {"from": accounts[0]} )
+    assert "LiquidityTemplateAdded" in tx.events
+    tx = launcher.removeLiquidityLauncherTemplate(2,{"from": accounts[0]})
+    
+    assert "LiquidityTemplateRemoved" in tx.events
+
+
+
+####### Helper function ###########################
+@pytest.fixture(scope='function', autouse=True)
+def pool_liquidity_template_2(PoolLiquidity):
+    pool_liquidity_template_2 = PoolLiquidity.deploy({"from": accounts[0]})
+    return pool_liquidity_template_2
+

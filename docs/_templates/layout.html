@@ -1,0 +1,18 @@
+{% extends "!layout.html" -%}
+{% block linktags -%}
+  {% if instantmiso_inject_language_links -%}
+  {% for alternate_lang in instantmiso_docs_supported_languages -%}
+  {# Convert to ISO 639-1 format, e.g. zh_CN -> zh-cn -#}
+  {% set alternate_lang_href = alternate_lang.lower().replace("_", "-") -%}
+  <link rel="alternate" hreflang="{{ alternate_lang_href }}" href="{{ instantmiso_docs_basepath }}{{ alternate_lang }}/{{ instantmiso_canonical_version }}/{{ pagename }}{{ instantmiso_docs_suffix }}" />
+  {% endfor -%}
+  <link rel="alternate" hreflang="x-default" href="{{ instantmiso_docs_basepath }}{{ instantmiso_default_lang }}/{{ instantmiso_canonical_version }}/{{ pagename }}{{ instantmiso_docs_suffix }}" />
+
+  <link rel="canonical" href="{{ instantmiso_docs_basepath }}{{ lang_attr }}/{{ instantmiso_canonical_version }}/{{ pagename }}{{ instantmiso_docs_suffix }}" />
+  {% endif -%}
+  {{ super() }}
+{% endblock -%}
+
+{% block htmltitle -%}
+<title>{{ instantmiso_title_prefix }}{{ title|striptags|e }}{{ titlesuffix }}</title>
+{% endblock -%}

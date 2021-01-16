@@ -16,7 +16,8 @@ def test_create_token(token_factory):
     name = "Fixed Token"
     symbol = "FXT"
     template_id = 1 # Fixed Token Template
-    tx = token_factory.createToken(name, symbol, template_id)
+    test_tokens = 100 * TENPOW18 # Fixed Token Template
+    tx = token_factory.createToken(name, symbol, template_id,test_tokens )
     assert "TokenCreated" in tx.events    
 
 def test_add_token_template_wrong_operator(token_factory, fixed_token_template):
@@ -27,13 +28,17 @@ def test_number_of_tokens(token_factory):
     name = "Fixed Token"
     symbol = "FXT"
     template_id = 1 # Fixed Token Template
-    tx = token_factory.createToken(name, symbol, template_id)
+    test_tokens = 100 * TENPOW18 # Fixed Token Template
+
+    tx = token_factory.createToken(name, symbol, template_id, test_tokens)
     assert "TokenCreated" in tx.events  
 
     name = "Mintable Token"
     symbol = "MNT"
     template_id = 2 # Mintable Token Template
-    tx = token_factory.createToken(name, symbol, template_id)
+    test_tokens = 0
+
+    tx = token_factory.createToken(name, symbol, template_id, test_tokens)
     assert "TokenCreated" in tx.events  
 
     assert token_factory.numberOfTokens() == 2

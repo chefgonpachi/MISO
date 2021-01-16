@@ -1,7 +1,5 @@
 pragma solidity ^0.6.9;
 
-
-
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeMathPlus.sol";
 import "../UniswapV2/UniswapV2Library.sol";
@@ -10,14 +8,15 @@ import "../UniswapV2/interfaces/IUniswapV2Pair.sol";
 import "../UniswapV2/interfaces/IUniswapV2Factory.sol";
 import "../../interfaces/IWETH9.sol";
 import "../../interfaces/IERC20.sol";
+import "../Utils/Owned.sol";
+// import "../Access/MISOAccessControls.sol";
 
 
 // GP: Have more than one depositor
 // GP: Deposit from / track contributors
 // GP: Send LP tokens to contributors 
 
-
-contract PoolLiquidity  {
+contract PoolLiquidity {
 
     using SafeMathPlus for uint256;
 
@@ -31,13 +30,16 @@ contract PoolLiquidity  {
     address public tokenWETHPair;
     address public wallet;
     bool private initialised;
-    uint256 public deadline;
     uint256 public locktime;
     uint256 public unlock;
+    uint256 public deadline;
+    uint256 public launchwindow;
     uint256 public expiry;
-
     uint256 public liquidityAdded;
-    
+
+    // MISOLiquidity template id
+    uint256 public constant liquidityTemplate = 1;
+
     event InitPoolLiquidity(address indexed token1, address indexed token2, address factory, address sender);
     event LiquidityAdded(uint256 liquidity);
 
@@ -51,13 +53,13 @@ contract PoolLiquidity  {
             address _factory,
             address _owner,
             address _wallet,
-            uint256 _duration,
-            uint256 _launchwindow,
             uint256 _deadline,
+            uint256 _launchwindow,
             uint256 _locktime
     )
         external
     {
+        require(_locktime < 10000000000, 'Enter an unix timestamp in seconds, not miliseconds');
         require(!initialised);
         accessControls = MISOAccessControls(_accessControls);
         token = IERC20(_token);
@@ -66,33 +68,22 @@ contract PoolLiquidity  {
         wallet = _wallet;
         _setTokenPair();
         initialised = true;
-        deadline = block.timestamp + _deadline;
         require(_launchwindow > 2 * SECONDS_PER_DAY);
-        expiry = deadline + _launchwindow;
+        deadline = _deadline;
+        launchwindow = _launchwindow;
+        expiry = _deadline + _launchwindow;
         locktime = _locktime;
         emit InitPoolLiquidity(address(_token), address(_WETH), address(_factory), _owner);
     }
 
-    fallback() external payable {
+    receive() external payable {
         if(msg.sender != address(WETH)){
              depositETH();
         }
     }
 
-
-    // Getters
-    function getTokenBalance() public view returns (uint256) {
-         return token.balanceOf(address(this));
-    }
-
-    function getWethBalance() public view returns (uint256) {
-         return WETH.balanceOf(address(this));
-    }
-    // function getTokenPrice() external returns (uint256) {}
-
-
     function depositETH() public payable {
-        require(block.timestamp < deadline, "Deadline has expired");
+        require(block.timestamp < deadline, "Deposit deadline has passed");
         require(liquidityAdded == 0, "Liquidity already added");
         if (msg.value > 0 ) {
             WETH.deposit{value : msg.value}();
@@ -101,13 +92,19 @@ contract PoolLiquidity  {
 
     function depositTokens(uint256 amount) external returns (bool success) {
         require(amount > 0, "Token amount must be greater than 0");
-        require(block.timestamp < deadline, "Deadline has expired");
+        require(block.timestamp < deadline, "Deposit deadline has passed");
         require(liquidityAdded == 0, "Liquidity already added");
         token.transferFrom(msg.sender, address(this), amount); 
     }
 
-    function addLiquidityToPool() external returns (uint256 liquidity) {
-        require(block.timestamp > deadline, "Deposits still active");
+    function launchLiquidityPool() external  returns (uint256 liquidity) {
+        /// GP: Could add a flag to give the option for a trustless launch
+        require(
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOLaucher.launchLiquidityPool: Sender must be operator"
+        );
+        require(block.timestamp > deadline, "Deposit deadline has not passed");
+        require(block.timestamp < expiry, "Contract has expired");
         /// GP: Check both tokens from the factory
 
         uint256 tokenAmount = getTokenBalance();
@@ -123,25 +120,30 @@ contract PoolLiquidity  {
         assert(token.transfer(tokenWETHPair, tokenAmount));
         assert(WETH.transfer(tokenWETHPair, wethAmount));
 
-        // GP: Check this will return number of LP tokens
         liquidity = IUniswapV2Pair(tokenWETHPair).mint(address(this));
         liquidityAdded = liquidityAdded.add(liquidity);
         unlock = block.timestamp + locktime;
         emit LiquidityAdded(liquidityAdded);
     }
 
-    function sendLPTokens() external returns (uint256 amount) {
+    function withdrawLPTokens() external returns (uint256 liquidity) {
         require(
             accessControls.hasOperatorRole(msg.sender),
-            "MISOLaucher.sendLPTokens: Sender must be operator"
+            "MISOLaucher.withdrawLPTokens: Sender must be operator"
         );
-        uint256 liquidity = IERC20(tokenWETHPair).balanceOf(address(this));
-        require(liquidity > 0, "Token amount must be greater than 0");
+        require(block.timestamp >= unlock, "Liquidity is locked");
+
+        liquidity = IERC20(tokenWETHPair).balanceOf(address(this));
+        require(liquidity > 0, "Liquidity must be greater than 0");
         IERC20(tokenWETHPair).transfer(wallet, liquidity);
     }
 
-
-    function withdrawTokens() external {
+    function withdrawDeposits() external {
+        require(
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOLaucher.withdrawLPTokens: Sender must be operator"
+        );
+        require(liquidityAdded == 0, "Liquidity is locked");
         require(block.timestamp > expiry, "Timer has not yet expired");
         uint256 tokenAmount = getTokenBalance();
         if (tokenAmount > 0 ) {
@@ -153,12 +155,7 @@ contract PoolLiquidity  {
         }
     }
 
-
-    /// @dev helper functions
-    function _createPool() internal returns (address) {
-        tokenWETHPair = factory.createPair(address(token), address(WETH));
-        return tokenWETHPair;
-    }
+    // GP: Claim / Bail
 
     function _setTokenPair() internal returns (address) {
         address pair = factory.getPair(address(token), address(WETH));
@@ -169,7 +166,22 @@ contract PoolLiquidity  {
         return tokenWETHPair;
     }
 
+    /// @dev helper functions
+    function _createPool() internal returns (address) {
+        tokenWETHPair = factory.createPair(address(token), address(WETH));
+        return tokenWETHPair;
+    }
+
     /// @dev getter functions
+    function getTokenBalance() public view returns (uint256) {
+         return token.balanceOf(address(this));
+    }
+
+    function getWethBalance() public view returns (uint256) {
+         return WETH.balanceOf(address(this));
+    }
+    // function getTokenPrice() external returns (uint256) {}
+
     function getLPTokenAddress() public view returns (address) {
         return tokenWETHPair;
     }
@@ -188,7 +200,6 @@ contract PoolLiquidity  {
     function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
         (address token0,) = UniswapV2Library.sortTokens(address(WETH), address(token));
         (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(tokenWETHPair).getReserves();
-        // GP: Test the order of returned values token/weth
         (wethReserves, tokenReserves) = token0 == address(token) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 

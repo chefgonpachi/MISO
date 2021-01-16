@@ -16,7 +16,7 @@ def isolation(fn_isolation):
 #     symbol = "MNT"
 #     owner = accounts[0]
 
-#     mintable_token.initToken(name, symbol, owner, {'from': owner})
+#     mintable_token.initToken(name, symbol, owner,0, {'from': owner})
 #     assert mintable_token.name() == name
 #     assert mintable_token.symbol() == symbol
 #     assert mintable_token.owner() == owner

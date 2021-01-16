@@ -12,6 +12,16 @@
           2,
           3
         ],
+        "Crowdsale.buyTokens": [
+          1,
+          1,
+          1
+        ],
+        "Crowdsale.buyTokensEth": [
+          1,
+          1,
+          1
+        ],
         "Crowdsale.finalize": [
           3,
           1,
@@ -73,6 +83,10 @@
           4,
           4
         ],
+        "Crowdsale._processBuy": [
+          3,
+          3
+        ],
         "Crowdsale._safeTransferFrom": [
           1,
           1
@@ -84,6 +98,10 @@
         "Crowdsale.buyTokens": [
           4,
           4
+        ],
+        "Crowdsale.buyTokensEth": [
+          3,
+          3
         ],
         "Crowdsale.finalize": [
           6,
@@ -98,8 +116,8 @@
           1
         ],
         "Crowdsale.initCrowdsale": [
-          19,
-          19
+          20,
+          20
         ],
         "Crowdsale.isOpen": [
           1,
@@ -110,8 +128,8 @@
           5
         ],
         "SafeMath.add": [
-          2,
-          2
+          1,
+          1
         ],
         "SafeMath.div": [
           2,
@@ -128,13 +146,193 @@
       },
       "totals": {
         "branches": [
-          25,
-          10,
-          28
+          27,
+          12,
+          30
         ],
         "statements": [
-          55,
-          57
+          61,
+          63
+        ]
+      }
+    },
+    "DutchAuction": {
+      "branches": {
+        "DutchAuction._addCommitment": [
+          1,
+          1,
+          2
+        ],
+        "DutchAuction._safeTransferFrom": [
+          1,
+          2,
+          3
+        ],
+        "DutchAuction._tokenPayment": [
+          1,
+          1,
+          1
+        ],
+        "DutchAuction.calculateCommitment": [
+          1,
+          1,
+          1
+        ],
+        "DutchAuction.clearingPrice": [
+          1,
+          1,
+          1
+        ],
+        "DutchAuction.commitEth": [
+          2,
+          2,
+          3
+        ],
+        "DutchAuction.commitTokensFrom": [
+          1,
+          1,
+          2
+        ],
+        "DutchAuction.finaliseAuction": [
+          3,
+          2,
+          3
+        ],
+        "DutchAuction.initAuction": [
+          4,
+          0,
+          4
+        ],
+        "DutchAuction.priceFunction": [
+          2,
+          2,
+          2
+        ],
+        "DutchAuction.withdrawTokens": [
+          3,
+          3,
+          3
+        ],
+        "SafeMath.add": [
+          1,
+          0,
+          1
+        ],
+        "SafeMath.div": [
+          1,
+          0,
+          1
+        ],
+        "SafeMath.mul": [
+          2,
+          1,
+          2
+        ],
+        "SafeMath.sub": [
+          1,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "DutchAuction.<receive>": [
+          1,
+          1
+        ],
+        "DutchAuction._addCommitment": [
+          4,
+          4
+        ],
+        "DutchAuction._safeTransferFrom": [
+          1,
+          1
+        ],
+        "DutchAuction._tokenPayment": [
+          2,
+          2
+        ],
+        "DutchAuction.auctionEnded": [
+          1,
+          1
+        ],
+        "DutchAuction.auctionSuccessful": [
+          1,
+          1
+        ],
+        "DutchAuction.calculateCommitment": [
+          2,
+          2
+        ],
+        "DutchAuction.clearingPrice": [
+          2,
+          2
+        ],
+        "DutchAuction.commitEth": [
+          3,
+          3
+        ],
+        "DutchAuction.commitTokens": [
+          1,
+          1
+        ],
+        "DutchAuction.commitTokensFrom": [
+          3,
+          3
+        ],
+        "DutchAuction.finaliseAuction": [
+          5,
+          5
+        ],
+        "DutchAuction.initAuction": [
+          15,
+          15
+        ],
+        "DutchAuction.priceFunction": [
+          3,
+          3
+        ],
+        "DutchAuction.tokenPrice": [
+          1,
+          1
+        ],
+        "DutchAuction.tokensClaimable": [
+          1,
+          1
+        ],
+        "DutchAuction.totalTokensCommitted": [
+          1,
+          1
+        ],
+        "DutchAuction.withdrawTokens": [
+          6,
+          6
+        ],
+        "SafeMath.add": [
+          1,
+          1
+        ],
+        "SafeMath.div": [
+          2,
+          2
+        ],
+        "SafeMath.mul": [
+          2,
+          2
+        ],
+        "SafeMath.sub": [
+          2,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          25,
+          17,
+          30
+        ],
+        "statements": [
+          60,
+          60
         ]
       }
     },
@@ -163,6 +361,11 @@
         "FixedToken.initFixedTotalSupply": [
           1,
           1,
+          1
+        ],
+        "FixedToken.initToken": [
+          1,
+          0,
           1
         ],
         "SafeMath.add": [
@@ -246,8 +449,8 @@
           3
         ],
         "FixedToken.initToken": [
-          1,
-          1
+          3,
+          3
         ],
         "SafeMath.add": [
           2,
@@ -260,13 +463,295 @@
       },
       "totals": {
         "branches": [
-          9,
+          10,
           1,
-          9
+          10
         ],
         "statements": [
-          38,
-          42
+          40,
+          44
+        ]
+      }
+    },
+    "MISOAccessControls": {
+      "branches": {
+        "AccessControl._grantRole": [
+          0,
+          1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          1,
+          0,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "EnumerableSet._add": [
+          0,
+          1,
+          1
+        ],
+        "EnumerableSet._at": [
+          0,
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "AccessControl._grantRole": [
+          1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleAdmin": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMember": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMemberCount": [
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          2,
+          2
+        ],
+        "AccessControl.hasRole": [
+          1,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          2
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          1
+        ],
+        "Context._msgSender": [
+          1,
+          1
+        ],
+        "EnumerableSet._add": [
+          3,
+          4
+        ],
+        "EnumerableSet._at": [
+          0,
+          2
+        ],
+        "EnumerableSet._contains": [
+          1,
+          1
+        ],
+        "EnumerableSet._length": [
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          6
+        ],
+        "EnumerableSet.add": [
+          1,
+          1
+        ],
+        "EnumerableSet.at": [
+          0,
+          1
+        ],
+        "EnumerableSet.contains": [
+          1,
+          1
+        ],
+        "EnumerableSet.length": [
+          0,
+          1
+        ],
+        "EnumerableSet.remove": [
+          0,
+          1
+        ],
+        "MISOAccessControls.addAdminRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.addMinterRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.addOperatorRole": [
+          2,
+          2
+        ],
+        "MISOAccessControls.addSmartContractRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.hasAdminRole": [
+          0,
+          1
+        ],
+        "MISOAccessControls.hasMinterRole": [
+          0,
+          1
+        ],
+        "MISOAccessControls.hasOperatorRole": [
+          1,
+          1
+        ],
+        "MISOAccessControls.hasSmartContractRole": [
+          0,
+          1
+        ],
+        "MISOAccessControls.removeAdminRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.removeMinterRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.removeOperatorRole": [
+          0,
+          2
+        ],
+        "MISOAccessControls.removeSmartContractRole": [
+          0,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          1,
+          2,
+          8
+        ],
+        "statements": [
+          14,
+          51
+        ]
+      }
+    },
+    "MISOFarmFactory": {
+      "branches": {
+        "MISOFarmFactory.addFarmTemplate": [
+          1,
+          1,
+          1
+        ],
+        "MISOFarmFactory.createFarm": [
+          4,
+          0,
+          4
+        ],
+        "MISOFarmFactory.getTemplateId": [
+          1,
+          1,
+          1
+        ],
+        "MISOFarmFactory.initMISOFarmFactory": [
+          1,
+          0,
+          1
+        ],
+        "MISOFarmFactory.removeFarmTemplate": [
+          1,
+          0,
+          1
+        ],
+        "MISOFarmFactory.setDev": [
+          0,
+          0,
+          1
+        ],
+        "MISOFarmFactory.setMinimumFee": [
+          0,
+          0,
+          1
+        ],
+        "MISOFarmFactory.setTokenFee": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "MISOFarmFactory.addFarmTemplate": [
+          4,
+          4
+        ],
+        "MISOFarmFactory.createFarm": [
+          9,
+          10
+        ],
+        "MISOFarmFactory.getFarmTemplate": [
+          1,
+          1
+        ],
+        "MISOFarmFactory.getTemplateId": [
+          2,
+          2
+        ],
+        "MISOFarmFactory.initMISOFarmFactory": [
+          7,
+          7
+        ],
+        "MISOFarmFactory.numberOfFarms": [
+          1,
+          1
+        ],
+        "MISOFarmFactory.removeFarmTemplate": [
+          4,
+          4
+        ],
+        "MISOFarmFactory.setDev": [
+          0,
+          2
+        ],
+        "MISOFarmFactory.setMinimumFee": [
+          0,
+          2
+        ],
+        "MISOFarmFactory.setTokenFee": [
+          0,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          8,
+          2,
+          11
+        ],
+        "statements": [
+          28,
+          35
         ]
       }
     },
@@ -274,12 +759,12 @@
       "branches": {
         "MISOLiquidityLauncher.addLiquidityLauncherTemplate": [
           1,
-          0,
+          1,
           1
         ],
         "MISOLiquidityLauncher.getTemplateId": [
-          0,
-          0,
+          1,
+          1,
           1
         ],
         "MISOLiquidityLauncher.initMISOLiquidityLauncher": [
@@ -288,7 +773,7 @@
           1
         ],
         "MISOLiquidityLauncher.removeLiquidityLauncherTemplate": [
-          0,
+          1,
           0,
           1
         ]
@@ -303,35 +788,113 @@
           5
         ],
         "MISOLiquidityLauncher.getLiquidityLauncherTemplate": [
-          0,
+          1,
           1
         ],
         "MISOLiquidityLauncher.getTemplateId": [
-          0,
+          2,
           2
         ],
         "MISOLiquidityLauncher.initMISOLiquidityLauncher": [
-          4,
-          4
+          5,
+          5
         ],
         "MISOLiquidityLauncher.numberOfLiquidityLauncherContracts": [
           0,
           1
         ],
         "MISOLiquidityLauncher.removeLiquidityLauncherTemplate": [
-          0,
+          4,
           4
         ]
       },
       "totals": {
         "branches": [
+          4,
           2,
-          0,
           4
         ],
         "statements": [
-          13,
-          21
+          21,
+          22
+        ]
+      }
+    },
+    "MISOMarket": {
+      "branches": {
+        "MISOMarket.addAuctionTemplate": [
+          2,
+          1,
+          2
+        ],
+        "MISOMarket.createAuction": [
+          2,
+          0,
+          2
+        ],
+        "MISOMarket.createCrowdsale": [
+          2,
+          0,
+          2
+        ],
+        "MISOMarket.initMISOMarket": [
+          1,
+          0,
+          1
+        ],
+        "MISOMarket.removeAuctionTemplate": [
+          1,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "MISOMarket._addAuctionTemplate": [
+          4,
+          4
+        ],
+        "MISOMarket.addAuctionTemplate": [
+          3,
+          3
+        ],
+        "MISOMarket.createAuction": [
+          8,
+          8
+        ],
+        "MISOMarket.createCrowdsale": [
+          7,
+          7
+        ],
+        "MISOMarket.getAuctionTemplate": [
+          1,
+          1
+        ],
+        "MISOMarket.getTemplateId": [
+          1,
+          1
+        ],
+        "MISOMarket.initMISOMarket": [
+          7,
+          7
+        ],
+        "MISOMarket.numberOfAuctions": [
+          1,
+          1
+        ],
+        "MISOMarket.removeAuctionTemplate": [
+          5,
+          5
+        ]
+      },
+      "totals": {
+        "branches": [
+          8,
+          1,
+          8
+        ],
+        "statements": [
+          37,
+          37
         ]
       }
     },
@@ -397,6 +960,182 @@
         "statements": [
           22,
           22
+        ]
+      }
+    },
+    "MasterChef": {
+      "branches": {
+        "Address._functionCallWithValue": [
+          0,
+          0,
+          3
+        ],
+        "MasterChef.addToken": [
+          0,
+          0,
+          4
+        ],
+        "MasterChef.blocksRemaining": [
+          0,
+          0,
+          1
+        ],
+        "MasterChef.claimTips": [
+          0,
+          0,
+          2
+        ],
+        "MasterChef.deposit": [
+          0,
+          0,
+          3
+        ],
+        "MasterChef.dev": [
+          0,
+          0,
+          1
+        ],
+        "MasterChef.getMultiplier": [
+          0,
+          0,
+          2
+        ],
+        "MasterChef.initFarm": [
+          1,
+          0,
+          1
+        ],
+        "MasterChef.pendingRewards": [
+          0,
+          0,
+          2
+        ],
+        "MasterChef.safeRewardsTransfer": [
+          0,
+          0,
+          1
+        ],
+        "MasterChef.set": [
+          0,
+          0,
+          2
+        ],
+        "MasterChef.setBonus": [
+          0,
+          0,
+          1
+        ],
+        "MasterChef.updatePool": [
+          0,
+          0,
+          3
+        ],
+        "MasterChef.withdraw": [
+          0,
+          0,
+          3
+        ],
+        "SafeERC20._callOptionalReturn": [
+          0,
+          0,
+          2
+        ],
+        "SafeMath.add": [
+          0,
+          0,
+          1
+        ],
+        "SafeMath.div": [
+          0,
+          0,
+          1
+        ],
+        "SafeMath.mul": [
+          0,
+          0,
+          2
+        ],
+        "SafeMath.sub": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "MasterChef.addToken": [
+          0,
+          4
+        ],
+        "MasterChef.blocksRemaining": [
+          0,
+          2
+        ],
+        "MasterChef.claimTips": [
+          0,
+          4
+        ],
+        "MasterChef.deposit": [
+          0,
+          6
+        ],
+        "MasterChef.dev": [
+          0,
+          2
+        ],
+        "MasterChef.emergencyWithdraw": [
+          0,
+          4
+        ],
+        "MasterChef.getMultiplier": [
+          0,
+          3
+        ],
+        "MasterChef.initFarm": [
+          8,
+          8
+        ],
+        "MasterChef.massUpdatePools": [
+          0,
+          2
+        ],
+        "MasterChef.pendingRewards": [
+          0,
+          2
+        ],
+        "MasterChef.poolLength": [
+          0,
+          1
+        ],
+        "MasterChef.safeRewardsTransfer": [
+          0,
+          2
+        ],
+        "MasterChef.set": [
+          0,
+          4
+        ],
+        "MasterChef.setBonus": [
+          0,
+          3
+        ],
+        "MasterChef.updatePool": [
+          0,
+          6
+        ],
+        "MasterChef.withdraw": [
+          0,
+          7
+        ]
+      },
+      "totals": {
+        "branches": [
+          1,
+          0,
+          36
+        ],
+        "statements": [
+          8,
+          60
         ]
       }
     },
@@ -483,21 +1222,6 @@
           1
         ],
         "MintableToken.unpause": [
-          0,
-          0,
-          1
-        ],
-        "Owned._initOwned": [
-          1,
-          0,
-          1
-        ],
-        "Owned.acceptOwnership": [
-          0,
-          0,
-          1
-        ],
-        "Owned.transferOwnership": [
           0,
           0,
           1
@@ -680,8 +1404,8 @@
           1
         ],
         "MintableToken.initToken": [
-          5,
-          5
+          4,
+          4
         ],
         "MintableToken.mint": [
           2,
@@ -692,26 +1416,6 @@
           2
         ],
         "MintableToken.unpause": [
-          0,
-          2
-        ],
-        "Owned._initOwned": [
-          4,
-          4
-        ],
-        "Owned.acceptOwnership": [
-          0,
-          4
-        ],
-        "Owned.isOwner": [
-          0,
-          1
-        ],
-        "Owned.owner": [
-          0,
-          1
-        ],
-        "Owned.transferOwnership": [
           0,
           2
         ],
@@ -738,13 +1442,13 @@
       },
       "totals": {
         "branches": [
-          11,
+          10,
           2,
-          25
+          22
         ],
         "statements": [
-          56,
-          107
+          51,
+          94
         ]
       }
     },
@@ -807,28 +1511,33 @@
     },
     "PoolLiquidity": {
       "branches": {
-        "PoolLiquidity.<fallback>": [
+        "PoolLiquidity.<receive>": [
           0,
           0,
           1
         ],
         "PoolLiquidity._setTokenPair": [
           0,
-          0,
+          1,
           1
         ],
+        "PoolLiquidity.addLiquidityETH": [
+          0,
+          1,
+          2
+        ],
         "PoolLiquidity.addLiquidityToPool": [
-          0,
-          0,
-          4
+          2,
+          3,
+          6
         ],
         "PoolLiquidity.depositETH": [
-          0,
+          2,
           1,
           3
         ],
         "PoolLiquidity.depositTokens": [
-          0,
+          3,
           0,
           3
         ],
@@ -843,18 +1552,18 @@
           1
         ],
         "PoolLiquidity.initPoolLiquidity": [
+          3,
           0,
-          0,
-          2
+          3
         ],
-        "PoolLiquidity.sendLPTokens": [
-          0,
-          0,
-          2
+        "PoolLiquidity.withdrawDeposits": [
+          2,
+          3,
+          4
         ],
-        "PoolLiquidity.withdrawTokens": [
-          0,
-          0,
+        "PoolLiquidity.withdrawLPTokens": [
+          2,
+          1,
           3
         ],
         "SafeMathPlus.add": [
@@ -892,6 +1601,11 @@
           0,
           3
         ],
+        "UniswapV2Library.quote": [
+          0,
+          0,
+          3
+        ],
         "UniswapV2Library.sortTokens": [
           0,
           0,
@@ -899,28 +1613,32 @@
         ]
       },
       "statements": {
-        "PoolLiquidity.<fallback>": [
+        "PoolLiquidity.<receive>": [
           0,
           1
         ],
         "PoolLiquidity._createPool": [
-          0,
+          2,
           2
         ],
         "PoolLiquidity._setTokenPair": [
-          0,
-          3
-        ],
-        "PoolLiquidity.addLiquidityToPool": [
-          0,
-          9
-        ],
-        "PoolLiquidity.depositETH": [
           1,
           3
         ],
+        "PoolLiquidity.addLiquidityETH": [
+          1,
+          8
+        ],
+        "PoolLiquidity.addLiquidityToPool": [
+          3,
+          11
+        ],
+        "PoolLiquidity.depositETH": [
+          3,
+          3
+        ],
         "PoolLiquidity.depositTokens": [
-          0,
+          4,
           4
         ],
         "PoolLiquidity.getLPTokenAddress": [
@@ -936,35 +1654,457 @@
           1
         ],
         "PoolLiquidity.getTokenBalance": [
-          0,
+          1,
           1
         ],
         "PoolLiquidity.getWethBalance": [
-          0,
+          1,
           1
         ],
         "PoolLiquidity.initPoolLiquidity": [
-          0,
-          13
+          15,
+          15
         ],
-        "PoolLiquidity.sendLPTokens": [
-          0,
-          3
+        "PoolLiquidity.withdrawDeposits": [
+          4,
+          4
         ],
-        "PoolLiquidity.withdrawTokens": [
-          0,
-          3
+        "PoolLiquidity.withdrawLPTokens": [
+          4,
+          5
         ]
       },
       "totals": {
         "branches": [
+          14,
+          10,
+          46
+        ],
+        "statements": [
+          39,
+          61
+        ]
+      }
+    },
+    "SushiToken": {
+      "branches": {
+        "AccessControl._grantRole": [
           0,
           1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "ERC20._approve": [
+          0,
+          0,
+          2
+        ],
+        "ERC20._initERC20": [
+          1,
+          0,
+          1
+        ],
+        "ERC20._mint": [
+          0,
+          0,
+          1
+        ],
+        "ERC20._transfer": [
+          0,
+          0,
+          2
+        ],
+        "EnumerableSet._add": [
+          0,
+          1,
+          1
+        ],
+        "EnumerableSet._at": [
+          0,
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          0,
+          1
+        ],
+        "SafeMath.add": [
+          0,
+          0,
+          1
+        ],
+        "SafeMath.sub": [
+          0,
+          0,
+          1
+        ],
+        "SushiToken._moveDelegates": [
+          0,
+          0,
+          6
+        ],
+        "SushiToken._writeCheckpoint": [
+          0,
+          0,
+          2
+        ],
+        "SushiToken.delegateBySig": [
+          0,
+          0,
+          3
+        ],
+        "SushiToken.getCurrentVotes": [
+          0,
+          0,
+          1
+        ],
+        "SushiToken.getPriorVotes": [
+          0,
+          0,
+          6
+        ],
+        "SushiToken.mint": [
+          0,
+          0,
+          1
+        ],
+        "SushiToken.safe32": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "AccessControl._grantRole": [
+          1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleAdmin": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMember": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMemberCount": [
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          1,
+          2
+        ],
+        "AccessControl.hasRole": [
+          0,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          2
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          1
+        ],
+        "Context._msgSender": [
+          1,
+          1
+        ],
+        "ERC20._approve": [
+          0,
+          4
+        ],
+        "ERC20._initERC20": [
+          5,
+          5
+        ],
+        "ERC20._mint": [
+          0,
+          5
+        ],
+        "ERC20._transfer": [
+          0,
+          6
+        ],
+        "ERC20.allowance": [
+          0,
+          1
+        ],
+        "ERC20.approve": [
+          0,
+          2
+        ],
+        "ERC20.balanceOf": [
+          0,
+          1
+        ],
+        "ERC20.decimals": [
+          0,
+          1
+        ],
+        "ERC20.decreaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.increaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.name": [
+          1,
+          1
+        ],
+        "ERC20.symbol": [
+          1,
+          1
+        ],
+        "ERC20.totalSupply": [
+          0,
+          1
+        ],
+        "ERC20.transfer": [
+          0,
+          1
+        ],
+        "ERC20.transferFrom": [
+          0,
+          3
+        ],
+        "EnumerableSet._add": [
+          3,
+          4
+        ],
+        "EnumerableSet._at": [
+          0,
+          2
+        ],
+        "EnumerableSet._contains": [
+          1,
+          1
+        ],
+        "EnumerableSet._length": [
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          6
+        ],
+        "EnumerableSet.add": [
+          1,
+          1
+        ],
+        "EnumerableSet.at": [
+          0,
+          1
+        ],
+        "EnumerableSet.contains": [
+          0,
+          1
+        ],
+        "EnumerableSet.length": [
+          0,
+          1
+        ],
+        "EnumerableSet.remove": [
+          0,
+          1
+        ],
+        "SushiToken._delegate": [
+          0,
+          3
+        ],
+        "SushiToken._moveDelegates": [
+          0,
+          2
+        ],
+        "SushiToken._writeCheckpoint": [
+          0,
+          4
+        ],
+        "SushiToken.delegate": [
+          0,
+          1
+        ],
+        "SushiToken.delegateBySig": [
+          0,
+          4
+        ],
+        "SushiToken.delegates": [
+          0,
+          1
+        ],
+        "SushiToken.getCurrentVotes": [
+          0,
+          1
+        ],
+        "SushiToken.getPriorVotes": [
+          0,
+          8
+        ],
+        "SushiToken.initToken": [
+          3,
+          3
+        ],
+        "SushiToken.mint": [
+          0,
+          3
+        ],
+        "SushiToken.safe32": [
+          0,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          1,
+          2,
           36
         ],
         "statements": [
+          18,
+          97
+        ]
+      }
+    },
+    "UniswapV2Factory": {
+      "branches": {
+        "UniswapV2Factory.createPair": [
+          4,
+          0,
+          4
+        ],
+        "UniswapV2Factory.setFeeTo": [
+          0,
+          0,
+          1
+        ],
+        "UniswapV2Factory.setFeeToSetter": [
+          0,
+          0,
+          1
+        ],
+        "UniswapV2Factory.setMigrator": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "UniswapV2Factory.allPairsLength": [
+          0,
+          1
+        ],
+        "UniswapV2Factory.createPair": [
+          8,
+          8
+        ],
+        "UniswapV2Factory.pairCodeHash": [
+          0,
+          1
+        ],
+        "UniswapV2Factory.setFeeTo": [
+          0,
+          2
+        ],
+        "UniswapV2Factory.setFeeToSetter": [
+          0,
+          2
+        ],
+        "UniswapV2Factory.setMigrator": [
+          0,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          4,
+          0,
+          7
+        ],
+        "statements": [
+          8,
+          16
+        ]
+      }
+    },
+    "WETH9": {
+      "branches": {
+        "WETH9.transferFrom": [
+          2,
+          0,
+          4
+        ],
+        "WETH9.withdraw": [
+          0,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "WETH9.<receive>": [
+          0,
+          1
+        ],
+        "WETH9.approve": [
+          0,
+          3
+        ],
+        "WETH9.deposit": [
+          2,
+          2
+        ],
+        "WETH9.totalSupply": [
           1,
-          46
+          1
+        ],
+        "WETH9.transfer": [
+          1,
+          1
+        ],
+        "WETH9.transferFrom": [
+          5,
+          7
+        ],
+        "WETH9.withdraw": [
+          0,
+          4
+        ]
+      },
+      "totals": {
+        "branches": [
+          2,
+          0,
+          5
+        ],
+        "statements": [
+          9,
+          19
         ]
       }
     }
@@ -975,140 +2115,152 @@
         "0": [],
         "13": [
           [
-            6400,
-            6411,
+            3888,
+            3918,
             "green",
             ""
           ],
           [
-            6520,
-            6538,
-            "yellow",
-            ""
-          ],
-          [
-            6588,
-            6601,
+            4491,
+            4521,
             "green",
             ""
           ],
           [
-            7130,
-            7140,
+            7831,
+            7842,
+            "green",
+            ""
+          ],
+          [
+            7951,
+            7969,
             "yellow",
             ""
           ],
           [
-            7191,
-            7202,
+            8019,
+            8032,
+            "green",
+            ""
+          ],
+          [
+            8578,
+            8588,
             "yellow",
             ""
           ],
           [
-            7408,
-            7421,
+            8639,
+            8650,
             "yellow",
             ""
           ],
           [
-            7594,
-            7610,
+            9018,
+            9031,
+            "yellow",
+            ""
+          ],
+          [
+            9207,
+            9223,
             "orange",
             ""
           ],
           [
-            2358,
-            2370,
+            2477,
+            2489,
             "green",
             ""
           ],
           [
-            2424,
-            2453,
+            2543,
+            2572,
             "yellow",
             ""
           ],
           [
-            2520,
-            2541,
-            "yellow",
-            ""
-          ],
-          [
-            2608,
-            2617,
-            "yellow",
-            ""
-          ],
-          [
+            2639,
             2660,
-            2681,
             "yellow",
             ""
           ],
           [
-            2741,
-            2761,
+            2727,
+            2736,
             "yellow",
             ""
           ],
           [
-            2820,
-            2836,
+            2779,
+            2800,
             "yellow",
             ""
           ],
           [
-            2887,
-            2896,
+            2860,
+            2880,
             "yellow",
             ""
           ],
           [
-            3119,
-            3157,
+            2939,
+            2955,
             "yellow",
             ""
           ],
           [
-            4824,
-            4832,
+            3006,
+            3015,
+            "yellow",
+            ""
+          ],
+          [
+            3282,
+            3320,
+            "yellow",
+            ""
+          ],
+          [
+            6167,
+            6175,
             "green",
             ""
           ],
           [
-            4879,
-            4904,
+            6222,
+            6247,
             "green",
             ""
           ],
           [
-            4969,
-            4983,
+            6312,
+            6323,
             "green",
             ""
           ],
           [
-            5101,
-            5157,
+            6438,
+            6494,
             "green",
             ""
           ],
           [
-            10631,
-            10638,
+            12245,
+            12252,
             "yellow",
             ""
           ],
           [
-            10643,
-            10659,
+            12257,
+            12273,
             "orange",
             ""
           ],
           [
-            10663,
-            10687,
+            12277,
+            12301,
             "yellow",
             ""
           ]
@@ -1117,6 +2269,12 @@
           [
             986,
             992,
+            "yellow",
+            ""
+          ],
+          [
+            3826,
+            3831,
             "yellow",
             ""
           ],
@@ -1133,168 +2291,163 @@
             ""
           ],
           [
-            3826,
-            3831,
-            "yellow",
-            ""
-          ],
-          [
             1859,
             1865,
             "yellow",
             ""
           ]
-        ]
+        ],
+        "60": []
       },
       "DutchAuction": {
         "14": [
           [
-            4833,
-            4872,
+            4912,
+            4951,
             "yellow",
             ""
           ],
           [
-            5121,
-            5138,
+            5200,
+            5217,
             "yellow",
             ""
           ],
           [
-            5255,
-            5270,
-            "orange",
-            ""
-          ],
-          [
-            3720,
-            3750,
+            5334,
+            5349,
             "green",
             ""
           ],
           [
-            6108,
-            6147,
-            "red",
+            3799,
+            3829,
+            "green",
             ""
           ],
           [
-            6261,
-            6281,
-            "red",
-            ""
-          ],
-          [
-            1454,
-            1466,
+            6187,
+            6226,
             "yellow",
             ""
           ],
           [
-            1523,
-            1544,
+            6340,
+            6360,
             "yellow",
             ""
           ],
           [
-            1605,
-            1632,
+            1533,
+            1545,
             "yellow",
             ""
           ],
           [
-            1694,
+            1602,
+            1623,
+            "yellow",
+            ""
+          ],
+          [
+            1684,
             1711,
             "yellow",
             ""
           ],
           [
-            7595,
-            7605,
-            "green",
-            ""
-          ],
-          [
-            7682,
-            7701,
+            1773,
+            1790,
             "yellow",
             ""
           ],
           [
-            8033,
-            8058,
-            "red",
+            7674,
+            7684,
+            "green",
             ""
           ],
           [
-            6691,
-            6740,
+            7761,
+            7780,
+            "green",
+            ""
+          ],
+          [
+            8112,
+            8137,
+            "yellow",
+            ""
+          ],
+          [
+            6770,
+            6819,
+            "green",
+            ""
+          ],
+          [
+            8422,
+            8441,
+            "green",
+            ""
+          ],
+          [
+            8675,
+            8692,
+            "green",
+            ""
+          ],
+          [
+            9026,
+            9051,
+            "green",
+            ""
+          ],
+          [
+            3322,
+            3350,
+            "green",
+            ""
+          ],
+          [
+            3407,
+            3433,
+            "green",
+            ""
+          ],
+          [
+            5558,
+            5586,
+            "yellow",
+            ""
+          ],
+          [
+            5590,
+            5616,
+            "yellow",
+            ""
+          ],
+          [
+            10594,
+            10601,
+            "yellow",
+            ""
+          ],
+          [
+            10606,
+            10622,
             "orange",
             ""
           ],
           [
-            8343,
-            8362,
-            "green",
-            ""
-          ],
-          [
-            8596,
-            8613,
-            "green",
-            ""
-          ],
-          [
-            8947,
-            8972,
-            "green",
-            ""
-          ],
-          [
-            3243,
-            3271,
-            "orange",
-            ""
-          ],
-          [
-            3328,
-            3354,
-            "green",
-            ""
-          ],
-          [
-            5479,
-            5507,
+            10626,
+            10650,
             "yellow",
             ""
           ],
           [
-            5511,
-            5537,
-            "yellow",
-            ""
-          ],
-          [
-            10516,
-            10523,
-            "yellow",
-            ""
-          ],
-          [
-            10528,
-            10544,
-            "orange",
-            ""
-          ],
-          [
-            10548,
-            10572,
-            "yellow",
-            ""
-          ],
-          [
-            10784,
-            10814,
+            10862,
+            10892,
             "green",
             ""
           ]
@@ -1388,15 +2541,21 @@
         ],
         "30": [
           [
-            400,
-            412,
+            683,
+            696,
             "green",
+            ""
+          ],
+          [
+            388,
+            408,
+            "yellow",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": []
+        "67": []
       },
       "MISOAccessControls": {
         "0": [],
@@ -1455,90 +2614,181 @@
         ],
         "9": []
       },
-      "MISOLiquidityLauncher": {
-        "19": [
+      "MISOFarmFactory": {
+        "0": [],
+        "1": [],
+        "17": [
           [
-            1677,
-            1719,
-            "yellow",
-            ""
-          ],
-          [
-            2136,
-            2178,
+            1491,
+            1530,
             "red",
             ""
           ],
           [
-            3054,
-            3095,
+            1734,
+            1773,
             "red",
             ""
           ],
           [
-            959,
-            971,
+            3614,
+            3656,
             "yellow",
+            ""
+          ],
+          [
+            1158,
+            1170,
+            "yellow",
+            ""
+          ],
+          [
+            2457,
+            2484,
+            "yellow",
+            ""
+          ],
+          [
+            2532,
+            2555,
+            "yellow",
+            ""
+          ],
+          [
+            2666,
+            2688,
+            "yellow",
+            ""
+          ],
+          [
+            3045,
+            3058,
+            "orange",
+            ""
+          ],
+          [
+            3208,
+            3250,
+            "green",
+            ""
+          ],
+          [
+            4467,
+            4500,
+            "green",
+            ""
+          ],
+          [
+            1973,
+            2012,
+            "red",
             ""
           ]
         ],
-        "52": []
+        "52": [],
+        "6": [],
+        "64": [],
+        "7": [],
+        "9": []
       },
-      "MISOMarket": {
-        "20": [
+      "MISOLiquidityLauncher": {
+        "0": [],
+        "1": [],
+        "19": [
           [
-            2096,
-            2164,
+            997,
+            1009,
             "yellow",
             ""
           ],
           [
-            2184,
+            1813,
+            1855,
+            "green",
+            ""
+          ],
+          [
+            2272,
+            2314,
+            "yellow",
+            ""
+          ],
+          [
+            3190,
+            3231,
+            "green",
+            ""
+          ]
+        ],
+        "52": [],
+        "6": [],
+        "7": [],
+        "9": []
+      },
+      "MISOMarket": {
+        "0": [],
+        "1": [],
+        "20": [
+          [
+            2164,
             2232,
             "yellow",
             ""
           ],
           [
-            3555,
-            3597,
+            2252,
+            2300,
             "yellow",
             ""
           ],
           [
-            3830,
-            3872,
-            "red",
+            3675,
+            3717,
+            "yellow",
             ""
           ],
           [
-            1168,
-            1180,
-            "red",
-            ""
-          ],
-          [
-            4752,
-            4791,
+            3815,
+            3850,
             "green",
             ""
           ],
           [
-            3083,
-            3151,
-            "red",
+            4062,
+            4104,
+            "yellow",
             ""
           ],
           [
-            3171,
-            3221,
-            "red",
+            3185,
+            3253,
+            "yellow",
+            ""
+          ],
+          [
+            3273,
+            3323,
+            "yellow",
+            ""
+          ],
+          [
+            1236,
+            1248,
+            "yellow",
             ""
           ]
         ],
-        "3": [],
-        "52": []
+        "52": [],
+        "6": [],
+        "60": [],
+        "62": [],
+        "63": [],
+        "7": [],
+        "9": []
       },
       "MISOTokenFactory": {
+        "0": [],
+        "1": [],
         "22": [
           [
             1648,
@@ -1565,7 +2815,243 @@
             ""
           ]
         ],
-        "52": []
+        "52": [],
+        "6": [],
+        "67": [],
+        "7": [],
+        "9": []
+      },
+      "MasterChef": {
+        "0": [],
+        "1": [],
+        "15": [
+          [
+            4212,
+            4251,
+            "red",
+            ""
+          ],
+          [
+            11215,
+            11236,
+            "red",
+            ""
+          ],
+          [
+            11268,
+            11276,
+            "red",
+            ""
+          ],
+          [
+            9367,
+            9389,
+            "red",
+            ""
+          ],
+          [
+            9550,
+            9561,
+            "red",
+            ""
+          ],
+          [
+            9640,
+            9651,
+            "red",
+            ""
+          ],
+          [
+            7626,
+            7662,
+            "red",
+            ""
+          ],
+          [
+            7774,
+            7787,
+            "red",
+            ""
+          ],
+          [
+            8068,
+            8085,
+            "red",
+            ""
+          ],
+          [
+            3797,
+            3809,
+            "yellow",
+            ""
+          ],
+          [
+            5553,
+            5595,
+            "red",
+            ""
+          ],
+          [
+            5674,
+            5685,
+            "red",
+            ""
+          ],
+          [
+            11508,
+            11529,
+            "red",
+            ""
+          ],
+          [
+            6044,
+            6064,
+            "red",
+            ""
+          ],
+          [
+            6143,
+            6165,
+            "red",
+            ""
+          ],
+          [
+            10984,
+            11003,
+            "red",
+            ""
+          ],
+          [
+            6752,
+            6787,
+            "red",
+            ""
+          ],
+          [
+            6791,
+            6804,
+            "red",
+            ""
+          ],
+          [
+            4782,
+            4821,
+            "red",
+            ""
+          ],
+          [
+            4825,
+            4872,
+            "red",
+            ""
+          ],
+          [
+            4948,
+            4959,
+            "red",
+            ""
+          ],
+          [
+            5038,
+            5063,
+            "red",
+            ""
+          ],
+          [
+            8594,
+            8609,
+            "red",
+            ""
+          ],
+          [
+            8731,
+            8742,
+            "red",
+            ""
+          ],
+          [
+            8839,
+            8850,
+            "red",
+            ""
+          ],
+          [
+            10624,
+            10644,
+            "red",
+            ""
+          ]
+        ],
+        "3": [
+          [
+            2479,
+            2485,
+            "red",
+            ""
+          ],
+          [
+            2565,
+            2575,
+            "red",
+            ""
+          ],
+          [
+            986,
+            992,
+            "red",
+            ""
+          ],
+          [
+            3826,
+            3831,
+            "red",
+            ""
+          ],
+          [
+            1859,
+            1865,
+            "red",
+            ""
+          ]
+        ],
+        "4": [],
+        "5": [
+          [
+            3487,
+            3508,
+            "red",
+            ""
+          ],
+          [
+            3616,
+            3646,
+            "red",
+            ""
+          ]
+        ],
+        "6": [
+          [
+            5082,
+            5100,
+            "red",
+            ""
+          ],
+          [
+            5296,
+            5303,
+            "red",
+            ""
+          ],
+          [
+            5437,
+            5458,
+            "red",
+            ""
+          ]
+        ],
+        "64": [],
+        "7": [],
+        "9": []
       },
       "MintableToken": {
         "0": [],
@@ -1670,47 +3156,27 @@
         ],
         "31": [
           [
-            1766,
-            1800,
+            1701,
+            1735,
             "red",
             ""
           ],
           [
-            1028,
-            1062,
+            963,
+            997,
             "yellow",
             ""
           ],
           [
-            1398,
-            1432,
+            1333,
+            1367,
             "red",
-            ""
-          ]
-        ],
-        "53": [
-          [
-            918,
-            940,
-            "red",
-            ""
-          ],
-          [
-            813,
-            822,
-            "red",
-            ""
-          ],
-          [
-            412,
-            424,
-            "yellow",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": [],
+        "67": [],
         "7": [
           [
             4517,
@@ -1741,6 +3207,8 @@
         ]
       },
       "PointList": {
+        "0": [],
+        "1": [],
         "10": [
           [
             788,
@@ -1774,181 +3242,248 @@
             "yellow",
             ""
           ]
-        ]
+        ],
+        "6": [],
+        "7": [],
+        "9": []
       },
       "PoolLiquidity": {
+        "0": [],
+        "1": [],
         "16": [
           [
-            2107,
-            2134,
+            2377,
+            2404,
             "red",
             ""
           ],
           [
-            2553,
-            2579,
+            2510,
+            2536,
+            "yellow",
+            ""
+          ],
+          [
+            2586,
+            2605,
+            "yellow",
+            ""
+          ],
+          [
+            2647,
+            2660,
+            "yellow",
+            ""
+          ],
+          [
+            1677,
+            1700,
+            "yellow",
+            ""
+          ],
+          [
+            1774,
+            1786,
+            "yellow",
+            ""
+          ],
+          [
+            2054,
+            2089,
+            "yellow",
+            ""
+          ],
+          [
+            5804,
+            5823,
+            "yellow",
+            ""
+          ],
+          [
+            5865,
+            5889,
+            "green",
+            ""
+          ],
+          [
+            5982,
+            5997,
+            "yellow",
+            ""
+          ],
+          [
+            6128,
+            6143,
+            "yellow",
+            ""
+          ],
+          [
+            3189,
+            3231,
+            "green",
+            ""
+          ],
+          [
+            3330,
+            3356,
+            "green",
+            ""
+          ],
+          [
+            3410,
+            3434,
             "orange",
             ""
           ],
           [
-            2622,
-            2641,
+            3626,
+            3666,
             "red",
             ""
           ],
           [
-            2683,
-            2696,
+            3901,
+            3917,
             "red",
             ""
           ],
           [
-            4263,
-            4305,
+            3921,
+            3936,
             "red",
             ""
           ],
           [
-            4474,
-            4487,
+            7617,
+            7641,
             "red",
             ""
           ],
           [
-            4653,
-            4677,
+            7750,
+            7774,
             "red",
             ""
           ],
           [
-            4770,
-            4785,
+            2822,
+            2832,
+            "yellow",
+            ""
+          ],
+          [
+            2890,
+            2916,
+            "yellow",
+            ""
+          ],
+          [
+            2966,
+            2985,
+            "yellow",
+            ""
+          ],
+          [
+            4465,
+            4483,
+            "orange",
+            ""
+          ],
+          [
+            4660,
+            4674,
             "red",
             ""
           ],
           [
-            4916,
-            4931,
-            "red",
+            5352,
+            5394,
+            "yellow",
             ""
           ],
           [
-            3204,
-            3230,
-            "red",
+            5491,
+            5516,
+            "yellow",
             ""
           ],
           [
-            3423,
-            3463,
-            "red",
+            5627,
+            5640,
+            "orange",
             ""
           ],
           [
-            3698,
-            3714,
-            "red",
+            6386,
+            6404,
+            "yellow",
             ""
           ],
           [
-            3718,
-            3733,
-            "red",
-            ""
-          ],
-          [
-            1524,
-            1536,
-            "red",
-            ""
-          ],
-          [
-            1852,
-            1887,
-            "red",
-            ""
-          ],
-          [
-            6085,
-            6109,
-            "red",
-            ""
-          ],
-          [
-            6218,
-            6242,
-            "red",
-            ""
-          ],
-          [
-            2858,
-            2868,
-            "red",
-            ""
-          ],
-          [
-            2926,
-            2952,
-            "red",
-            ""
-          ],
-          [
-            2995,
-            3014,
-            "red",
-            ""
-          ],
-          [
-            5348,
-            5366,
-            "red",
-            ""
-          ],
-          [
-            6808,
-            6832,
+            8359,
+            8383,
             "red",
             ""
           ]
         ],
         "36": [
           [
-            2292,
-            2304,
+            2291,
+            2303,
             "red",
             ""
           ],
           [
-            2370,
-            2383,
+            2369,
+            2382,
             "red",
             ""
           ],
           [
-            2387,
-            2401,
+            2386,
+            2400,
             "red",
             ""
           ],
           [
-            398,
-            414,
+            397,
+            413,
             "red",
             ""
           ],
           [
-            485,
-            500,
+            484,
+            499,
             "red",
             ""
           ],
           [
-            556,
-            576,
+            555,
+            575,
+            "red",
+            ""
+          ],
+          [
+            1842,
+            1853,
+            "red",
+            ""
+          ],
+          [
+            1913,
+            1925,
+            "red",
+            ""
+          ],
+          [
+            1929,
+            1941,
             "red",
             ""
           ]
         ],
+        "43": [],
+        "44": [],
         "49": [
           [
             505,
@@ -2000,10 +3535,47 @@
             "red",
             ""
           ]
-        ]
+        ],
+        "6": [],
+        "60": [],
+        "7": [],
+        "72": [],
+        "9": []
       },
       "SushiToken": {
         "0": [],
+        "1": [
+          [
+            4717,
+            4762,
+            "red",
+            ""
+          ],
+          [
+            5894,
+            5917,
+            "red",
+            ""
+          ],
+          [
+            5175,
+            5220,
+            "red",
+            ""
+          ],
+          [
+            7088,
+            7121,
+            "yellow",
+            ""
+          ],
+          [
+            7279,
+            7315,
+            "red",
+            ""
+          ]
+        ],
         "27": [
           [
             9713,
@@ -2058,149 +3630,237 @@
         ],
         "32": [
           [
-            5626,
-            5652,
+            802,
+            836,
             "red",
             ""
           ],
           [
-            5767,
-            5784,
+            5885,
+            5911,
             "red",
             ""
           ],
           [
-            5876,
-            5939,
+            6026,
+            6043,
             "red",
             ""
           ],
           [
-            6075,
-            6122,
+            6135,
+            6198,
             "red",
             ""
           ],
           [
-            6423,
-            6450,
+            6334,
+            6381,
             "red",
             ""
           ],
           [
-            6510,
-            6536,
+            6682,
+            6709,
             "red",
             ""
           ],
           [
-            4994,
-            5010,
+            6769,
+            6795,
             "red",
             ""
           ],
           [
-            4343,
-            4366,
+            5253,
+            5269,
             "red",
             ""
           ],
           [
-            4428,
-            4456,
+            4602,
+            4625,
             "red",
             ""
           ],
           [
-            4514,
-            4527,
+            4687,
+            4715,
             "red",
             ""
           ],
           [
-            7244,
-            7260,
+            4773,
+            4786,
             "red",
             ""
           ],
           [
-            7264,
-            7274,
+            7503,
+            7519,
             "red",
             ""
           ],
           [
-            7294,
-            7314,
+            7523,
+            7533,
             "red",
             ""
           ],
           [
-            7460,
-            7473,
+            7553,
+            7573,
             "red",
             ""
           ],
           [
-            7687,
-            7707,
+            7719,
+            7732,
             "red",
             ""
           ],
           [
-            7853,
-            7866,
+            7946,
+            7966,
             "red",
             ""
           ],
           [
-            8368,
-            8384,
+            8112,
+            8125,
             "red",
             ""
           ],
           [
-            8388,
-            8453,
+            8627,
+            8643,
             "red",
             ""
           ],
           [
-            8878,
-            8887,
-            "red",
-            ""
-          ]
-        ],
-        "53": [
-          [
-            315,
-            324,
+            8647,
+            8712,
             "red",
             ""
           ],
           [
-            918,
-            940,
+            9137,
+            9146,
             "red",
-            ""
-          ],
-          [
-            813,
-            822,
-            "red",
-            ""
-          ],
-          [
-            412,
-            424,
-            "yellow",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": []
+        "67": [],
+        "7": [
+          [
+            4517,
+            4543,
+            "red",
+            ""
+          ],
+          [
+            1695,
+            1716,
+            "yellow",
+            ""
+          ],
+          [
+            2420,
+            2435,
+            "red",
+            ""
+          ]
+        ]
+      },
+      "UniswapV2Factory": {
+        "34": [],
+        "35": [
+          [
+            2003,
+            2028,
+            "red",
+            ""
+          ],
+          [
+            2178,
+            2203,
+            "red",
+            ""
+          ],
+          [
+            919,
+            935,
+            "yellow",
+            ""
+          ],
+          [
+            1015,
+            1030,
+            "yellow",
+            ""
+          ],
+          [
+            1086,
+            1106,
+            "yellow",
+            ""
+          ],
+          [
+            1152,
+            1189,
+            "yellow",
+            ""
+          ],
+          [
+            1840,
+            1865,
+            "red",
+            ""
+          ]
+        ],
+        "37": [],
+        "40": [],
+        "41": [],
+        "43": [],
+        "48": [],
+        "49": [],
+        "51": []
+      },
+      "WETH9": {
+        "56": [
+          [
+            2175,
+            2196,
+            "yellow",
+            ""
+          ],
+          [
+            2212,
+            2229,
+            "orange",
+            ""
+          ],
+          [
+            2233,
+            2271,
+            "red",
+            ""
+          ],
+          [
+            2295,
+            2328,
+            "red",
+            ""
+          ],
+          [
+            1490,
+            1518,
+            "red",
+            ""
+          ]
+        ]
       }
     },
     "statements": {
@@ -2215,307 +3875,337 @@
         ],
         "13": [
           [
-            8640,
-            8663,
+            10249,
+            10275,
             "green",
             ""
           ],
           [
-            3742,
-            3786,
+            3880,
+            3961,
             "green",
             ""
           ],
           [
-            3898,
-            3955,
+            3972,
+            4017,
             "green",
             ""
           ],
           [
-            3990,
-            4026,
+            4027,
+            4063,
             "green",
             ""
           ],
           [
-            4087,
-            4153,
+            4483,
+            4566,
             "green",
             ""
           ],
           [
-            9489,
-            9521,
+            4576,
+            4624,
             "green",
             ""
           ],
           [
-            8981,
-            9046,
+            4634,
+            4694,
             "green",
             ""
           ],
           [
-            6392,
-            6437,
+            4704,
+            4743,
             "green",
             ""
           ],
           [
-            6512,
-            6574,
+            11104,
+            11136,
             "green",
             ""
           ],
           [
-            6711,
-            6751,
+            10593,
+            10658,
             "green",
             ""
           ],
           [
-            6842,
-            6875,
+            7823,
+            7868,
             "green",
             ""
           ],
           [
-            6895,
-            6920,
+            7943,
+            8005,
             "green",
             ""
           ],
           [
-            7122,
-            7173,
+            8159,
+            8199,
             "green",
             ""
           ],
           [
-            7183,
-            7228,
+            8290,
+            8323,
             "green",
             ""
           ],
           [
-            7437,
-            7452,
+            8343,
+            8368,
             "green",
             ""
           ],
           [
-            7527,
-            7570,
+            8570,
+            8621,
             "green",
             ""
           ],
           [
-            7626,
-            7662,
+            8631,
+            8676,
+            "green",
+            ""
+          ],
+          [
+            9047,
+            9062,
+            "green",
+            ""
+          ],
+          [
+            9140,
+            9183,
+            "green",
+            ""
+          ],
+          [
+            9239,
+            9275,
             "red",
             ""
           ],
           [
-            7683,
-            7699,
+            9296,
+            9312,
             "green",
             ""
           ],
           [
-            7710,
-            7735,
+            9323,
+            9348,
             "green",
             ""
           ],
           [
-            8810,
-            8834,
+            10422,
+            10446,
             "green",
             ""
           ],
           [
-            9236,
-            9260,
+            10848,
+            10875,
             "green",
             ""
           ],
           [
-            2350,
-            2405,
+            2469,
+            2524,
             "green",
             ""
           ],
           [
-            2416,
-            2502,
+            2535,
+            2621,
             "green",
             ""
           ],
           [
-            2512,
-            2590,
+            2631,
+            2709,
             "green",
             ""
           ],
           [
-            2600,
-            2642,
+            2719,
+            2761,
             "green",
             ""
           ],
           [
-            2652,
-            2723,
+            2771,
+            2842,
             "green",
             ""
           ],
           [
-            2733,
-            2802,
-            "green",
-            ""
-          ],
-          [
-            2812,
-            2869,
-            "green",
-            ""
-          ],
-          [
-            2879,
+            2852,
             2921,
             "green",
             ""
           ],
           [
-            2932,
-            2946,
-            "green",
-            ""
-          ],
-          [
-            2956,
-            2978,
-            "green",
-            ""
-          ],
-          [
+            2931,
             2988,
-            3006,
             "green",
             ""
           ],
           [
-            3016,
-            3028,
+            2998,
+            3040,
             "green",
             ""
           ],
           [
-            3038,
-            3054,
+            3051,
+            3065,
             "green",
             ""
           ],
           [
-            3064,
-            3078,
+            3075,
+            3097,
             "green",
             ""
           ],
           [
-            3088,
-            3100,
+            3107,
+            3125,
             "green",
             ""
           ],
           [
-            3111,
-            3232,
+            3135,
+            3147,
+            "green",
+            ""
+          ],
+          [
+            3157,
+            3173,
+            "green",
+            ""
+          ],
+          [
+            3183,
+            3217,
+            "green",
+            ""
+          ],
+          [
+            3227,
+            3241,
             "green",
             ""
           ],
           [
             3251,
-            3299,
+            3263,
             "green",
             ""
           ],
           [
-            3309,
-            3327,
+            3274,
+            3395,
             "green",
             ""
           ],
           [
-            3337,
-            3354,
+            3414,
+            3462,
             "green",
             ""
           ],
           [
-            4816,
-            4861,
+            3472,
+            3490,
             "green",
             ""
           ],
           [
-            4871,
-            4951,
+            3500,
+            3517,
             "green",
             ""
           ],
           [
-            4961,
-            5013,
+            6159,
+            6204,
             "green",
             ""
           ],
           [
-            5093,
-            5198,
+            6214,
+            6294,
             "green",
             ""
           ],
           [
-            8105,
-            8131,
+            6304,
+            6350,
             "green",
             ""
           ],
           [
-            5703,
-            5749,
+            6430,
+            6535,
             "green",
             ""
           ],
           [
-            8269,
-            8307,
+            5240,
+            5297,
             "green",
             ""
           ],
           [
-            10623,
-            10689,
+            5332,
+            5371,
+            "green",
+            ""
+          ],
+          [
+            5432,
+            5495,
+            "green",
+            ""
+          ],
+          [
+            12237,
+            12303,
+            "green",
+            ""
+          ],
+          [
+            7040,
+            7086,
+            "green",
+            ""
+          ],
+          [
+            9878,
+            9916,
+            "green",
+            ""
+          ],
+          [
+            9717,
+            9740,
             "green",
             ""
           ]
         ],
         "3": [
-          [
-            978,
-            1024,
-            "green",
-            ""
-          ],
-          [
-            1035,
-            1043,
-            "green",
-            ""
-          ],
           [
             3178,
             3224,
@@ -2541,6 +4231,12 @@
             ""
           ],
           [
+            978,
+            1024,
+            "green",
+            ""
+          ],
+          [
             2501,
             2509,
             "red",
@@ -2552,325 +4248,326 @@
             "green",
             ""
           ]
-        ]
+        ],
+        "60": []
       },
       "DutchAuction": {
         "14": [
           [
-            4674,
-            4695,
+            4753,
+            4774,
             "green",
             ""
           ],
           [
-            4825,
-            4873,
+            4904,
+            4952,
             "green",
             ""
           ],
           [
-            5154,
-            5190,
+            5233,
+            5269,
             "green",
             ""
           ],
           [
-            5286,
-            5313,
-            "red",
-            ""
-          ],
-          [
-            5878,
-            5915,
-            "red",
-            ""
-          ],
-          [
-            3766,
-            3785,
+            5365,
+            5392,
             "green",
             ""
           ],
           [
-            3805,
-            3827,
+            5957,
+            5994,
             "green",
             ""
           ],
           [
-            7127,
-            7196,
+            3845,
+            3864,
             "green",
             ""
           ],
           [
-            6100,
-            6148,
-            "red",
-            ""
-          ],
-          [
-            6297,
-            6347,
-            "red",
-            ""
-          ],
-          [
-            6361,
-            6400,
-            "red",
-            ""
-          ],
-          [
-            1446,
-            1467,
+            3884,
+            3906,
             "green",
             ""
           ],
           [
-            1515,
-            1545,
+            7206,
+            7275,
             "green",
             ""
           ],
           [
-            1597,
-            1633,
+            6179,
+            6227,
             "green",
             ""
           ],
           [
-            1686,
+            6376,
+            6426,
+            "green",
+            ""
+          ],
+          [
+            6440,
+            6479,
+            "green",
+            ""
+          ],
+          [
+            1525,
+            1546,
+            "green",
+            ""
+          ],
+          [
+            1594,
+            1624,
+            "green",
+            ""
+          ],
+          [
+            1676,
             1712,
             "green",
             ""
           ],
           [
-            1772,
-            1793,
+            1765,
+            1791,
             "green",
             ""
           ],
           [
-            1803,
-            1837,
+            1851,
+            1872,
             "green",
             ""
           ],
           [
-            1847,
-            1873,
+            1882,
+            1916,
             "green",
             ""
           ],
           [
-            1883,
-            1905,
+            1926,
+            1952,
             "green",
             ""
           ],
           [
-            1915,
-            1933,
+            1962,
+            1984,
             "green",
             ""
           ],
           [
-            1943,
-            1967,
+            1994,
+            2012,
             "green",
             ""
           ],
           [
-            1977,
-            2005,
+            2022,
+            2046,
             "green",
             ""
           ],
           [
-            2015,
-            2031,
+            2056,
+            2084,
             "green",
             ""
           ],
           [
-            2154,
-            2192,
+            2094,
+            2110,
             "green",
             ""
           ],
           [
-            2305,
-            2359,
+            2233,
+            2271,
             "green",
             ""
           ],
           [
-            2369,
-            2387,
+            2384,
+            2438,
             "green",
             ""
           ],
           [
-            4063,
-            4110,
+            2448,
+            2466,
             "green",
             ""
           ],
           [
-            7587,
-            7606,
+            4142,
+            4189,
             "green",
             ""
           ],
           [
-            7827,
-            7883,
+            7666,
+            7685,
             "green",
             ""
           ],
           [
-            8025,
-            8059,
-            "red",
-            ""
-          ],
-          [
-            8115,
-            8163,
-            "red",
-            ""
-          ],
-          [
-            8183,
-            8199,
+            7906,
+            7962,
             "green",
             ""
           ],
           [
-            6756,
-            6798,
-            "red",
-            ""
-          ],
-          [
-            6818,
-            6836,
+            8104,
+            8138,
             "green",
             ""
           ],
           [
-            3021,
-            3071,
+            8194,
+            8242,
             "green",
             ""
           ],
           [
-            7330,
-            7385,
+            8262,
+            8278,
             "green",
             ""
           ],
           [
-            8588,
-            8615,
+            6835,
+            6877,
             "green",
             ""
           ],
           [
-            8672,
-            8708,
+            6897,
+            6915,
             "green",
             ""
           ],
           [
-            8722,
-            8776,
+            3100,
+            3150,
             "green",
             ""
           ],
           [
-            8939,
-            8973,
+            7409,
+            7464,
             "green",
             ""
           ],
           [
-            9092,
-            9119,
+            8667,
+            8694,
             "green",
             ""
           ],
           [
-            9180,
-            9238,
+            8751,
+            8787,
             "green",
             ""
           ],
           [
-            4268,
-            4322,
+            8801,
+            8855,
             "green",
             ""
           ],
           [
-            3287,
-            3304,
-            "red",
-            ""
-          ],
-          [
-            3370,
-            3389,
+            9018,
+            9052,
             "green",
             ""
           ],
           [
-            3484,
-            3516,
+            9171,
+            9198,
             "green",
             ""
           ],
           [
-            5471,
-            5538,
+            9259,
+            9317,
             "green",
             ""
           ],
           [
-            5574,
-            5630,
+            4347,
+            4401,
             "green",
             ""
           ],
           [
-            5640,
-            5692,
+            3366,
+            3383,
             "green",
             ""
           ],
           [
-            5702,
-            5742,
+            3449,
+            3468,
             "green",
             ""
           ],
           [
-            10508,
-            10574,
+            3563,
+            3595,
             "green",
             ""
           ],
           [
-            10830,
-            10851,
+            5550,
+            5617,
             "green",
             ""
           ],
           [
-            10882,
-            10917,
+            5653,
+            5709,
+            "green",
+            ""
+          ],
+          [
+            5719,
+            5771,
+            "green",
+            ""
+          ],
+          [
+            5781,
+            5821,
+            "green",
+            ""
+          ],
+          [
+            10586,
+            10652,
+            "green",
+            ""
+          ],
+          [
+            10908,
+            10929,
+            "green",
+            ""
+          ],
+          [
+            10960,
+            10995,
             "green",
             ""
           ]
@@ -3157,33 +4854,45 @@
         ],
         "30": [
           [
-            392,
-            413,
+            675,
+            697,
             "green",
             ""
           ],
           [
-            423,
-            441,
+            707,
+            726,
             "green",
             ""
           ],
           [
-            451,
+            736,
+            763,
+            "green",
+            ""
+          ],
+          [
+            380,
+            446,
+            "green",
+            ""
+          ],
+          [
+            456,
             482,
             "green",
             ""
           ],
           [
-            279,
-            305,
+            492,
+            507,
             "green",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": []
+        "67": []
       },
       "MISOAccessControls": {
         "0": [
@@ -3502,360 +5211,607 @@
           ]
         ]
       },
-      "MISOLiquidityLauncher": {
-        "19": [
+      "MISOFarmFactory": {
+        "0": [],
+        "1": [],
+        "17": [
           [
-            2671,
-            2707,
+            1470,
+            1610,
             "red",
             ""
           ],
           [
-            1656,
-            1820,
-            "green",
-            ""
-          ],
-          [
-            1874,
-            1894,
-            "green",
-            ""
-          ],
-          [
-            1904,
-            1953,
-            "green",
-            ""
-          ],
-          [
-            1963,
-            2021,
-            "green",
-            ""
-          ],
-          [
-            2806,
-            2829,
+            1620,
+            1640,
             "red",
             ""
           ],
           [
-            2115,
-            2282,
+            1713,
+            1851,
             "red",
             ""
           ],
           [
-            2292,
-            2345,
+            1861,
+            1879,
             "red",
             ""
           ],
           [
-            2414,
-            2457,
+            3593,
+            3741,
+            "green",
+            ""
+          ],
+          [
+            3751,
+            3800,
+            "green",
+            ""
+          ],
+          [
+            3865,
+            3904,
+            "green",
+            ""
+          ],
+          [
+            3914,
+            3961,
+            "green",
+            ""
+          ],
+          [
+            1150,
+            1171,
+            "green",
+            ""
+          ],
+          [
+            1181,
+            1199,
+            "green",
+            ""
+          ],
+          [
+            1209,
+            1227,
+            "green",
+            ""
+          ],
+          [
+            1237,
+            1261,
+            "green",
+            ""
+          ],
+          [
+            1271,
+            1291,
+            "green",
+            ""
+          ],
+          [
+            1301,
+            1353,
+            "green",
+            ""
+          ],
+          [
+            1363,
+            1399,
+            "green",
+            ""
+          ],
+          [
+            4121,
+            4153,
+            "green",
+            ""
+          ],
+          [
+            4231,
+            4250,
+            "green",
+            ""
+          ],
+          [
+            2449,
+            2514,
+            "green",
+            ""
+          ],
+          [
+            2524,
+            2589,
+            "green",
+            ""
+          ],
+          [
+            2599,
+            2648,
+            "green",
+            ""
+          ],
+          [
+            2658,
+            2689,
+            "green",
+            ""
+          ],
+          [
+            2700,
+            2746,
+            "green",
+            ""
+          ],
+          [
+            2756,
+            2789,
+            "green",
+            ""
+          ],
+          [
+            2799,
+            2824,
+            "green",
+            ""
+          ],
+          [
+            2834,
+            2926,
+            "green",
+            ""
+          ],
+          [
+            2937,
+            3031,
+            "green",
+            ""
+          ],
+          [
+            3074,
+            3101,
             "red",
             ""
           ],
           [
-            2467,
-            2519,
-            "red",
-            ""
-          ],
-          [
-            1245,
-            1298,
+            3187,
+            3332,
             "green",
             ""
           ],
           [
-            1308,
-            1362,
+            3386,
+            3402,
             "green",
             ""
           ],
           [
-            1372,
-            1422,
+            3412,
+            3453,
             "green",
             ""
           ],
           [
-            1432,
-            1465,
+            3463,
+            3512,
             "green",
             ""
           ],
           [
-            1475,
-            1567,
+            4520,
+            4528,
             "green",
             ""
           ],
           [
-            3115,
-            3123,
-            "red",
-            ""
-          ],
-          [
-            3032,
-            3035,
-            "red",
-            ""
-          ],
-          [
-            951,
-            972,
-            "green",
-            ""
-          ],
-          [
-            982,
-            1000,
-            "green",
-            ""
-          ],
-          [
-            1010,
-            1062,
-            "green",
-            ""
-          ],
-          [
-            1072,
-            1114,
-            "green",
-            ""
-          ]
-        ],
-        "52": []
-      },
-      "MISOMarket": {
-        "20": [
-          [
-            4548,
-            4584,
-            "green",
-            ""
-          ],
-          [
-            4921,
-            4943,
-            "red",
-            ""
-          ],
-          [
-            1825,
-            1877,
-            "green",
-            ""
-          ],
-          [
-            1887,
-            1942,
+            4445,
+            4448,
             "green",
             ""
           ],
           [
             1952,
-            2034,
+            2085,
+            "red",
+            ""
+          ],
+          [
+            2095,
+            2113,
+            "red",
+            ""
+          ]
+        ],
+        "52": [],
+        "6": [],
+        "64": [],
+        "7": [],
+        "9": []
+      },
+      "MISOLiquidityLauncher": {
+        "0": [],
+        "1": [],
+        "19": [
+          [
+            989,
+            1010,
             "green",
             ""
           ],
           [
-            2044,
-            2078,
+            1020,
+            1038,
             "green",
             ""
           ],
           [
-            2088,
-            2165,
+            1048,
+            1100,
             "green",
             ""
           ],
           [
-            2176,
+            1110,
+            1122,
+            "green",
+            ""
+          ],
+          [
+            1132,
+            1174,
+            "green",
+            ""
+          ],
+          [
+            2807,
+            2843,
+            "green",
+            ""
+          ],
+          [
+            1792,
+            1956,
+            "green",
+            ""
+          ],
+          [
+            2010,
+            2030,
+            "green",
+            ""
+          ],
+          [
+            2040,
+            2089,
+            "green",
+            ""
+          ],
+          [
+            2099,
+            2157,
+            "green",
+            ""
+          ],
+          [
+            2942,
+            2965,
+            "red",
+            ""
+          ],
+          [
+            2251,
+            2418,
+            "green",
+            ""
+          ],
+          [
+            2428,
+            2481,
+            "green",
+            ""
+          ],
+          [
+            2550,
+            2593,
+            "green",
+            ""
+          ],
+          [
+            2603,
+            2655,
+            "green",
+            ""
+          ],
+          [
+            1306,
+            1432,
+            "green",
+            ""
+          ],
+          [
+            1443,
+            1497,
+            "green",
+            ""
+          ],
+          [
+            1507,
+            1557,
+            "green",
+            ""
+          ],
+          [
+            1567,
+            1600,
+            "green",
+            ""
+          ],
+          [
+            1611,
+            1703,
+            "green",
+            ""
+          ],
+          [
+            3251,
+            3259,
+            "green",
+            ""
+          ],
+          [
+            3168,
+            3171,
+            "green",
+            ""
+          ]
+        ],
+        "52": [],
+        "6": [],
+        "7": [],
+        "9": []
+      },
+      "MISOMarket": {
+        "0": [],
+        "1": [],
+        "20": [
+          [
+            4883,
+            4919,
+            "green",
+            ""
+          ],
+          [
+            5147,
+            5169,
+            "green",
+            ""
+          ],
+          [
+            1893,
+            1945,
+            "green",
+            ""
+          ],
+          [
+            1955,
+            2010,
+            "green",
+            ""
+          ],
+          [
+            2020,
+            2102,
+            "green",
+            ""
+          ],
+          [
+            2112,
+            2146,
+            "green",
+            ""
+          ],
+          [
+            2156,
             2233,
             "green",
             ""
           ],
           [
-            2243,
-            2393,
+            2244,
+            2301,
             "green",
             ""
           ],
           [
-            2403,
-            2486,
+            2311,
+            2461,
             "green",
             ""
           ],
           [
-            3534,
-            3677,
+            2471,
+            2554,
             "green",
             ""
           ],
           [
-            3687,
-            3717,
+            3654,
+            3797,
             "green",
             ""
           ],
           [
-            3809,
-            3955,
-            "red",
+            3807,
+            3909,
+            "green",
             ""
           ],
           [
-            3965,
-            4017,
-            "red",
+            3919,
+            3949,
+            "green",
             ""
           ],
           [
-            4085,
-            4127,
-            "red",
-            ""
-          ],
-          [
-            4137,
+            4041,
             4187,
-            "red",
+            "green",
             ""
           ],
           [
-            1160,
-            1181,
-            "red",
+            4197,
+            4249,
+            "green",
             ""
           ],
           [
-            1191,
-            1243,
-            "red",
+            4317,
+            4359,
+            "green",
             ""
           ],
           [
-            1254,
-            1275,
-            "red",
+            4369,
+            4402,
+            "green",
             ""
           ],
           [
+            4412,
+            4462,
+            "green",
+            ""
+          ],
+          [
+            2908,
+            2960,
+            "green",
+            ""
+          ],
+          [
+            2970,
+            3027,
+            "green",
+            ""
+          ],
+          [
+            3037,
+            3121,
+            "green",
+            ""
+          ],
+          [
+            3131,
+            3167,
+            "green",
+            ""
+          ],
+          [
+            3177,
+            3254,
+            "green",
+            ""
+          ],
+          [
+            3265,
+            3324,
+            "green",
+            ""
+          ],
+          [
+            3334,
+            3476,
+            "green",
+            ""
+          ],
+          [
+            1228,
+            1249,
+            "green",
+            ""
+          ],
+          [
+            1259,
+            1311,
+            "green",
+            ""
+          ],
+          [
+            1322,
             1343,
-            1377,
-            "red",
-            ""
-          ],
-          [
-            1324,
-            1327,
-            "red",
-            ""
-          ],
-          [
-            1406,
-            1424,
-            "red",
-            ""
-          ],
-          [
-            1434,
-            1465,
-            "red",
-            ""
-          ],
-          [
-            4811,
-            4819,
             "green",
             ""
           ],
           [
-            4730,
-            4733,
+            1411,
+            1445,
             "green",
             ""
           ],
           [
-            2806,
-            2858,
-            "red",
-            ""
-          ],
-          [
-            2868,
-            2925,
-            "red",
-            ""
-          ],
-          [
-            2935,
-            3019,
-            "red",
-            ""
-          ],
-          [
-            3029,
-            3065,
-            "red",
-            ""
-          ],
-          [
-            3075,
-            3152,
-            "red",
-            ""
-          ],
-          [
-            3163,
-            3222,
-            "red",
-            ""
-          ],
-          [
-            3232,
-            3356,
-            "red",
-            ""
-          ],
-          [
-            3366,
-            3451,
-            "red",
-            ""
-          ],
-          [
-            4267,
-            4286,
+            1392,
+            1395,
             "green",
             ""
           ],
           [
-            4296,
-            4343,
+            1474,
+            1492,
             "green",
             ""
           ],
           [
-            4353,
-            4408,
+            1502,
+            1533,
+            "green",
+            ""
+          ],
+          [
+            5025,
+            5069,
+            "green",
+            ""
+          ],
+          [
+            4542,
+            4561,
+            "green",
+            ""
+          ],
+          [
+            4571,
+            4618,
+            "green",
+            ""
+          ],
+          [
+            4628,
+            4678,
+            "green",
+            ""
+          ],
+          [
+            4688,
+            4743,
             "green",
             ""
           ]
         ],
-        "3": [],
-        "52": []
+        "52": [],
+        "6": [],
+        "60": [],
+        "62": [],
+        "63": [],
+        "7": [],
+        "9": []
       },
       "MISOTokenFactory": {
+        "0": [],
+        "1": [],
         "22": [
           [
             2552,
@@ -3990,7 +5946,483 @@
             ""
           ]
         ],
-        "52": []
+        "52": [],
+        "6": [],
+        "67": [],
+        "7": [],
+        "9": []
+      },
+      "MasterChef": {
+        "0": [],
+        "1": [],
+        "15": [
+          [
+            4191,
+            4313,
+            "red",
+            ""
+          ],
+          [
+            4324,
+            4354,
+            "red",
+            ""
+          ],
+          [
+            4364,
+            4398,
+            "red",
+            ""
+          ],
+          [
+            11207,
+            11250,
+            "red",
+            ""
+          ],
+          [
+            11260,
+            11291,
+            "red",
+            ""
+          ],
+          [
+            11335,
+            11343,
+            "red",
+            ""
+          ],
+          [
+            11353,
+            11392,
+            "red",
+            ""
+          ],
+          [
+            4475,
+            4497,
+            "red",
+            ""
+          ],
+          [
+            9359,
+            9412,
+            "red",
+            ""
+          ],
+          [
+            9422,
+            9438,
+            "red",
+            ""
+          ],
+          [
+            9577,
+            9617,
+            "red",
+            ""
+          ],
+          [
+            9667,
+            9705,
+            "red",
+            ""
+          ],
+          [
+            9719,
+            9774,
+            "red",
+            ""
+          ],
+          [
+            9794,
+            9862,
+            "red",
+            ""
+          ],
+          [
+            9872,
+            9912,
+            "red",
+            ""
+          ],
+          [
+            7678,
+            7685,
+            "red",
+            ""
+          ],
+          [
+            7803,
+            7838,
+            "red",
+            ""
+          ],
+          [
+            7852,
+            7859,
+            "red",
+            ""
+          ],
+          [
+            8101,
+            8159,
+            "red",
+            ""
+          ],
+          [
+            8179,
+            8270,
+            "red",
+            ""
+          ],
+          [
+            8280,
+            8315,
+            "red",
+            ""
+          ],
+          [
+            10191,
+            10206,
+            "red",
+            ""
+          ],
+          [
+            10216,
+            10235,
+            "red",
+            ""
+          ],
+          [
+            10245,
+            10299,
+            "red",
+            ""
+          ],
+          [
+            10309,
+            10357,
+            "red",
+            ""
+          ],
+          [
+            3789,
+            3810,
+            "green",
+            ""
+          ],
+          [
+            3820,
+            3846,
+            "green",
+            ""
+          ],
+          [
+            3856,
+            3875,
+            "green",
+            ""
+          ],
+          [
+            3885,
+            3903,
+            "green",
+            ""
+          ],
+          [
+            3913,
+            3947,
+            "green",
+            ""
+          ],
+          [
+            3957,
+            3981,
+            "green",
+            ""
+          ],
+          [
+            3991,
+            4009,
+            "green",
+            ""
+          ],
+          [
+            4019,
+            4071,
+            "green",
+            ""
+          ],
+          [
+            7418,
+            7433,
+            "red",
+            ""
+          ],
+          [
+            7397,
+            7402,
+            "red",
+            ""
+          ],
+          [
+            5532,
+            5660,
+            "red",
+            ""
+          ],
+          [
+            5701,
+            5718,
+            "red",
+            ""
+          ],
+          [
+            5738,
+            5819,
+            "red",
+            ""
+          ],
+          [
+            5829,
+            5868,
+            "red",
+            ""
+          ],
+          [
+            11500,
+            11543,
+            "red",
+            ""
+          ],
+          [
+            11553,
+            11571,
+            "red",
+            ""
+          ],
+          [
+            6080,
+            6122,
+            "red",
+            ""
+          ],
+          [
+            6181,
+            6202,
+            "red",
+            ""
+          ],
+          [
+            6233,
+            6343,
+            "red",
+            ""
+          ],
+          [
+            11019,
+            11054,
+            "red",
+            ""
+          ],
+          [
+            11085,
+            11093,
+            "red",
+            ""
+          ],
+          [
+            7014,
+            7095,
+            "red",
+            ""
+          ],
+          [
+            7115,
+            7188,
+            "red",
+            ""
+          ],
+          [
+            4761,
+            4934,
+            "red",
+            ""
+          ],
+          [
+            4975,
+            4992,
+            "red",
+            ""
+          ],
+          [
+            5101,
+            5151,
+            "red",
+            ""
+          ],
+          [
+            5161,
+            5345,
+            "red",
+            ""
+          ],
+          [
+            8564,
+            8580,
+            "red",
+            ""
+          ],
+          [
+            8762,
+            8802,
+            "red",
+            ""
+          ],
+          [
+            8866,
+            8940,
+            "red",
+            ""
+          ],
+          [
+            8954,
+            8992,
+            "red",
+            ""
+          ],
+          [
+            9012,
+            9080,
+            "red",
+            ""
+          ],
+          [
+            9090,
+            9129,
+            "red",
+            ""
+          ],
+          [
+            10660,
+            10693,
+            "red",
+            ""
+          ],
+          [
+            10724,
+            10754,
+            "red",
+            ""
+          ]
+        ],
+        "3": [
+          [
+            2501,
+            2509,
+            "red",
+            ""
+          ],
+          [
+            2557,
+            2613,
+            "red",
+            ""
+          ],
+          [
+            2624,
+            2632,
+            "red",
+            ""
+          ],
+          [
+            3178,
+            3224,
+            "red",
+            ""
+          ],
+          [
+            3818,
+            3846,
+            "red",
+            ""
+          ],
+          [
+            1398,
+            1448,
+            "red",
+            ""
+          ],
+          [
+            1851,
+            1880,
+            "red",
+            ""
+          ],
+          [
+            978,
+            1024,
+            "red",
+            ""
+          ]
+        ],
+        "4": [],
+        "5": [
+          [
+            778,
+            864,
+            "red",
+            ""
+          ],
+          [
+            977,
+            1073,
+            "red",
+            ""
+          ],
+          [
+            3608,
+            3693,
+            "red",
+            ""
+          ]
+        ],
+        "6": [
+          [
+            3700,
+            3760,
+            "red",
+            ""
+          ],
+          [
+            5074,
+            5134,
+            "red",
+            ""
+          ],
+          [
+            5319,
+            5336,
+            "red",
+            ""
+          ],
+          [
+            5827,
+            5847,
+            "red",
+            ""
+          ],
+          [
+            1109,
+            1124,
+            "red",
+            ""
+          ]
+        ],
+        "64": [],
+        "7": [],
+        "9": []
       },
       "MintableToken": {
         "0": [
@@ -4313,14 +6745,14 @@
             ""
           ],
           [
-            1036,
-            1087,
+            1034,
+            1085,
             "red",
             ""
           ],
           [
-            1097,
-            1119,
+            1095,
+            1117,
             "red",
             ""
           ]
@@ -4361,155 +6793,75 @@
         ],
         "31": [
           [
-            1758,
-            1852,
+            1693,
+            1787,
             "red",
             ""
           ],
           [
-            1862,
-            1872,
+            1797,
+            1807,
             "red",
             ""
           ],
           [
-            1020,
-            1111,
+            955,
+            1046,
             "green",
             ""
           ],
           [
-            1121,
-            1138,
+            1056,
+            1073,
             "green",
             ""
           ],
           [
-            1390,
-            1482,
+            1325,
+            1417,
             "red",
             ""
           ],
           [
-            1492,
-            1500,
+            1427,
+            1435,
             "red",
             ""
           ],
           [
-            573,
-            591,
+            536,
+            562,
             "green",
             ""
           ],
           [
-            601,
-            627,
+            572,
+            610,
             "green",
             ""
           ],
           [
-            637,
-            675,
+            620,
+            651,
             "green",
             ""
           ],
           [
-            685,
-            716,
+            661,
+            692,
             "green",
             ""
           ],
           [
-            726,
-            757,
-            "green",
-            ""
-          ],
-          [
-            2015,
-            2059,
-            "green",
-            ""
-          ]
-        ],
-        "53": [
-          [
-            910,
-            941,
-            "red",
-            ""
-          ],
-          [
-            951,
-            994,
-            "red",
-            ""
-          ],
-          [
-            1004,
-            1039,
-            "red",
-            ""
-          ],
-          [
-            1049,
-            1070,
-            "red",
-            ""
-          ],
-          [
-            621,
-            634,
-            "red",
-            ""
-          ],
-          [
-            702,
-            729,
-            "red",
-            ""
-          ],
-          [
-            805,
-            823,
-            "red",
-            ""
-          ],
-          [
-            833,
-            853,
-            "red",
-            ""
-          ],
-          [
-            404,
-            425,
-            "green",
-            ""
-          ],
-          [
-            435,
-            468,
-            "green",
-            ""
-          ],
-          [
-            478,
-            496,
-            "green",
-            ""
-          ],
-          [
-            506,
-            551,
+            1950,
+            1994,
             "green",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": [],
+        "67": [],
         "7": [
           [
             6178,
@@ -4660,6 +7012,8 @@
         ]
       },
       "PointList": {
+        "0": [],
+        "1": [],
         "10": [
           [
             780,
@@ -4747,325 +7101,440 @@
             "green",
             ""
           ]
-        ]
+        ],
+        "6": [],
+        "7": [],
+        "9": []
       },
       "PoolLiquidity": {
+        "0": [],
+        "1": [],
         "16": [
           [
-            2150,
-            2162,
+            2420,
+            2432,
             "red",
             ""
           ],
           [
-            2545,
-            2604,
+            2502,
+            2568,
             "green",
             ""
           ],
           [
-            2614,
-            2669,
+            2578,
+            2633,
+            "green",
+            ""
+          ],
+          [
+            2677,
+            2710,
+            "green",
+            ""
+          ],
+          [
+            1669,
+            1756,
+            "green",
+            ""
+          ],
+          [
+            1766,
+            1787,
+            "green",
+            ""
+          ],
+          [
+            1797,
+            1849,
+            "green",
+            ""
+          ],
+          [
+            1859,
+            1881,
+            "green",
+            ""
+          ],
+          [
+            1891,
+            1910,
+            "green",
+            ""
+          ],
+          [
+            1920,
+            1957,
+            "green",
+            ""
+          ],
+          [
+            1967,
+            1983,
+            "green",
+            ""
+          ],
+          [
+            1993,
+            2008,
+            "green",
+            ""
+          ],
+          [
+            2018,
+            2036,
+            "green",
+            ""
+          ],
+          [
+            2046,
+            2090,
+            "green",
+            ""
+          ],
+          [
+            2100,
+            2120,
+            "green",
+            ""
+          ],
+          [
+            2130,
+            2158,
+            "green",
+            ""
+          ],
+          [
+            2168,
+            2202,
+            "green",
+            ""
+          ],
+          [
+            2212,
+            2232,
+            "green",
+            ""
+          ],
+          [
+            2242,
+            2324,
+            "green",
+            ""
+          ],
+          [
+            5796,
+            5847,
+            "green",
+            ""
+          ],
+          [
+            5857,
+            5919,
+            "green",
+            ""
+          ],
+          [
+            6014,
+            6057,
+            "green",
+            ""
+          ],
+          [
+            6160,
+            6201,
+            "green",
+            ""
+          ],
+          [
+            6819,
+            6856,
+            "green",
+            ""
+          ],
+          [
+            6936,
+            6972,
+            "green",
+            ""
+          ],
+          [
+            3168,
+            3312,
+            "green",
+            ""
+          ],
+          [
+            3322,
+            3392,
+            "green",
+            ""
+          ],
+          [
+            3402,
+            3459,
+            "green",
+            ""
+          ],
+          [
+            3618,
+            3698,
             "red",
             ""
           ],
           [
-            2713,
-            2746,
+            3952,
+            3960,
             "red",
             ""
           ],
           [
-            4242,
-            4380,
+            3980,
+            4030,
             "red",
             ""
           ],
           [
-            4466,
-            4527,
+            4040,
+            4088,
             "red",
             ""
           ],
           [
-            4537,
-            4586,
+            4157,
+            4218,
             "red",
             ""
           ],
           [
-            2269,
-            2306,
+            4228,
+            4274,
             "red",
             ""
           ],
           [
-            4645,
-            4707,
+            4284,
+            4319,
             "red",
             ""
           ],
           [
-            4802,
-            4845,
+            4329,
+            4364,
             "red",
             ""
           ],
           [
-            4948,
+            7116,
+            7136,
+            "red",
+            ""
+          ],
+          [
+            7846,
+            7952,
+            "red",
+            ""
+          ],
+          [
+            2814,
+            2872,
+            "green",
+            ""
+          ],
+          [
+            2882,
+            2948,
+            "green",
+            ""
+          ],
+          [
+            2958,
+            3013,
+            "green",
+            ""
+          ],
+          [
+            3023,
+            3076,
+            "green",
+            ""
+          ],
+          [
+            4457,
+            4518,
+            "green",
+            ""
+          ],
+          [
+            4652,
+            4702,
+            "red",
+            ""
+          ],
+          [
+            4712,
+            4745,
+            "red",
+            ""
+          ],
+          [
+            4931,
+            4979,
+            "red",
+            ""
+          ],
+          [
             4989,
+            5070,
             "red",
             ""
           ],
           [
-            2386,
-            2422,
+            5081,
+            5142,
             "red",
             ""
           ],
           [
-            3196,
-            3256,
-            "red",
-            ""
-          ],
-          [
-            3415,
-            3495,
-            "red",
-            ""
-          ],
-          [
-            3749,
-            3757,
-            "red",
-            ""
-          ],
-          [
-            3777,
-            3827,
-            "red",
-            ""
-          ],
-          [
-            3837,
-            3885,
-            "red",
-            ""
-          ],
-          [
-            3954,
-            4015,
-            "red",
-            ""
-          ],
-          [
-            4025,
-            4071,
-            "red",
-            ""
-          ],
-          [
-            4081,
-            4116,
-            "red",
-            ""
-          ],
-          [
-            4126,
-            4161,
-            "red",
-            ""
-          ],
-          [
-            5584,
-            5604,
-            "red",
-            ""
-          ],
-          [
-            1516,
-            1537,
-            "red",
-            ""
-          ],
-          [
-            1547,
-            1599,
-            "red",
-            ""
-          ],
-          [
-            1609,
-            1631,
-            "red",
-            ""
-          ],
-          [
-            1641,
-            1660,
-            "red",
-            ""
-          ],
-          [
-            1670,
-            1707,
-            "red",
-            ""
-          ],
-          [
-            1717,
-            1733,
-            "red",
-            ""
-          ],
-          [
-            1743,
-            1758,
-            "red",
-            ""
-          ],
-          [
-            1768,
-            1786,
-            "red",
-            ""
-          ],
-          [
-            1796,
-            1834,
-            "red",
-            ""
-          ],
-          [
-            1844,
-            1888,
-            "red",
-            ""
-          ],
-          [
-            1898,
-            1931,
-            "red",
-            ""
-          ],
-          [
-            1941,
-            1961,
-            "red",
-            ""
-          ],
-          [
-            1971,
-            2053,
-            "red",
-            ""
-          ],
-          [
-            6314,
-            6420,
-            "red",
-            ""
-          ],
-          [
-            2850,
-            2908,
-            "red",
-            ""
-          ],
-          [
-            2918,
-            2977,
-            "red",
-            ""
-          ],
-          [
-            2987,
-            3042,
-            "red",
-            ""
-          ],
-          [
-            3052,
-            3105,
-            "red",
-            ""
-          ],
-          [
-            5382,
-            5402,
-            "red",
-            ""
-          ],
-          [
-            5422,
-            5442,
-            "red",
-            ""
-          ],
-          [
-            5452,
-            5472,
-            "red",
-            ""
-          ],
-          [
-            6776,
-            6878,
-            "red",
-            ""
-          ],
-          [
-            5103,
-            5168,
-            "red",
-            ""
-          ],
-          [
-            5178,
+            5152,
             5198,
             "red",
+            ""
+          ],
+          [
+            5208,
+            5243,
+            "red",
+            ""
+          ],
+          [
+            5331,
+            5473,
+            "green",
+            ""
+          ],
+          [
+            5483,
+            5540,
+            "green",
+            ""
+          ],
+          [
+            5551,
+            5609,
+            "green",
+            ""
+          ],
+          [
+            5619,
+            5677,
+            "green",
+            ""
+          ],
+          [
+            5687,
+            5736,
+            "red",
+            ""
+          ],
+          [
+            6420,
+            6440,
+            "green",
+            ""
+          ],
+          [
+            6460,
+            6480,
+            "red",
+            ""
+          ],
+          [
+            6490,
+            6510,
+            "red",
+            ""
+          ],
+          [
+            8327,
+            8429,
+            "red",
+            ""
+          ],
+          [
+            6613,
+            6678,
+            "green",
+            ""
+          ],
+          [
+            6688,
+            6708,
+            "green",
             ""
           ]
         ],
         "36": [
           [
-            2284,
-            2352,
+            2283,
+            2351,
             "red",
             ""
           ],
           [
-            2362,
-            2446,
+            2361,
+            2445,
             "red",
             ""
           ],
           [
-            2633,
-            2668,
+            2632,
+            2667,
             "red",
             ""
           ],
           [
-            390,
-            456,
+            389,
+            455,
             "red",
             ""
           ],
           [
-            466,
-            538,
+            465,
+            537,
             "red",
             ""
           ],
           [
-            548,
-            611,
+            547,
+            610,
+            "red",
+            ""
+          ],
+          [
+            1834,
+            1895,
+            "red",
+            ""
+          ],
+          [
+            1905,
+            1986,
+            "red",
+            ""
+          ],
+          [
+            1996,
+            2038,
             "red",
             ""
           ]
         ],
+        "43": [],
+        "44": [],
         "49": [
           [
             497,
@@ -5123,13 +7592,86 @@
             "red",
             ""
           ]
-        ]
+        ],
+        "6": [],
+        "60": [],
+        "7": [],
+        "72": [],
+        "9": []
       },
       "SushiToken": {
         "0": [
           [
             670,
             687,
+            "green",
+            ""
+          ]
+        ],
+        "1": [
+          [
+            4348,
+            4377,
+            "red",
+            ""
+          ],
+          [
+            4709,
+            4814,
+            "red",
+            ""
+          ],
+          [
+            4825,
+            4850,
+            "green",
+            ""
+          ],
+          [
+            5886,
+            5969,
+            "red",
+            ""
+          ],
+          [
+            5980,
+            6006,
+            "red",
+            ""
+          ],
+          [
+            4047,
+            4084,
+            "red",
+            ""
+          ],
+          [
+            3025,
+            3070,
+            "red",
+            ""
+          ],
+          [
+            3327,
+            3363,
+            "red",
+            ""
+          ],
+          [
+            5167,
+            5273,
+            "red",
+            ""
+          ],
+          [
+            7137,
+            7182,
+            "green",
+            ""
+          ],
+          [
+            7331,
+            7376,
             "red",
             ""
           ]
@@ -5362,263 +7904,543 @@
         ],
         "32": [
           [
-            633,
-            652,
+            794,
+            882,
             "red",
             ""
           ],
           [
-            662,
-            714,
+            892,
+            911,
             "red",
             ""
           ],
           [
-            2788,
-            2816,
+            921,
+            973,
             "red",
             ""
           ],
           [
-            3017,
-            3056,
+            3047,
+            3075,
             "red",
             ""
           ],
           [
-            5618,
-            5697,
+            3276,
+            3315,
             "red",
             ""
           ],
           [
-            5800,
-            5808,
+            5877,
+            5956,
             "red",
             ""
           ],
           [
-            5955,
-            6006,
+            6059,
+            6067,
             "red",
             ""
           ],
           [
-            6138,
-            6146,
+            6214,
+            6265,
             "red",
             ""
           ],
           [
-            6470,
-            6485,
+            6397,
+            6405,
             "red",
             ""
           ],
           [
-            6556,
-            6570,
+            6729,
+            6744,
             "red",
             ""
           ],
           [
-            6609,
-            6627,
+            6815,
+            6829,
             "red",
             ""
           ],
           [
-            6661,
-            6701,
+            6868,
+            6886,
             "red",
             ""
           ],
           [
-            399,
-            416,
+            6920,
+            6960,
+            "red",
+            ""
+          ],
+          [
+            507,
+            545,
             "green",
             ""
           ],
           [
-            426,
-            452,
+            555,
+            586,
             "green",
             ""
           ],
           [
-            4987,
-            5061,
+            596,
+            622,
+            "green",
+            ""
+          ],
+          [
+            5246,
+            5320,
             "red",
             ""
           ],
           [
-            4335,
-            4410,
+            4594,
+            4669,
             "red",
             ""
           ],
           [
-            4420,
-            4496,
+            4679,
+            4755,
             "red",
             ""
           ],
           [
-            4506,
-            4571,
+            4765,
+            4830,
             "red",
             ""
           ],
           [
-            4581,
-            4619,
+            4840,
+            4878,
             "red",
             ""
           ],
           [
-            7597,
-            7654,
+            7856,
+            7913,
             "red",
             ""
           ],
           [
-            7990,
-            8047,
+            8249,
+            8306,
             "red",
             ""
           ],
           [
-            6962,
-            6995,
+            7221,
+            7254,
             "red",
             ""
           ],
           [
-            7006,
-            7065,
+            7265,
+            7324,
             "red",
             ""
           ],
           [
-            7076,
-            7136,
+            7335,
+            7395,
             "red",
             ""
           ],
           [
-            8469,
-            8526,
+            8728,
+            8785,
             "red",
             ""
           ],
           [
-            8557,
-            8629,
+            8816,
+            8888,
             "red",
             ""
           ],
           [
-            8643,
-            8687,
-            "red",
-            ""
-          ],
-          [
-            8708,
-            8764,
-            "red",
-            ""
-          ],
-          [
-            8870,
             8902,
+            8946,
             "red",
             ""
           ],
           [
-            8912,
-            8928,
-            "red",
-            ""
-          ]
-        ],
-        "53": [
-          [
-            910,
-            941,
+            8967,
+            9023,
             "red",
             ""
           ],
           [
-            951,
-            994,
+            9129,
+            9161,
             "red",
             ""
           ],
           [
-            1004,
-            1039,
+            9171,
+            9187,
             "red",
-            ""
-          ],
-          [
-            1049,
-            1070,
-            "red",
-            ""
-          ],
-          [
-            621,
-            634,
-            "green",
-            ""
-          ],
-          [
-            702,
-            729,
-            "red",
-            ""
-          ],
-          [
-            805,
-            823,
-            "red",
-            ""
-          ],
-          [
-            833,
-            853,
-            "red",
-            ""
-          ],
-          [
-            404,
-            425,
-            "green",
-            ""
-          ],
-          [
-            435,
-            468,
-            "green",
-            ""
-          ],
-          [
-            478,
-            496,
-            "green",
-            ""
-          ],
-          [
-            506,
-            551,
-            "green",
             ""
           ]
         ],
         "6": [],
         "60": [],
-        "66": []
+        "67": [],
+        "7": [
+          [
+            6178,
+            6225,
+            "red",
+            ""
+          ],
+          [
+            5497,
+            5550,
+            "red",
+            ""
+          ],
+          [
+            5720,
+            5746,
+            "red",
+            ""
+          ],
+          [
+            4950,
+            4998,
+            "green",
+            ""
+          ],
+          [
+            5262,
+            5313,
+            "red",
+            ""
+          ],
+          [
+            4509,
+            4582,
+            "red",
+            ""
+          ],
+          [
+            4592,
+            4617,
+            "red",
+            ""
+          ],
+          [
+            3865,
+            3896,
+            "green",
+            ""
+          ],
+          [
+            4059,
+            4084,
+            "red",
+            ""
+          ],
+          [
+            1732,
+            1755,
+            "green",
+            ""
+          ],
+          [
+            1890,
+            1930,
+            "green",
+            ""
+          ],
+          [
+            1944,
+            1955,
+            "green",
+            ""
+          ],
+          [
+            1986,
+            1998,
+            "red",
+            ""
+          ],
+          [
+            3245,
+            3283,
+            "red",
+            ""
+          ],
+          [
+            3349,
+            3392,
+            "red",
+            ""
+          ],
+          [
+            3498,
+            3515,
+            "red",
+            ""
+          ],
+          [
+            3583,
+            3609,
+            "red",
+            ""
+          ],
+          [
+            3624,
+            3635,
+            "red",
+            ""
+          ],
+          [
+            3666,
+            3678,
+            "red",
+            ""
+          ]
+        ]
+      },
+      "UniswapV2Factory": {
+        "34": [],
+        "35": [
+          [
+            1995,
+            2053,
+            "red",
+            ""
+          ],
+          [
+            2063,
+            2083,
+            "red",
+            ""
+          ],
+          [
+            644,
+            666,
+            "red",
+            ""
+          ],
+          [
+            745,
+            795,
+            "red",
+            ""
+          ],
+          [
+            2170,
+            2228,
+            "red",
+            ""
+          ],
+          [
+            2238,
+            2264,
+            "red",
+            ""
+          ],
+          [
+            911,
+            970,
+            "green",
+            ""
+          ],
+          [
+            1078,
+            1134,
+            "green",
+            ""
+          ],
+          [
+            1144,
+            1216,
+            "green",
+            ""
+          ],
+          [
+            1492,
+            1538,
+            "green",
+            ""
+          ],
+          [
+            1548,
+            1578,
+            "green",
+            ""
+          ],
+          [
+            1588,
+            1618,
+            "green",
+            ""
+          ],
+          [
+            1673,
+            1692,
+            "green",
+            ""
+          ],
+          [
+            1702,
+            1757,
+            "green",
+            ""
+          ],
+          [
+            1832,
+            1890,
+            "red",
+            ""
+          ],
+          [
+            1900,
+            1914,
+            "red",
+            ""
+          ]
+        ],
+        "37": [],
+        "40": [],
+        "41": [],
+        "43": [],
+        "48": [],
+        "49": [],
+        "51": []
+      },
+      "WETH9": {
+        "56": [
+          [
+            1281,
+            1290,
+            "red",
+            ""
+          ],
+          [
+            1346,
+            1380,
+            "green",
+            ""
+          ],
+          [
+            1390,
+            1425,
+            "green",
+            ""
+          ],
+          [
+            1819,
+            1851,
+            "red",
+            ""
+          ],
+          [
+            1861,
+            1896,
+            "red",
+            ""
+          ],
+          [
+            1906,
+            1917,
+            "red",
+            ""
+          ],
+          [
+            1706,
+            1734,
+            "green",
+            ""
+          ],
+          [
+            2167,
+            2197,
+            "green",
+            ""
+          ],
+          [
+            2287,
+            2329,
+            "red",
+            ""
+          ],
+          [
+            2343,
+            2376,
+            "red",
+            ""
+          ],
+          [
+            2397,
+            2418,
+            "green",
+            ""
+          ],
+          [
+            2428,
+            2449,
+            "green",
+            ""
+          ],
+          [
+            2460,
+            2488,
+            "green",
+            ""
+          ],
+          [
+            2499,
+            2510,
+            "green",
+            ""
+          ],
+          [
+            1482,
+            1519,
+            "red",
+            ""
+          ],
+          [
+            1529,
+            1557,
+            "red",
+            ""
+          ],
+          [
+            1567,
+            1591,
+            "red",
+            ""
+          ],
+          [
+            1601,
+            1633,
+            "red",
+            ""
+          ],
+          [
+            2003,
+            2044,
+            "green",
+            ""
+          ]
+        ]
       }
     }
   },

@@ -1,4 +1,4 @@
-pragma solidity >=0.5.0;
+pragma solidity ^0.6.9;
 
 interface IERC20Uniswap {
     event Approval(address indexed owner, address indexed spender, uint value);

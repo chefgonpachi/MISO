@@ -1,4 +1,4 @@
-pragma solidity ^0.6.12;
+pragma solidity ^0.6.9;
 
 import "./IERC20.sol";
 

@@ -13,11 +13,11 @@ import "../../interfaces/IMisoFarm.sol";
 
 // MasterChef is the master of Rewards. He can make Rewards and he is a fair guy.
 //
-// Note that it's ownable and the owner wields tremendous power. The ownership
+// Note that its ownable and the owner wields tremendous power. The ownership
 // will be transferred to a governance smart contract once tokens are sufficiently
 // distributed and the community can show to govern itself.
 //
-// Have fun reading it. Hopefully it's bug-free. God bless.
+// Have fun reading it. Hopefully its bug-free. God bless.
 //
 // MISO Update - Removed LP migrator
 // MISO Update - Removed minter - Contract holds token
@@ -41,11 +41,11 @@ contract MasterChef is IMisoFarm {
         //
         //   pending reward = (user.amount * pool.accRewardsPerShare) - user.rewardDebt
         //
-        // Whenever a user deposits or withdraws LP tokens to a pool. Here's what happens:
-        //   1. The pool's `accRewardsPerShare` (and `lastRewardBlock`) gets updated.
+        // Whenever a user deposits or withdraws LP tokens to a pool. Heres what happens:
+        //   1. The pools `accRewardsPerShare` (and `lastRewardBlock`) gets updated.
         //   2. User receives the pending reward sent to his/her address.
-        //   3. User's `amount` gets updated.
-        //   4. User's `rewardDebt` gets updated.
+        //   3. Users `amount` gets updated.
+        //   4. Users `rewardDebt` gets updated.
     }
 
     // Info of each pool.
@@ -70,9 +70,10 @@ contract MasterChef is IMisoFarm {
     // Reward tokens created per block.
     uint256 public rewardsPerBlock;
     // Bonus muliplier for early rewards makers.
-    uint256 public BONUS_MULTIPLIER;
-
-
+    uint256 public bonusMultiplier;
+    // MISOFarmFactory template id
+    uint256 public constant farmTemplate = 1;
+    // For initial setup
     bool private initialised;
 
     // Info of each pool.
@@ -115,7 +116,7 @@ contract MasterChef is IMisoFarm {
         );
 
         bonusEndBlock = _bonusEndBlock;
-        BONUS_MULTIPLIER = _bonusMultiplier;
+        bonusMultiplier = _bonusMultiplier;
     }
 
     function poolLength() external view returns (uint256) {
@@ -142,7 +143,7 @@ contract MasterChef is IMisoFarm {
         }));
     }
 
-    // Update the given pool's token allocation point. Can only be called by the operator.
+    // Update the given pools token allocation point. Can only be called by the operator.
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public  {
         require(
             accessControls.hasOperatorRole(msg.sender),
@@ -159,11 +160,11 @@ contract MasterChef is IMisoFarm {
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
         if (_to <= bonusEndBlock) {
-            return _to.sub(_from).mul(BONUS_MULTIPLIER);
+            return _to.sub(_from).mul(bonusMultiplier);
         } else if (_from >= bonusEndBlock) {
             return _to.sub(_from);
         } else {
-            return bonusEndBlock.sub(_from).mul(BONUS_MULTIPLIER).add(
+            return bonusEndBlock.sub(_from).mul(bonusMultiplier).add(
                 _to.sub(bonusEndBlock)
             );
         }
@@ -279,7 +280,7 @@ contract MasterChef is IMisoFarm {
         }
     }
 
-    // Claims any rewards for the developer
+    // Claims any rewards for the developers, if set
     function claimTips() public {
         require(msg.sender == devaddr, "dev: wut?");
         require(tips > 0, "dev: broke");

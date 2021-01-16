@@ -20,14 +20,14 @@ abstract contract ERC20Burnable is ERC20 {
     }
 
     /**
-     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * @dev Destroys `amount` tokens from `account`, deducting from the callers
      * allowance.
      *
      * See {ERC20-_burn} and {ERC20-allowance}.
      *
      * Requirements:
      *
-     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * - the caller must have allowance for ``accounts``s tokens of at least
      * `amount`.
      */
     function burnFrom(address account, uint256 amount) public virtual {

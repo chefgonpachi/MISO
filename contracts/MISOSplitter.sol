@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Access/MISOAccessControls.sol";
 import "../interfaces/IERC20.sol";
 
+// DO NOT USE YET
 // GP Move tokens based on points/ weightings to a list of destinations 
 // Basically dividends without transfers
 // Keeps track of token points for each address

@@ -13,8 +13,9 @@ def main():
 
     # GP: Split into public and miso access control
     access_control = deploy_access_control(operator)
-    # user_access_control = deploy_user_access_control(operator)
-    user_access_control = access_control
+    user_access_control = deploy_user_access_control(operator)
+    # user_access_control = access_control
+
     # Setup MISOTokenFactory
     miso_token_factory = deploy_miso_token_factory(access_control)
     mintable_token_template = deploy_mintable_token_template()
@@ -28,8 +29,10 @@ def main():
     uniswap_factory = deploy_uniswap_factory()
 
     # MISOLiquidityLauncher
+    weth_token = deploy_weth_token()
+
     pool_liquidity_template = deploy_pool_liquidity_template()    
-    miso_launcher = deploy_miso_launcher(access_control)
+    miso_launcher = deploy_miso_launcher(access_control, weth_token)
     if miso_launcher.launcherTemplateId() == 0:
         miso_launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
 
@@ -41,20 +44,19 @@ def main():
 
 
     # Create mintable for testing
-    weth_token = deploy_weth_token()
 
-    # recipe_02 = MISORecipe02.deploy(
-    #     miso_token_factory, 
-    #     weth_token, 
-    #     miso_market, 
-    #     miso_launcher, 
-    #     uniswap_factory, 
-    #     farm_factory, 
-    #     {"from": accounts[0]}
-    # )
+    recipe_02 = MISORecipe02.deploy(
+        miso_token_factory, 
+        weth_token, 
+        miso_market, 
+        miso_launcher, 
+        uniswap_factory, 
+        farm_factory, 
+        {"from": accounts[0]}
+    )
 
-    recipe_02_address = web3.toChecksumAddress(0x3FD2f53bA85345E17aF41e845f1c41014962db5F)
-    recipe_02 = MISORecipe02.at(recipe_02_address)
+    # recipe_02_address = web3.toChecksumAddress(0x3FD2f53bA85345E17aF41e845f1c41014962db5F)
+    # recipe_02 = MISORecipe02.at(recipe_02_address)
     
     # Access control admin must set the smart contract roles
     # user_access_control.addSmartContractRole(recipe_02, {'from': accounts[0]})
@@ -63,13 +65,13 @@ def main():
     symbol = "TKN"
     tokensToMint = 1000 * TENPOW18
     tokensToMarket = 200 * TENPOW18
+    paymentCurrency = ETH_ADDRESS
 
     startTime = chain.time() + 50
     endTime = chain.time() + 1000
     market_rate = 100
     market_goal = 200
 
-    duration = 300  # seconds
     launchwindow = 3 * 24 * 60 * 60
     deadline = 200
     locktime = 100
@@ -89,6 +91,7 @@ def main():
         user_access_control,
         tokensToMint,
         tokensToMarket,
+        paymentCurrency,
 
         startTime, 
         endTime,
@@ -97,9 +100,8 @@ def main():
         wallet,
         operator,
 
-        duration,
-        launchwindow, 
         deadline,
+        launchwindow, 
         locktime, 
         tokensToLiquidity,
 

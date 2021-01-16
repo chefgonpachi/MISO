@@ -5,6 +5,7 @@ import "../../interfaces/IERC20.sol";
 import "../../interfaces/IWETH9.sol";
 import "../../interfaces/IMisoCrowdsale.sol";
 import "../../interfaces/ISushiToken.sol";
+import "../../interfaces/IMisoLauncher.sol";
 
 // MVP for preparing a MISO set menu
 
@@ -12,7 +13,8 @@ interface IMISOTokenFactory {
     function createToken(
         string memory _name,
         string memory _symbol,
-        uint256 _templateId
+        uint256 _templateId, 
+        uint256 _initialSupply
     ) external returns (address token);
 }
 
@@ -20,6 +22,7 @@ interface IMISOMarket {
     function createCrowdsale(
         address _token, 
         uint256 _tokenSupply, 
+        address _paymentCurrency,
         uint256 _startDate, 
         uint256 _endDate, 
         uint256 _rate, 
@@ -27,12 +30,6 @@ interface IMISOMarket {
         address payable _wallet,
         uint256 _templateId
     ) external returns (address newCrowdsale);
-}
-
-interface IMISOLiquidity {
-   function createLiquidityLauncher(
-            uint256 _templateId
-    ) external returns (address launcher);
 }
 
 
@@ -44,13 +41,10 @@ interface IPoolLiquidity {
             address _factory,
             address _owner,
             address _wallet,
-            uint256 _duration,
-            uint256 _launchwindow,
             uint256 _deadline,
+            uint256 _launchwindow,
             uint256 _locktime
-    )
-        external
-        returns (address launcher);
+    ) external;
     function getLPTokenAddress() external view returns (address);
 }
 
@@ -62,7 +56,7 @@ interface IMISOFarmFactory {
             address _devaddr,
             address _accessControls,
             uint256 _templateId
-    ) external returns (address farm);
+    ) external payable returns (address farm);
 }
 
 interface IMasterChef {
@@ -83,11 +77,20 @@ contract MISORecipe01 {
     IMISOTokenFactory public tokenFactory;
     IMISOMarket public misoMarket;
     IWETH public weth;
-    IMISOLiquidity public misoLauncher; 
+    IMisoLauncher public misoLauncher; 
     IMISOFarmFactory public farmFactory;
 
     address public uniswapFactory;
 
+    /** 
+     * @notice Recipe Number 01
+     * @param _tokenFactory - Token Factory that produced fresh new tokens
+     * @param _weth - Wrapped Ethers contract address
+     * @param _misoMarket - Factory that produces a market / auction to sell your tokens
+     * @param _misoLauncher - MISOLauncher is a vault that collects tokens and sends them to SushiSwap
+     * @param _uniswapFactory - The SushiSwap factory to create new pools
+     * @param _farmFactory - A factory that makes farms that can stake and reward your new tokens
+    "*/
     constructor(
         address _tokenFactory,
         address _weth,
@@ -99,31 +102,34 @@ contract MISORecipe01 {
         tokenFactory = IMISOTokenFactory(_tokenFactory);
         weth = IWETH(_weth);
         misoMarket = IMISOMarket(_misoMarket);
-        misoLauncher = IMISOLiquidity(_misoLauncher);
+        misoLauncher = IMisoLauncher(_misoLauncher);
         uniswapFactory = _uniswapFactory;
         farmFactory = IMISOFarmFactory(_farmFactory);
 
     }
 
+    /** 
+     * @dev Gateway to prepare a MISO recipe
+     *   
+    */
     function prepareMiso(
         string calldata _name,
         string calldata _symbol,
         address accessControl
     )
-        external 
+        external payable
     {
         uint256 tokensToMint = 1000;
         uint256 tokensToMarket = 300;
         // Mintable token
-        ISushiToken token = ISushiToken(tokenFactory.createToken(_name, _symbol, 1));
-        // transfer ownership to msg.sender
-        token.mint(address(this), tokensToMint);
+        ISushiToken token = ISushiToken(tokenFactory.createToken(_name, _symbol, 1, tokensToMint));
+
         token.approve(address(misoMarket), tokensToMarket);
 
         // Scope for creating crowdsale
         {
-        uint256 startTime = block.timestamp +5;
-        uint256 endTime = block.timestamp +100;
+        uint256 startTime = block.timestamp + 5;
+        uint256 endTime = block.timestamp + 100;
         uint256 marketRate = 100;
         uint256 marketGoal = 200;
         address payable wallet = msg.sender;
@@ -131,6 +137,7 @@ contract MISORecipe01 {
         IMisoCrowdsale crowdsale = IMisoCrowdsale(misoMarket.createCrowdsale(
             address(token), 
             tokensToMarket, 
+            0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
             startTime, 
             endTime, 
             marketRate, 
@@ -159,9 +166,8 @@ contract MISORecipe01 {
             uniswapFactory,
             operator,
             wallet,
-            duration,
-            launchwindow,
             deadline,
+            launchwindow,
             locktime); 
         
         token.transfer(address(poolLiquidity),tokensToLiquidity);
@@ -170,14 +176,12 @@ contract MISORecipe01 {
 
         // Scope for creating farm
         {
-        uint256 rewardsPerBlock = 1e18;
-        uint256 startBlock =  block.number + 10;
         address payable devAddr = msg.sender;
         uint256 tokensToFarm = 10;
-        IMasterChef farm = IMasterChef(farmFactory.createFarm(
+        IMasterChef farm = IMasterChef(farmFactory.createFarm{value: msg.value}(
                 address(token),
-                rewardsPerBlock,
-                startBlock,
+                1e18,  // rewardsPerBlock
+                block.number + 10, // startBlock
                 devAddr,
                 accessControl,
                 1));
@@ -191,6 +195,5 @@ contract MISORecipe01 {
         }
 
     }
-
 
 }

@@ -1,7 +1,7 @@
 pragma solidity ^0.6.9;
 
 // ----------------------------------------------------------------------------
-// BokkyPooBah's White List
+// BokkyPooBahs White List
 //
 //
 // Enjoy.

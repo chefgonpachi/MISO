@@ -9,27 +9,45 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract Crowdsale is Context /* ReentrancyGuard */ {
     using SafeMath for uint256;
 
-    // The token being sold
+    /// @notice The placeholder ETH address.
+    address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
+    /// @notice The token being sold
     address public token;
 
-    // Address where funds are collected
+    /// @notice Address where funds are collected
     address payable private wallet;
+    
+    /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address
+    address public paymentCurrency;
 
-    // How many token units a buyer gets per wei.
-    // The rate is the conversion between wei and the smallest and indivisible token unit.
-    // So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
-    // 1 wei will give you 1 unit, or 0.001 TOK.
+    /** 
+    * @notice How many token units a buyer gets per token or wei.
+    * The rate is the conversion between wei and the smallest and indivisible token unit.
+    * So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
+    * 1 wei will give you 1 unit, or 0.001 TOK. 
+    */
     uint256 public rate;
-    // Amount of wei raised
-    uint256 public weiRaised;
-    // minimum amount of funds to be raised in weis
+    
+    /// @notice Amount of wei raised
+    uint256 public amountRaised;
+
+    /// @notice minimum amount of funds to be raised in weis or tokens
     uint256 public goal;
+
+    /// @notice starting time of crowdsale
     uint256 public startTime;
+
+    /// @notice ending time of crowdsale
     uint256 public endTime;
+    
     bool private initialised;
     bool private finalized;
 
-    // the balances of accounts
+    /// @notice MISOMarket template id for the factory contract
+    uint256 public constant marketTemplate = 1;
+
+    /// @notice the balances of accounts
     mapping(address => uint256) private balances;
 
 
@@ -37,7 +55,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
      * Event for token purchase logging
      * @param purchaser who paid for the tokens
      * @param beneficiary who got the tokens
-     * @param value weis paid for purchase
+     * @param value value of wei or token paid for purchase
      * @param amount amount of tokens purchased
      */
     event TokensPurchased(
@@ -50,19 +68,21 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     event CrowdsaleFinalized();
 
     /**
-     * @param _rate Number of token units a buyer gets per wei
-     * @dev The rate is the conversion between wei and the smallest and indivisible
-     * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
-     * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
-     * @param _startTime Crowdsale start time
-     * @param _endTime Crowdsale end time
-     * @param _wallet Address where collected funds will be forwarded to
+     * @param _funder The address that funds the token for crowdsale
      * @param _token Address of the token being sold
+     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address
+     * @param _totalTokens The total number of tokens to sell in crowdsale 
+     * @param _startTime Crowdsale start time  
+     * @param _endTime Crowdsale end time
+     * @param _rate Number of token units a buyer gets per wei or token
+     * @param _goal Minimum amount of funds to be raised in weis or tokens
+     * @param _wallet Address where collected funds will be forwarded to
+   
      */
-
     function initCrowdsale(
         address _funder,
         address _token,
+        address _paymentCurrency,
         uint256 _totalTokens,
         uint256 _startTime,
         uint256 _endTime,
@@ -84,6 +104,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         endTime = _endTime;
         rate = _rate;
         wallet = _wallet;
+        paymentCurrency = _paymentCurrency;
         token = _token;
         goal = _goal;
 
@@ -95,51 +116,68 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     }
 
     /**
-     * @dev low level token purchase ***DO NOT OVERRIDE***
+     * @dev low level token purchase with ETH ***DO NOT OVERRIDE***
      * This function has a non-reentrancy guard, so it shouldn't be called by
      * another `nonReentrant` function.
-     * @param beneficiary Recipient of the token purchase
+     * @param _beneficiary Recipient of the token purchase
      */
-    function buyTokens(address beneficiary) public payable /* nonReentrant */  {
-        uint256 weiAmount = msg.value;
-        _preValidatePurchase(beneficiary, weiAmount);
-
-        // calculate token amount to be created
-        uint256 tokens = _getTokenAmount(weiAmount);
-        balances[beneficiary] = balances[beneficiary].add(tokens);
-
-        // update state
-        weiRaised = weiRaised.add(weiAmount);
-
-        // _processPurchase(beneficiary, tokens);
-        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
+    function buyTokensEth(address _beneficiary) public payable /* nonReentrant */  {
+        require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
+        _preValidatePurchase(_beneficiary, msg.value);
+        _processBuy(_beneficiary, msg.value);
     }
 
     /**
-     * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met.
-     * Use `super` in contracts that inherit from Crowdsale to extend their validations.
-     * Example from CappedCrowdsale.sol's _preValidatePurchase method:
-     *     super._preValidatePurchase(beneficiary, weiAmount);
-     *     require(weiRaised().add(weiAmount) <= cap);
-     * @param beneficiary Address performing the token purchase
-     * @param weiAmount Value in wei involved in the purchase
+     * @dev low level token purchase with a token ***DO NOT OVERRIDE***
+     * This function has a non-reentrancy guard, so it shouldn't be called by
+     * another `nonReentrant` function.
+     * @param _beneficiary Recipient of the token purchase
+     * @param _tokenAmount Value in wei or token involved in the purchase
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount)
+    function buyTokens(address _beneficiary, uint256 _tokenAmount) public /* nonReentrant */ {
+        require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
+        _preValidatePurchase(_beneficiary, _tokenAmount);
+        _safeTransferFrom(paymentCurrency, msg.sender, _tokenAmount);
+        _processBuy(_beneficiary, _tokenAmount);
+    }
+
+    /**
+     * @param beneficiary Recipient of the token purchase
+     * @param amount Value in wei or token involved in the purchase
+     */ 
+    function _processBuy(address beneficiary, uint256 amount) internal {
+        // calculate token amount to be created
+        uint256 tokens = _getTokenAmount(amount);
+        balances[beneficiary] = balances[beneficiary].add(tokens);
+
+        // update state
+        amountRaised = amountRaised.add(amount);
+
+        emit TokensPurchased(_msgSender(), beneficiary, amount, tokens);
+
+    }
+
+    /**
+     * @dev Validation of an incoming purchase.
+     * @param beneficiary Address performing the token purchase
+     * @param amount Value in wei or token involved in the purchase
+     */
+    function _preValidatePurchase(address beneficiary, uint256 amount)
         internal
         view
     {
         require(isOpen(), "TimedCrowdsale: not open");
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(weiAmount != 0, "Crowdsale: weiAmount is 0");
+        require(amount != 0, "Crowdsale: amount is 0");
         uint256 totalTokens = IERC20(token).balanceOf(address(this));
-        require(_getTokenAmount(weiRaised.add(weiAmount)) <= totalTokens, "Crowdsale: amount of tokens exceeded");
+        require(_getTokenAmount(amountRaised.add(amount)) <= totalTokens, "Crowdsale: amount of tokens exceeded");
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
     }
 
     /**
      * @dev Source of tokens. Override this method to modify the way in which the crowdsale ultimately gets and sends
      * its tokens.
-     * @param beneficiary Address performing the token purchase
+     * @param beneficiary Recipient of the token purchase
      * @param tokenAmount Number of tokens to be emitted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
@@ -147,8 +185,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     }
 
     /**
-     * @dev Executed when a purchase has been validated and is ready to be executed. Doesn't necessarily emit/send
-     * tokens.
+     * @dev Executed when a purchase has been validated and is ready to be executed.
      * @param beneficiary Address receiving the tokens
      * @param tokenAmount Number of tokens to be purchased
      */
@@ -171,6 +208,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
 
         if(goalReached()) {
             uint256 tokenAmount =  claimerBalance;
+            // GP: Keep track of tokens delivered/withdrawn
             _deliverTokens(beneficiary, tokenAmount);
         } else {
             uint256 claimAmount = claimerBalance.div(rate);
@@ -179,18 +217,22 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         balances[beneficiary] = 0;
     }
 
+
     /**
      * @dev Must be called after crowdsale ends, to do some extra finalization
-     * work. Calls the contract's finalization function.
+     * work. Calls the contracts finalization function.
      */
     function finalize() public {
+
         require(!finalized, "Crowdsale: already finalized");
         require(hasClosed(), "Crowdsale: not closed");
+        // GP: The balance can decrease on withdraw, this affects the amount unsold
+        // GP: Need to add counter for tokensClaimed and recalc unsoldTokens
         uint256 unsoldTokens = IERC20(token).balanceOf(address(this));
-        //GP: Check if the amount weiRaised() not reached, if the funds are able to be refunded
+        // GP: Check if the amount weiRaised() not reached, if the funds are able to be refunded
         if(goalReached()) {
             _forwardFunds();
-            uint256 soldTokens = _getTokenAmount(weiRaised);
+            uint256 soldTokens = _getTokenAmount(amountRaised);
             unsoldTokens = unsoldTokens.sub(soldTokens);
         }
 
@@ -203,17 +245,18 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         emit CrowdsaleFinalized();
     }
 
+
     /**
      * @dev Override to extend the way in which ether is converted to tokens.
-     * @param weiAmount Value in wei to be converted into tokens
-     * @return Number of tokens that can be purchased with the specified _weiAmount
+     * @param amount Value in wei or token to be converted into tokens
+     * @return Number of tokens that can be purchased with the specified amount
      */
-    function _getTokenAmount(uint256 weiAmount)
+    function _getTokenAmount(uint256 amount)
         internal
         view
         returns (uint256)
     {
-        return weiAmount.mul(rate);
+        return amount.mul(rate);
     }
 
     /**
@@ -224,13 +267,13 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     }
 
     /**
-     * @dev fallback function ***DO NOT OVERRIDE***
+     * @dev
      * Note that other contracts will transfer funds with a base gas stipend
      * of 2300, which is not enough to call buyTokens. Consider calling
      * buyTokens directly when purchasing tokens from a contract.
      */
     receive() external payable {
-        buyTokens(_msgSender());
+        buyTokensEth(_msgSender());
     }
 
     /**
@@ -252,7 +295,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
      * @return Whether funding goal was reached
      */
     function goalReached() public view returns (bool) {
-        return weiRaised >= goal;
+        return amountRaised >= goal;
     }
 
     /**
@@ -263,9 +306,15 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         return block.timestamp > endTime;
     }
 
-    // There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-    // I'm trying to make it a habit to put external calls last (reentrancy)
-    // You can put this in an internal function if you like.
+
+    //--------------------------------------------------------
+    // Helper Functions
+    //--------------------------------------------------------
+    /**
+     * @dev There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
+     * @dev Im trying to make it a habit to put external calls last (reentrancy)
+     * @dev You can put this in an internal function if you like.
+    */
     function _safeTransfer(address _token, address _to, uint256 _amount) internal {
         // solium-disable-next-line security/no-low-level-calls
         (bool success, bytes memory data) = _token.call(

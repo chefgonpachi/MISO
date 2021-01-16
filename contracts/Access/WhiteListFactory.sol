@@ -12,8 +12,7 @@ import "../../interfaces/IWhiteList.sol";
 // ----------------------------------------------------------------------------
 // MISO WhiteList Factory
 //
-//
-// Appropriated from BokkyPooBah's Fixed Supply Token 👊 Factory
+// Appropriated from BokkyPooBahs Fixed Supply Token 👊 Factory
 //
 // ----------------------------------------------------------------------------
 

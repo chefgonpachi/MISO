@@ -6,13 +6,15 @@ interface IMISOTokenFactory:
     def createToken(
         name: String[64],
         symbol: String[32],
-        templateId: uint256
+        templateId: uint256,
+        initialSupply: uint256
     ) -> address: nonpayable
 
 interface IMISOMarket:
     def createCrowdsale(
         token: address, 
-        tokenSupply: uint256, 
+        tokenSupply: uint256,
+        paymentCurrency: address,
         startDate: uint256, 
         endDate: uint256, 
         rate: uint256, 
@@ -21,7 +23,7 @@ interface IMISOMarket:
         templateId: uint256
     ) -> address: nonpayable
 
-interface IMISOLiquidity:
+interface IMISOLauncher:
     def createLiquidityLauncher( 
         templateId: uint256
     ) -> address: nonpayable
@@ -34,9 +36,8 @@ interface IPoolLiquidity:
         factory: address,
         owner: address,
         wallet: address,
-        duration: uint256,
-        launchwindow: uint256,
         deadline: uint256,
+        launchwindow: uint256,
         locktime: uint256
     ) : nonpayable
     def getLPTokenAddress() -> address: view
@@ -49,7 +50,7 @@ interface IMISOFarmFactory:
         devaddr: address,
         accessControls: address,
         templateId: uint256
-    ) -> address: nonpayable
+    ) -> address: payable
 
 interface IMasterChef:
     def initFarm(
@@ -71,9 +72,9 @@ interface ISushiToken:
 tokenFactory: public(IMISOTokenFactory)
 misoMarket: public(address)
 weth: public(address)
-misoLauncher: public(IMISOLiquidity)
+misoLauncher: public(IMISOLauncher)
 farmFactory: public(IMISOFarmFactory)
-uniswapFactory: public(address)
+sushiswapFactory: public(address)
 
 
 @external
@@ -82,7 +83,7 @@ def __init__(
     weth: address,
     misoMarket: address,
     misoLauncher: address,
-    uniswapFactory: address, 
+    sushiswapFactory: address, 
     farmFactory: address
 ):
     """
@@ -91,18 +92,18 @@ def __init__(
     @param weth - Wrapped Ethers contract address
     @param misoMarket - Factory that produces a market / auction to sell your tokens
     @param misoLauncher - MISOLauncher is a vault that collects tokens and sends them to SushiSwap
-    @param uniswapFactory - The SushiSwap factory to create new pools
+    @param sushiswapFactory - The SushiSwap factory to create new pools
     @param farmFactory - A factory that makes farms that can stake and reward your new tokens
     """
 
     self.tokenFactory = IMISOTokenFactory(tokenFactory)
     self.weth = weth
     self.misoMarket = misoMarket
-    self.misoLauncher = IMISOLiquidity(misoLauncher)
-    self.uniswapFactory = uniswapFactory
+    self.misoLauncher = IMISOLauncher(misoLauncher)
+    self.sushiswapFactory = sushiswapFactory
     self.farmFactory = IMISOFarmFactory(farmFactory)
 
-    
+@payable 
 @external
 def prepareMiso(
     name: String[64],
@@ -110,6 +111,7 @@ def prepareMiso(
     accessControl: address,
     tokensToMint: uint256,
     tokensToMarket: uint256,
+    paymentCurrency: address,
 
     startTime: uint256, 
     endTime: uint256,
@@ -118,9 +120,8 @@ def prepareMiso(
     wallet: address,
     operator: address,
 
-    duration: uint256,
-    launchwindow: uint256, 
     deadline: uint256,
+    launchwindow: uint256, 
     locktime: uint256, 
     tokensToLiquidity: uint256,
 
@@ -128,28 +129,21 @@ def prepareMiso(
     startBlock: uint256,
     devAddr: address, 
     tokensToFarm: uint256,
-    allocPoint: uint256,
-
+    allocPoint: uint256
 ) -> (address, address, address, address):
-    """
-    @notice Prepare Miso
-    @param name Name 
-    @param symbol Symbol
-    @param accessControl For operator permissions 
-    """
 
     assert startTime < endTime  # dev: Start time later then end time
 
-    token: address = self.tokenFactory.createToken(name, symbol, 1)
+    token: address = self.tokenFactory.createToken(name, symbol, 1, tokensToMint)
     # create access control
     # transfer ownership to msg.sender
 
-    ISushiToken(token).mint(self, tokensToMint)
     ISushiToken(token).approve(self.misoMarket, tokensToMarket)
 
     crowdsale: address = IMISOMarket(self.misoMarket).createCrowdsale(
         token,
-        tokensToMarket, 
+        tokensToMarket,
+        paymentCurrency, 
         startTime, 
         endTime, 
         marketRate, 
@@ -163,12 +157,11 @@ def prepareMiso(
     IPoolLiquidity(poolLiquidity).initPoolLiquidity(accessControl,
         token,
         self.weth,
-        self.uniswapFactory,
+        self.sushiswapFactory,
         operator,
         wallet,
-        duration,
-        launchwindow,
         deadline,
+        launchwindow,
         locktime
     ) 
     
@@ -185,7 +178,7 @@ def prepareMiso(
     
     ISushiToken(token).transfer(farm,tokensToFarm)
     lpToken: address = IPoolLiquidity(poolLiquidity).getLPTokenAddress()
-    IMasterChef(farm).addToken(allocPoint, lpToken, False)
+    # IMasterChef(farm).addToken(allocPoint, lpToken, False)
 
-    return (token, crowdsale, poolLiquidity, farm)
+    return (token, lpToken, poolLiquidity, farm)
 

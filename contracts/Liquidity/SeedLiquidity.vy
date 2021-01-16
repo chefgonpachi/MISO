@@ -39,7 +39,7 @@ unlock: public(uint256)
 
 
 @external
-def __init__(router: address, tokens: address[2], target: uint256[2], duration: uint256, locktime: uint256):
+def initSeedLiquidity(router: address, tokens: address[2], target: uint256[2], duration: uint256, locktime: uint256):
     """
     @notice Set up a new seed liquidity contract
     @param router UniswapRouter address, e.g. 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
@@ -104,7 +104,7 @@ def provide():
         self.tokens[1],
         self.totals[0],
         self.totals[1],
-        self.totals[0],  # don't allow slippage
+        self.totals[0],  # do not allow slippage
         self.totals[1],
         self,
         block.timestamp
@@ -113,6 +113,17 @@ def provide():
     self.unlock = block.timestamp + self.locktime
     self.liquidity = self.pair.balanceOf(self)
     assert self.liquidity > 0  # dev: no liquidity provided
+
+@external
+def addLiquidity(amounts: uint256[2]):
+    """
+    @notice Bootstrap a new Uniswap pair using the assets in the contract
+    @dev
+        This function can only be called once and before the contract has expired.
+        Requires the target to be reached for both tokens.
+        Requires the pool to have no liquidity in it.
+    """
+    
 
 
 @external

@@ -16,7 +16,8 @@ CONTRACTS = {
         "gnosis_vault":"",
         "access_control":"",
         "masterchef_template":"",
-        "farm_factory":""
+        "farm_factory":"",
+        "miso_dev":""
 
     },
     "mainnet":{
@@ -24,6 +25,8 @@ CONTRACTS = {
         "miso_launcher":"",
         "uniswap_factory":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
         "mintable_token_template":"",
+        "fixed_token_template":"",
+        "sushi_token_template":"",
         "mintable_token":"",
         "dutch_auction_template":"",
         "crowdsale_template":"",
@@ -36,7 +39,8 @@ CONTRACTS = {
         "gnosis_vault":"",
         "access_control":"",
         "masterchef_template":"",
-        "farm_factory":""
+        "farm_factory":"",
+        "miso_dev":""
 
     },
     "rinkeby": {
@@ -44,6 +48,8 @@ CONTRACTS = {
         "miso_launcher":"",
         "uniswap_factory":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
         "mintable_token_template":"",
+        "fixed_token_template":"",
+        "sushi_token_template":"",
         "mintable_token":"",
         "dutch_auction_template":"",
         "crowdsale_template":"",
@@ -56,7 +62,8 @@ CONTRACTS = {
         "gnosis_vault":"",
         "access_control":"",
         "masterchef_template":"",
-        "farm_factory":""
+        "farm_factory":"",
+        "miso_dev":""
 
     },
     "kovan": {
@@ -64,6 +71,8 @@ CONTRACTS = {
         "miso_launcher":"",
         "uniswap_factory":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
         "mintable_token_template":"",
+        "fixed_token_template":"",
+        "sushi_token_template":"",
         "mintable_token":"",
         "dutch_auction_template":"",
         "crowdsale_template":"",
@@ -76,33 +85,41 @@ CONTRACTS = {
         "gnosis_vault":"",
         "access_control":"",
         "masterchef_template":"",
-        "farm_factory":""
+        "farm_factory":"",
+        "miso_dev":""
+
 
     },
     "goerli": {
-        "miso_token_factory":"0xf04e276528fd90aC14a7a2006A42ebCfA0E22ED9",
-        "miso_launcher":"0x444fC1BEBF81116A482ff15114EB662dBc299495",
+        "miso_token_factory":"0xF832D7f2004e1b8f88dE49c705aaa6Ff2E0E7362",
+        "miso_launcher":"0x44115139FF76CC975D8edDFa34543e3B0507c2Ad",
         "uniswap_factory":"0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-        "mintable_token_template":"0x00A430dec5bD09Aec9e1EEbEd68F1Accffb5D4FC",
+        "mintable_token_template":"0xA0134991fa959071191bA2224c89fEE77b5CA6Ba",
+        "fixed_token_template":"0xB1e0baEAfD0A63b0737781336549a13Cd49C875A",
+        "sushi_token_template":"0x1f3F9d11fc7f79AcB950c02C090050B857a509c1",
         "mintable_token":"",
-        "dutch_auction_template":"0xa5359A511D3Bb5C4d2a721aae62ea4d6A556e5dF",
-        "crowdsale_template":"0xf4fC337096FE088866C9523670a9DF2fD0138Aec",
-        "pool_liquidity_template":"0xF98b0A14a48F9D36F9fc8f5CC9A13c124d19C8b2", 
-        "miso_market":"0xdE74577771212f8f1FA8426E3c235601Bb3f5945",
+        "dutch_auction_template":"0x6f92bA7AA493a2f0D82D52668177704BA27631b7",
+        "crowdsale_template":"0xDd6e58C440F6Cb490EAdCa1FB5443ddEecfE253A",
+        "pool_liquidity_template":"0xBf4455EAd481D9d78DCAB6ce440cDD957E0BA97c", 
+        "miso_market":"0x5D41286b24e45cBbA6d9118b6b7e6ebFCcd24c87",
         "weth_token":"0xfF8A67507D1FcfA751380Ef88E6628fb03Dc714B",
         "dutch_auction":"",
         "gnosis_safe":"",
         "proxy_factory":"",
         "gnosis_vault":"",
-        "access_control":"0x4858501f47a65438c2E933500649aD16b6e5A8A0",
-        "masterchef_template":"0x17A81A53B578ae1FbEa709856eb092E39A5aefEA",
-        "farm_factory":"0xb57fEdDc408825332c270dcD6944548b8797d382"
+        "access_control":"0x1F8dC3eF83E3726d31af194702E11C601B7ca613",
+        "masterchef_template":"0x8dA76EDCa82da61322245AfADf4dc31832D4291f",
+        "farm_factory":"0xC419A0135A802DA516c5Cc843372AA96025cd7BE",
+        "miso_dev":"",
+        
     },
     "development": {
         "miso_token_factory":"",
         "miso_launcher":"",
         "uniswap_factory":"",
         "mintable_token_template":"",
+        "fixed_token_template":"",
+        "sushi_token_template":"",
         "mintable_token":"",
         "dutch_auction_template":"",
         "crowdsale_template":"",
@@ -115,7 +132,8 @@ CONTRACTS = {
         "gnosis_vault":"",
         "access_control":"",
         "masterchef_template":"",
-        "farm_factory":""
+        "farm_factory":"",
+        "miso_dev":""
 
     }
 }

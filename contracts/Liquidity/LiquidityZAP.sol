@@ -3,7 +3,7 @@ pragma solidity ^0.6.12;
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //
-// UniswapZAP takes ETH and converts to a Uniswap liquidity tokens. 
+// LiquidityZAP takes ETH and converts to  liquidity tokens. 
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,17 +22,17 @@ pragma solidity ^0.6.12;
 //
 // Attribution: CORE / cvault.finance
 //  https://github.com/cVault-finance/CORE-periphery/blob/master/contracts/COREv1Router.sol
-// ---------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
-// ---------------------------------------------------------------------
+//
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-import "./interfaces/IUniswapV2Pair.sol";
+
+import "../UniswapV2/interfaces/IUniswapV2Pair.sol";
 import "../../interfaces/IWETH9.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/SafeMathPlus.sol";
-import "./UniswapV2Library.sol";
+import "../UniswapV2/UniswapV2Library.sol";
 
-contract UniswapZAP {
+contract LiquidityZAP {
 
     using SafeMathPlus for uint256;
 
@@ -56,14 +56,14 @@ contract UniswapZAP {
     }
 
 
-    function zapETH() external payable {
+    function zapETH() external payable returns (uint256 liquidity) {
         require(msg.value > 0, "ETH amount must be greater than 0");
-        addLiquidityETHOnly(msg.sender);
+        return addLiquidityETHOnly(msg.sender);
     }
 
-    function zapTokens(uint amount) external  {
+    function zapTokens(uint amount) external returns (uint256 liquidity) {
         require(amount > 0, "Token amount must be greater than 0");
-        addLiquidityTokensOnly(msg.sender, msg.sender, amount);
+        return addLiquidityTokensOnly(msg.sender, msg.sender, amount);
     }
 
     function unzap() external returns  (uint amountToken, uint amountETH) {
@@ -83,7 +83,7 @@ contract UniswapZAP {
 
 
     /// @dev Add liquidity functions
-    function addLiquidityTokensOnly(address from, address payable to, uint amount) public {
+    function addLiquidityTokensOnly(address from, address payable to, uint amount) public returns (uint256 liquidity) {
         require(to != address(0), "Invalid address");
 
         uint256 buyAmount = amount.div(2);
@@ -98,11 +98,11 @@ contract UniswapZAP {
         (address token0, address token1) = UniswapV2Library.sortTokens(address(_WETH), _token);
         IUniswapV2Pair(_tokenWETHPair).swap(address(_WETH) == token0 ? outETH : 0, address(_WETH) == token1 ? outETH : 0, address(this), "");
 
-        _addLiquidity( buyAmount, outETH, to);
+        return _addLiquidity( buyAmount, outETH, to);
 
     }
 
-    function addLiquidityETHOnly(address payable to) public payable {
+    function addLiquidityETHOnly(address payable to) public payable returns (uint256 liquidity ) {
         require(to != address(0), "Invalid address");
 
         uint256 buyAmount = msg.value.div(2);
@@ -117,11 +117,11 @@ contract UniswapZAP {
         (address token0, address token1) = UniswapV2Library.sortTokens(address(_WETH), _token);
         IUniswapV2Pair(_tokenWETHPair).swap(_token == token0 ? outTokens : 0, _token == token1 ? outTokens : 0, address(this), "");
 
-        _addLiquidity(outTokens, buyAmount, to);
+        return _addLiquidity(outTokens, buyAmount, to);
 
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 wethAmount, address payable to) internal {
+    function _addLiquidity(uint256 tokenAmount, uint256 wethAmount, address payable to) internal returns (uint256 liquidity){
         (uint256 wethReserve, uint256 tokenReserve) = getPairReserves();
 
         uint256 optimalTokenAmount = UniswapV2Library.quote(wethAmount, wethReserve, tokenReserve);
@@ -137,7 +137,7 @@ contract UniswapZAP {
         assert(_WETH.transfer(_tokenWETHPair, optimalWETHAmount));
         assert(IERC20(_token).transfer(_tokenWETHPair, optimalTokenAmount));
 
-        IUniswapV2Pair(_tokenWETHPair).mint(to);
+        liquidity = IUniswapV2Pair(_tokenWETHPair).mint(to);
         
         //refund dust
         if (tokenAmount > optimalTokenAmount)

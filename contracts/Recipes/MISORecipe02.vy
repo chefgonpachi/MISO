@@ -7,6 +7,7 @@ interface IMISOTokenFactory:
         name: String[64],
         symbol: String[32],
         templateId: uint256,
+        admin: address,
         initialSupply: uint256
     ) -> address: nonpayable
 
@@ -66,7 +67,12 @@ interface ISushiToken:
     def mint(owner: address, amount: uint256) : nonpayable
     def approve(spender: address, amount: uint256) -> bool: nonpayable
     def transfer(to: address, amount: uint256) -> bool: nonpayable
+    def balanceOf(owner: address) -> uint256: nonpayable
 
+interface IAdminAccess:
+    def hasAdminRole(user: address) -> bool: nonpayable
+    def addAdminRole(user: address) : nonpayable
+    def removeAdminRole(user: address) : nonpayable
 
 
 tokenFactory: public(IMISOTokenFactory)
@@ -133,10 +139,10 @@ def prepareMiso(
 ) -> (address, address, address, address):
 
     assert startTime < endTime  # dev: Start time later then end time
+    assert tokensToMint >= tokensToMarket + tokensToLiquidity + tokensToFarm
 
-    token: address = self.tokenFactory.createToken(name, symbol, 1, tokensToMint)
+    token: address = self.tokenFactory.createToken(name, symbol, 1, msg.sender, tokensToMint)
     # create access control
-    # transfer ownership to msg.sender
 
     ISushiToken(token).approve(self.misoMarket, tokensToMarket)
 
@@ -172,13 +178,20 @@ def prepareMiso(
             rewardsPerBlock,
             startBlock,
             devAddr,
-            accessControl,
+            self,
             1)
 
     
     ISushiToken(token).transfer(farm,tokensToFarm)
     lpToken: address = IPoolLiquidity(poolLiquidity).getLPTokenAddress()
-    # IMasterChef(farm).addToken(allocPoint, lpToken, False)
+    IMasterChef(farm).addToken(allocPoint, lpToken, False)
+    IAdminAccess(farm).addAdminRole(msg.sender)
+    IAdminAccess(farm).hasAdminRole(msg.sender)
+    IAdminAccess(farm).removeAdminRole(self)
+
+    tokensRemaining: uint256 = ISushiToken(token).balanceOf(self)
+    if tokensRemaining > 0:
+        ISushiToken(token).transfer(wallet, tokensRemaining)
 
     return (token, lpToken, poolLiquidity, farm)
 

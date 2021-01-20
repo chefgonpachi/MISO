@@ -41,7 +41,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     /// @notice ending time of crowdsale
     uint256 public endTime;
     
-    bool private initialised;
+    bool private initialized;
     bool private finalized;
 
     /// @notice MISOMarket template id for the factory contract
@@ -68,6 +68,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     event CrowdsaleFinalized();
 
     /**
+     * @dev Init function
      * @param _funder The address that funds the token for crowdsale
      * @param _token Address of the token being sold
      * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address
@@ -90,7 +91,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 _goal,
         address payable _wallet
     ) external {
-        require(!initialised, "Crowdsale: already initialised"); 
+        require(!initialized, "Crowdsale: already initialized"); 
         require(_startTime >= block.timestamp, "Crowdsale: start time is before current time");
         require(_endTime > _startTime, "Crowdsale: start time is not before end time");
         require(_rate > 0, "Crowdsale: rate is 0");
@@ -111,7 +112,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         require(_getTokenAmount(_goal) <= _totalTokens, "Crowdsale: goal should be equal to or lower than total tokens or equal");
         
         _safeTransferFrom(_token, _funder, _totalTokens);
-        initialised = true;
+        initialized = true;
         finalized = false;
     }
 

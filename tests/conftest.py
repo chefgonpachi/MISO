@@ -65,22 +65,32 @@ def fixed_token(FixedToken):
 
 
 #####################################
-# FixedToken
+# FixedToken for Crowdsale
 ######################################
 @pytest.fixture(scope='module', autouse=True)
 def fixed_token2(FixedToken):
     fixed_token = FixedToken.deploy({'from': accounts[0]})
-    name = "Fixed Token"
-    symbol = "FXT"
+    name = "Crowdsale Token"
+    symbol = "CWT"
     owner = accounts[0]
 
     fixed_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
-    assert fixed_token.name() == name
-    assert fixed_token.symbol() == symbol
-    assert fixed_token.totalSupply() == AUCTION_TOKENS
-    assert fixed_token.balanceOf(owner) == AUCTION_TOKENS
 
     return fixed_token
+
+#####################################
+# FixedToken for BatchAuction
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def batch_auction_token(FixedToken):
+    batch_auction_token = FixedToken.deploy({'from': accounts[0]})
+    name = "Batch Auction Token"
+    symbol = "BAT"
+    owner = accounts[0]
+
+    batch_auction_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
+
+    return batch_auction_token
 
 @pytest.fixture(scope='module', autouse=True)
 def fixed_token_template(FixedToken):
@@ -164,17 +174,35 @@ def auction_factory(MISOMarket, miso_access_controls, dutch_auction_template, cr
 def dutch_auction(DutchAuction, fixed_token):
     assert fixed_token.balanceOf(accounts[0]) == AUCTION_TOKENS
     
-    start_date = chain.time() +10
-    end_date = start_date + AUCTION_TIME
+    start_time = chain.time() +10
+    end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
     dutch_auction = DutchAuction.deploy({"from": accounts[0]})
 
     fixed_token.approve(dutch_auction, AUCTION_TOKENS, {"from": accounts[0]})
 
-    dutch_auction.initAuction(accounts[0], fixed_token, AUCTION_TOKENS, start_date, end_date, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, wallet, {"from": accounts[0]})
+    dutch_auction.initAuction(accounts[0], fixed_token, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, wallet, {"from": accounts[0]})
     assert dutch_auction.clearingPrice() == AUCTION_START_PRICE
     chain.sleep(10)
     return dutch_auction 
+
+#####################################
+# BatchAuction
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def batch_auction(BatchAuction, batch_auction_token):
+    assert batch_auction_token.balanceOf(accounts[0]) == AUCTION_TOKENS
+    
+    start_time = chain.time() +10
+    end_time = start_time + AUCTION_TIME
+    wallet = accounts[1]
+    batch_auction = BatchAuction.deploy({"from": accounts[0]})
+
+    batch_auction_token.approve(batch_auction, AUCTION_TOKENS, {"from": accounts[0]})
+
+    batch_auction.initAuction(accounts[0], batch_auction_token, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_MINIMUM_COMMITMENT, wallet, {"from": accounts[0]})
+    chain.sleep(10)
+    return batch_auction 
 
 @pytest.fixture(scope='module', autouse=True)
 def dutch_auction_template(DutchAuction):
@@ -303,8 +331,8 @@ def farm_factory(MISOFarmFactory,miso_access_controls,farm_template):
     return farm_factory
 
 @pytest.fixture(scope='module', autouse=True)
-def farm_template(MasterChef):
-    farm_template = MasterChef.deploy({"from":accounts[0]})
+def farm_template(MISOMasterChef):
+    farm_template = MISOMasterChef.deploy({"from":accounts[0]})
     return farm_template
 
 #####################################

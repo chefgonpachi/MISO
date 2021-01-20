@@ -75,7 +75,7 @@ def test_dutch_auction_claim(dutch_auction):
         dutch_auction.withdrawTokens({'from': accounts[0]})
     
     token_buyer.transfer(dutch_auction,eth_to_transfer)
-    assert dutch_auction.finalised({'from': accounts[0]}) == False
+    assert dutch_auction.finalized({'from': accounts[0]}) == False
 
     chain.sleep(AUCTION_TIME+100)
     chain.mine()
@@ -88,9 +88,9 @@ def test_dutch_auction_claim(dutch_auction):
         dutch_auction.withdrawTokens({'from': token_buyer})
         dutch_auction.withdrawTokens({'from': accounts[0]})
 
-    dutch_auction.finaliseAuction({'from': accounts[0]})
+    dutch_auction.finalizeAuction({'from': accounts[0]})
     with reverts():
-        dutch_auction.finaliseAuction({'from': accounts[0]})
+        dutch_auction.finalizeAuction({'from': accounts[0]})
 
 def test_dutch_auction_claim_not_enough(dutch_auction):
     token_buyer = accounts[2]
@@ -100,7 +100,7 @@ def test_dutch_auction_claim_not_enough(dutch_auction):
     chain.sleep(AUCTION_TIME+100)
     chain.mine()
     dutch_auction.withdrawTokens({'from': token_buyer})
-    dutch_auction.finaliseAuction({"from": accounts[0]})
+    dutch_auction.finalizeAuction({"from": accounts[0]})
 
 def test_dutch_auction_clearingPrice(dutch_auction):
     chain.sleep(100)
@@ -153,14 +153,14 @@ def dutch_auction_cal(DutchAuction, fixed_token_cal):
     start_price = 1 * TENPOW18
     auction_tokens = 100 * TENPOW18
     
-    start_date = chain.time() + 10
-    end_date = start_date + AUCTION_TIME
+    start_time = chain.time() + 10
+    end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
     dutch_auction_cal = DutchAuction.deploy({"from": accounts[5]})
 
     fixed_token_cal.approve(dutch_auction_cal, auction_tokens, {"from": accounts[5]})
 
-    dutch_auction_cal.initAuction(accounts[5], fixed_token_cal, auction_tokens, start_date, end_date, ETH_ADDRESS, start_price, AUCTION_RESERVE, wallet, {"from": accounts[5]})
+    dutch_auction_cal.initAuction(accounts[5], fixed_token_cal, auction_tokens, start_time, end_time, ETH_ADDRESS, start_price, AUCTION_RESERVE, wallet, {"from": accounts[5]})
     assert dutch_auction_cal.clearingPrice() == start_price
     chain.sleep(10)
     return dutch_auction_cal 
@@ -204,14 +204,14 @@ def dutch_auction_pay_by_token(DutchAuction, fixed_token_ime, fixed_token_cal):
     start_price = 1 * TENPOW18
     auction_tokens = 100 * TENPOW18
     
-    start_date = chain.time() + 10
-    end_date = start_date + AUCTION_TIME
+    start_time = chain.time() + 10
+    end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
     dutch_auction_pay_by_token = DutchAuction.deploy({"from": accounts[5]})
 
     fixed_token_cal.approve(dutch_auction_pay_by_token, auction_tokens, {"from": accounts[5]})
 
-    dutch_auction_pay_by_token.initAuction(accounts[5], fixed_token_cal, auction_tokens, start_date, end_date, fixed_token_ime, start_price, AUCTION_RESERVE, wallet, {"from": accounts[5]})
+    dutch_auction_pay_by_token.initAuction(accounts[5], fixed_token_cal, auction_tokens, start_time, end_time, fixed_token_ime, start_price, AUCTION_RESERVE, wallet, {"from": accounts[5]})
     assert dutch_auction_pay_by_token.clearingPrice() == start_price
     chain.sleep(10)
     return dutch_auction_pay_by_token 

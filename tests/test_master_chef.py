@@ -23,7 +23,7 @@ def fixed_token_cal(FixedToken):
 
     return fixed_token_cal
 
-def test_create_farm(MasterChef,farm_factory, fixed_token_cal,miso_access_controls):
+def test_create_farm(MISOMasterChef,farm_factory, fixed_token_cal,miso_access_controls):
     rewards_per_block = 1 * TENPOW18
     # Define the start time relative to sales
     start_block =  len(chain) + 10
@@ -35,5 +35,5 @@ def test_create_farm(MasterChef,farm_factory, fixed_token_cal,miso_access_contro
     assert "FarmCreated" in tx.events
     assert farm_factory.numberOfFarms() == 1
     farm_address = tx.events["FarmCreated"]["addr"] 
-    farm = MasterChef.at(farm_address)
+    farm = MISOMasterChef.at(farm_address)
     farm.addToken(100, fixed_token_cal, False,{"from":accounts[0]})

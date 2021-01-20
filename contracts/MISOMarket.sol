@@ -21,6 +21,18 @@ contract MISOMarket is CloneFactory {
         uint256 index;
     }
 
+    struct DutchAuction {
+        address _funder;
+        address _token;
+        uint256 _tokenSupply;
+        uint256 _startDate;
+        uint256 _endDate;
+        address _paymentCurrency;
+        uint256 _startPrice;
+        uint256 _minimumPrice;
+        address payable _wallet;
+    }
+
     /// @notice mapping from market template id to market template address
     mapping(uint256 => address) private auctionTemplates;
 
@@ -84,13 +96,13 @@ contract MISOMarket is CloneFactory {
      * @param _templateId Id of the auction template to create
     */
     function createAuction(
-        address _token, 
-        uint256 _tokenSupply, 
-        uint256 _startDate, 
-        uint256 _endDate, 
+        address _token,
+        uint256 _tokenSupply,
+        uint256 _startDate,
+        uint256 _endDate,
         address _paymentCurrency,
-        uint256 _startPrice, 
-        uint256 _minimumPrice, 
+        uint256 _startPrice,
+        uint256 _minimumPrice,
         address payable _wallet,
         uint256 _templateId
     ) external returns (address newAuction) {
@@ -103,6 +115,17 @@ contract MISOMarket is CloneFactory {
         IMisoAuction(newAuction).initAuction(address(this), _token, _tokenSupply, _startDate, _endDate, _paymentCurrency, _startPrice, _minimumPrice, _wallet);
         emit AuctionCreated(msg.sender, address(newAuction), auctionTemplates[_templateId]);
     }
+
+    // function createAuction(DutchAuction storage ducthAuctionData, uint256 _templateId) external returns (address newAuction) {
+    //     require(auctionTemplates[_templateId] != address(0));
+    //     newAuction = createClone(auctionTemplates[_templateId]);
+    //     auctionInfo[address(newAuction)] = Auction(true, _templateId, auctions.length - 1);
+    //     auctions.push(address(newAuction));
+    //     require(IERC20(_token).transferFrom(msg.sender, address(this), _tokenSupply)); 
+    //     require(IERC20(_token).approve(newAuction, _tokenSupply));
+    //     IMisoAuction(newAuction).initAuction(address(this), ducthAuctionData);
+    //     emit AuctionCreated(msg.sender, address(newAuction), auctionTemplates[_templateId]);
+    // }
     
     /**
      * @dev Creates a Crowdsale corresponding to _templateId
@@ -118,13 +141,13 @@ contract MISOMarket is CloneFactory {
      * @param _templateId Id of the crowdsale template to create
     */
     function createCrowdsale(
-        address _token, 
-        uint256 _tokenSupply, 
+        address _token,
+        uint256 _tokenSupply,
         address _paymentCurrency,
-        uint256 _startDate, 
-        uint256 _endDate, 
-        uint256 _rate, 
-        uint256 _goal, 
+        uint256 _startDate,
+        uint256 _endDate,
+        uint256 _rate,
+        uint256 _goal,
         address payable _wallet,
         uint256 _templateId
     ) external returns (address newCrowdsale) {

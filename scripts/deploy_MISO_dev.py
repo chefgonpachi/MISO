@@ -9,6 +9,7 @@ def main():
 
     # Initialise Project
     operator = accounts[0]
+    owner = accounts[0]
     wallet = accounts[1]
 
     # GP: Split into public and miso access control
@@ -49,7 +50,7 @@ def main():
     wallet = accounts[1]
     templateId = 1
     tokens_to_mint = 1000 * TENPOW18
-    tx = miso_token_factory.createToken("Token", "TKN", templateId,tokens_to_mint, {'from': operator})
+    tx = miso_token_factory.createToken("Token", "TKN", templateId,owner, tokens_to_mint, {'from': operator})
     rewards_token = MintableToken.at(web3.toChecksumAddress(tx.events['TokenCreated']['addr']))
     print("rewards_token: " + str(rewards_token))
 
@@ -60,7 +61,7 @@ def main():
     market_rate = 100
     market_goal = 200
     payment_currency = ETH_ADDRESS
-    
+
     rewards_token.approve(miso_market, market_tokens, {'from': operator})
     tx = miso_market.createCrowdsale(
         rewards_token, 

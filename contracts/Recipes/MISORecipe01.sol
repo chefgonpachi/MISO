@@ -14,6 +14,7 @@ interface IMISOTokenFactory {
         string memory _name,
         string memory _symbol,
         uint256 _templateId, 
+        address _admin,
         uint256 _initialSupply
     ) external returns (address token);
 }
@@ -67,7 +68,7 @@ interface IMasterChef {
         address _devaddr,
         address _accessControls
     ) external; 
-    function add(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) external;
+    function addToken(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) external;
 }
 
 contract MISORecipe01 {
@@ -122,7 +123,7 @@ contract MISORecipe01 {
         uint256 tokensToMint = 1000;
         uint256 tokensToMarket = 300;
         // Mintable token
-        ISushiToken token = ISushiToken(tokenFactory.createToken(_name, _symbol, 1, tokensToMint));
+        ISushiToken token = ISushiToken(tokenFactory.createToken(_name, _symbol, 1, msg.sender, tokensToMint));
 
         token.approve(address(misoMarket), tokensToMarket);
 
@@ -190,7 +191,7 @@ contract MISORecipe01 {
         token.transfer(address(farm),tokensToFarm);
         uint256 allocPoint = 10;
         address lpToken = poolLiquidity.getLPTokenAddress();
-        farm.add(allocPoint, IERC20(lpToken), false);
+        farm.addToken(allocPoint, IERC20(lpToken), false);
 
         }
 

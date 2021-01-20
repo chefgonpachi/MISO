@@ -9,6 +9,8 @@ def main():
 
     # Initialise Project
     operator = accounts[0]
+    owner = accounts[0]
+
     wallet = accounts[1]
 
     # Farm Settings
@@ -35,11 +37,11 @@ def main():
         mintable_token_template = deploy_mintable_token_template()
         miso_token_factory.addTokenTemplate(mintable_token_template, {'from': operator} )
 
-    tx = miso_token_factory.createToken("Token", "TKN", templateId, {'from': operator})
+    tx = miso_token_factory.createToken("Token", "TKN", templateId, owner, 0, {'from': operator})
     rewards_token = MintableToken.at(web3.toChecksumAddress(tx.events['TokenCreated']['addr']))
     print("rewards_token: " + str(rewards_token))
 
-    rewards_token.mint(operator, tokensToFarm, {'from': operator})
+    rewards_token.mint(owner, tokensToFarm, {'from': owner})
 
     # MISOFarmFactory
     masterchef_template = deploy_masterchef_template()    

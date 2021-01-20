@@ -32,6 +32,7 @@ def deploy_access_control(operator):
 
 def deploy_user_access_control(operator):
     access_control = MISOAccessControls.deploy({'from': accounts[0]}, publish_source=publish())
+    access_control.initAccessControls(operator, {'from': accounts[0]})
     access_control.addOperatorRole(operator, {'from': accounts[0]})
     return access_control
 
@@ -84,7 +85,7 @@ def deploy_mintable_token(miso_token_factory,mintable_token_template):
     if mintable_token_address == '':
         tx1 = miso_token_factory.addTokenTemplate(mintable_token_template,{"from":accounts[0]})
         template_id = tx1.events['TokenTemplateAdded']['templateId']
-        tx2 = miso_token_factory.createToken(NAME,SYMBOL,template_id, 0, {"from":accounts[0]})
+        tx2 = miso_token_factory.createToken(NAME,SYMBOL,template_id, accounts[0], 0, {"from":accounts[0]})
         mintable_token = MintableToken.at(web3.toChecksumAddress(tx2.events['TokenCreated']['addr']))
     else:
         mintable_token = MintableToken.at(mintable_token_address)
@@ -140,7 +141,7 @@ def deploy_miso_launcher(access_control, weth_token):
     miso_launcher_address = CONTRACTS[network.show_active()]["miso_launcher"]
     if miso_launcher_address == '':
         miso_launcher = MISOLiquidityLauncher.deploy({"from":accounts[0]}, publish_source=publish())
-        time.sleep(1) 
+        time.sleep(2) 
         miso_launcher.initMISOLiquidityLauncher(access_control, weth_token, {"from":accounts[0]})
 
     else:
@@ -151,16 +152,16 @@ def deploy_miso_launcher(access_control, weth_token):
 def deploy_masterchef_template():
     masterchef_template_address = CONTRACTS[network.show_active()]["masterchef_template"]
     if masterchef_template_address == '':
-        masterchef_template = MasterChef.deploy({"from":accounts[0]}, publish_source=publish())
+        masterchef_template = MISOMasterChef.deploy({"from":accounts[0]}, publish_source=publish())
     else:
-        masterchef_template = MasterChef.at(masterchef_template_address)
+        masterchef_template = MISOMasterChef.at(masterchef_template_address)
     return masterchef_template
 
 def deploy_farm_factory(access_control ):
     farm_factory_address = CONTRACTS[network.show_active()]["farm_factory"]
     if farm_factory_address == '':
         farm_factory = MISOFarmFactory.deploy({"from":accounts[0]}, publish_source=publish())        
-        time.sleep(1) 
+        time.sleep(2) 
         miso_dev = accounts[0]
         minimum_fee = 0
         token_fee = 0

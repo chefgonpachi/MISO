@@ -38,6 +38,11 @@ interface Factory:
     def getPair(tokenA: address, tokenB: address) -> address: view
     def createPair(tokenA: address, tokenB: address) -> address: nonpayable
 
+interface IMISOAccess:
+    def hasAdminRole(addr: address) -> bool: view
+    def addAdminRole(addr: address) : nonpayable
+    def removeAdminRole(addr: address) : nonpayable
+
 
 weth: public(address)
 farmFactory: public(IMISOFarmFactory)
@@ -71,9 +76,7 @@ def createLiquidityFarm(
     startBlock: uint256,
     devAddr: address, 
     allocPoint: uint256,
-
-    # to create in recipe
-    accessControl: address
+    admin: address
 
 ) -> (address): 
     """
@@ -93,19 +96,20 @@ def createLiquidityFarm(
     if pair == ZERO_ADDRESS:
         pair = Factory(self.sushiswapFactory).createPair(rewardToken, self.weth)
     
-    # create access control
-    # transfer ownership to msg.sender
 
     farm: address = self.farmFactory.createFarm(
             rewardToken,
             rewardsPerBlock,
             startBlock,
             devAddr,
-            accessControl,
+            self,
             1, value=msg.value)
 
     ISushiToken(rewardToken).transfer(farm,tokensToFarm)
-    # IMasterChef(farm).addToken(allocPoint, pair, False)
+    IMasterChef(farm).addToken(allocPoint, pair, False)
+    IMISOAccess(farm).addAdminRole(admin)
+    assert IMISOAccess(farm).hasAdminRole(admin) == True
+    IMISOAccess(farm).removeAdminRole(self)
 
     return (farm)
 

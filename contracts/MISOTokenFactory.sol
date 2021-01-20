@@ -59,12 +59,12 @@ contract MISOTokenFactory is CloneFactory {
      * @param _symbol Symbol for the token
      * @param _templateId Template id of token to create 
      */
-    function createToken(string memory _name, string memory _symbol, uint256 _templateId, uint256 _initialSupply) external returns (address token) {
+    function createToken(string memory _name, string memory _symbol, uint256 _templateId, address _owner, uint256 _initialSupply) external returns (address token) {
         require(tokenTemplates[_templateId] != address(0));
         token = createClone(tokenTemplates[_templateId]);
         isChildToken[address(token)] = true;
         tokens.push(address(token));
-        IMisoToken(token).initToken(_name, _symbol, msg.sender, _initialSupply);
+        IMisoToken(token).initToken(_name, _symbol, _owner, _initialSupply);
         if (_initialSupply > 0 ) {
             IERC20(token).transfer(msg.sender, _initialSupply);
         }

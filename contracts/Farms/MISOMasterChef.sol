@@ -24,11 +24,9 @@ import "../../interfaces/IMisoFarm.sol";
 // MISO Update - Dev tips parameterised
 // MISO Update - Replaced owner with access controls
 
-contract MasterChef is IMisoFarm, AccessControl {
+contract MISOMasterChef is IMisoFarm, MISOAccessControls {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-
-    MISOAccessControls public accessControls;
 
 
     // Info of each user.
@@ -94,16 +92,17 @@ contract MasterChef is IMisoFarm, AccessControl {
         uint256 _rewardsPerBlock,
         uint256 _startBlock,
         address _devaddr,
-        address _accessControls
+        address _admin
     ) public override {
         require(!initialised);
         rewards = IERC20(_rewards);
         totalAllocPoint = 0;
-        initialised = true;
         rewardsPerBlock = _rewardsPerBlock;
         startBlock = _startBlock;
         devaddr = _devaddr;
-        accessControls = MISOAccessControls(_accessControls);
+        initAccessControls(_admin);
+        initialised = true;
+
     }
 
     function setBonus(
@@ -111,8 +110,8 @@ contract MasterChef is IMisoFarm, AccessControl {
         uint256 _bonusMultiplier
     ) public {
         require(
-            accessControls.hasAdminRole(msg.sender),
-            "MasterChef.add: Sender must be admin"
+            hasAdminRole(msg.sender),
+            "MasterChef.setBonus: Sender must be admin"
         );
 
         bonusEndBlock = _bonusEndBlock;
@@ -127,8 +126,8 @@ contract MasterChef is IMisoFarm, AccessControl {
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function addToken(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) public  {
         require(
-            accessControls.hasAdminRole(msg.sender) || accessControls.hasSmartContractRole(msg.sender),
-            "MasterChef.add: Sender must be admin"
+            hasAdminRole(msg.sender),
+            "MasterChef.addToken: Sender must be admin"
         );
         if (_withUpdate) {
             massUpdatePools();
@@ -146,8 +145,8 @@ contract MasterChef is IMisoFarm, AccessControl {
     // Update the given pools token allocation point. Can only be called by the operator.
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public  {
         require(
-            accessControls.hasOperatorRole(msg.sender),
-            "MasterChef.set: Sender must be operator"
+            hasOperatorRole(msg.sender) ,
+            "MasterChef.set: Sender must be admin"
         );
         if (_withUpdate) {
             massUpdatePools();

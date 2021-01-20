@@ -1,29 +1,19 @@
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+
+import "./MISOAdminAccess.sol";
 
 /**
  * @notice Access Controls 
  * @author Attr: BlockRocket.tech
  */
-contract MISOAccessControls is AccessControl {
+contract MISOAccessControls is MISOAdminAccess {
     /// @notice Role definitions
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant SMART_CONTRACT_ROLE = keccak256("SMART_CONTRACT_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
-    bool private initialised;
-
     /// @notice Events for adding and removing various roles
-    event AdminRoleGranted(
-        address indexed beneficiary,
-        address indexed caller
-    );
-
-    event AdminRoleRemoved(
-        address indexed beneficiary,
-        address indexed caller
-    );
 
     event MinterRoleGranted(
         address indexed beneficiary,
@@ -61,31 +51,17 @@ contract MISOAccessControls is AccessControl {
     constructor() public {
     }
 
-    function initAccessControls(address _admin) external {
-        require(!initialised, "Already initialised");
-        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
-        initialised = true;
-    }
 
     /////////////
     // Lookups //
     /////////////
 
     /**
-     * @notice Used to check whether an address has the admin role
-     * @param _address EOA or contract being checked
-     * @return bool True if the account has the role or false if it does not
-     */
-    function hasAdminRole(address _address) external view returns (bool) {
-        return hasRole(DEFAULT_ADMIN_ROLE, _address);
-    }
-
-    /**
      * @notice Used to check whether an address has the minter role
      * @param _address EOA or contract being checked
      * @return bool True if the account has the role or false if it does not
      */
-    function hasMinterRole(address _address) external view returns (bool) {
+    function hasMinterRole(address _address) public view returns (bool) {
         return hasRole(MINTER_ROLE, _address);
     }
 
@@ -94,7 +70,7 @@ contract MISOAccessControls is AccessControl {
      * @param _address EOA or contract being checked
      * @return bool True if the account has the role or false if it does not
      */
-    function hasSmartContractRole(address _address) external view returns (bool) {
+    function hasSmartContractRole(address _address) public view returns (bool) {
         return hasRole(SMART_CONTRACT_ROLE, _address);
     }
 
@@ -103,33 +79,13 @@ contract MISOAccessControls is AccessControl {
      * @param _address EOA or contract being checked
      * @return bool True if the account has the role or false if it does not
      */
-    function hasOperatorRole(address _address) external view returns (bool) {
+    function hasOperatorRole(address _address) public view returns (bool) {
         return hasRole(OPERATOR_ROLE, _address);
     }
 
     ///////////////
     // Modifiers //
     ///////////////
-
-    /**
-     * @notice Grants the admin role to an address
-     * @dev The sender must have the admin role
-     * @param _address EOA or contract receiving the new role
-     */
-    function addAdminRole(address _address) external {
-        grantRole(DEFAULT_ADMIN_ROLE, _address);
-        emit AdminRoleGranted(_address, _msgSender());
-    }
-
-    /**
-     * @notice Removes the admin role from an address
-     * @dev The sender must have the admin role
-     * @param _address EOA or contract affected
-     */
-    function removeAdminRole(address _address) external {
-        revokeRole(DEFAULT_ADMIN_ROLE, _address);
-        emit AdminRoleRemoved(_address, _msgSender());
-    }
 
     /**
      * @notice Grants the minter role to an address

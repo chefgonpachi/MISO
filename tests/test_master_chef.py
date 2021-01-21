@@ -29,11 +29,12 @@ def test_create_farm(MISOMasterChef,farm_factory, fixed_token_cal,miso_access_co
     start_block =  len(chain) + 10
     wallet = accounts[4]
     dev_addr = wallet
+    admin = accounts[1]
     fixed_token_cal.approve(farm_factory, AUCTION_TOKENS, {"from": accounts[0]})
-    tx = farm_factory.createFarm(fixed_token_cal,rewards_per_block,start_block,dev_addr,miso_access_controls,1,{"from":accounts[0]})
+    tx = farm_factory.createFarm(fixed_token_cal,rewards_per_block,start_block,dev_addr,admin,1,{"from":accounts[0]})
 
     assert "FarmCreated" in tx.events
     assert farm_factory.numberOfFarms() == 1
     farm_address = tx.events["FarmCreated"]["addr"] 
     farm = MISOMasterChef.at(farm_address)
-    farm.addToken(100, fixed_token_cal, False,{"from":accounts[0]})
+    farm.addToken(100, fixed_token_cal, False,{"from":admin})

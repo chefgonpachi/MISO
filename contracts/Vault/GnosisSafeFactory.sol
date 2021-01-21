@@ -6,7 +6,7 @@ import "../../interfaces/ISafeGnosis.sol";
 import "../Access/MISOAccessControls.sol";
 import "../../interfaces/IERC20.sol";
 
-contract GnosisVault {
+contract GnosisSafeFactory {
     
     ISafeGnosis public safeGnosis;
     IGnosisProxyFactory public proxyFactory;

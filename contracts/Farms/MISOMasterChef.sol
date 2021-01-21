@@ -102,8 +102,21 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
         devaddr = _devaddr;
         initAccessControls(_admin);
         initialised = true;
-
     }
+
+    // function initFarm(
+    //     address[] _addressValues,
+    //     uint256[] _numberValues,
+    //     bool[] _boolValues
+    // ) external {
+    //     initFarm(
+    //         _addressValues[0],
+    //         _numberValues[0],
+    //         _numberValues[1],
+    //         _addressValues[1],
+    //         _addressValues[2]
+    //     );
+    // }
 
     function setBonus(
         uint256 _bonusEndBlock,

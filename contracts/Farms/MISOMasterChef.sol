@@ -104,19 +104,40 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
         initialised = true;
     }
 
-    // function initFarm(
-    //     address[] _addressValues,
-    //     uint256[] _numberValues,
-    //     bool[] _boolValues
-    // ) external {
-    //     initFarm(
-    //         _addressValues[0],
-    //         _numberValues[0],
-    //         _numberValues[1],
-    //         _addressValues[1],
-    //         _addressValues[2]
-    //     );
-    // }
+   function initFarm(
+        bytes calldata _data
+    ) public override {
+        (address _rewards,
+        uint256 _rewardsPerBlock,
+        uint256 _startBlock,
+        address _devaddr,
+        address _admin) = abi.decode(_data, (address, uint256, uint256, address, address));
+        initFarm(_rewards,_rewardsPerBlock,_startBlock,_devaddr,_admin );
+    }
+
+
+   /** 
+     * @dev Generates init data for Farm Factory
+     * @param _rewards Rewards token address
+     * @param _rewardsPerBlock - Rewards per block for the whole farm
+     * @param _startBlock - Starting block
+     * @param _divaddr Any donations if set are sent here
+     * @param _accessControls Gives right to access
+  */
+    function getInitData(
+            address _rewards,
+            uint256 _rewardsPerBlock,
+            uint256 _startBlock,
+            address _divaddr,
+            address _accessControls
+    )
+        external
+        pure
+        returns (bytes memory _data)
+    {
+        return abi.encode(_rewards, _rewardsPerBlock, _startBlock, _divaddr, _accessControls);
+    }
+
 
     function setBonus(
         uint256 _bonusEndBlock,

@@ -67,7 +67,8 @@ def prepare_miso(miso_recipe_02, miso_access_controls):
     token,lp_token,pool_liquidity,farm = txn.return_value
     return [token,lp_token,pool_liquidity,farm]
 
-def pool_liqudity(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls):
+
+def pool_liqudity_helper(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls):
     token,lp_token,pool_liquidity,farm = prepare_miso(miso_recipe_02,miso_access_controls)
     pool_liquidity = PoolLiquidity.at(pool_liquidity)
     
@@ -78,23 +79,51 @@ def pool_liqudity(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_ac
     assert weth_token.totalSupply() == deposit_eth
     assert pool_liquidity.getWethBalance() == deposit_eth 
 
+   ## token = SushiToken.at(token)
+    #deposit_amount = 10*TENPOW18
+    ##token.approve(pool_liquidity, deposit_amount, {"from":accounts[0]})
+    #tx = pool_liquidity.depositTokens(deposit_amount, {"from": accounts[0]})
+    #assert "Transfer" in tx.events
+    #assert pool_liquidity.getTokenBalance() == deposit_amount
+    #print(pool_liquidity.getTokenBalance()) """
+    
+    chain.sleep(POOL_LAUNCH_DEADLINE)
+    tx = pool_liquidity.launchLiquidityPool({"from": accounts[0]})
+
+    assert "LiquidityAdded" in tx.events
+    assert pool_liquidity.getTokenBalance() == 0
+    assert pool_liquidity.getWethBalance() == 0
+    
     return [token,lp_token,pool_liquidity,farm]
 
-    token = SushiToken.at(token)
-    deposit_amount = 100*TENPOW18
-    tx = pool_liquidity.depositTokens(deposit_amount, {"from": accounts[0]})
-    assert "Transfer" in tx.events
-    assert pool_liquidity.getTokenBalance() == deposit_amount
-    return [token,lp_token,pool_liquidity,farm]
-    
-
-
-def test_master_chef(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls,MasterChef,fixed_token2):
-    token,lp_token,pool_liquidity,farm= pool_liqudity(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls)
-    
+def test_master_chef(UniswapV2Pair, SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls,MasterChef,fixed_token2):
+    token,lp_token,pool_liquidity,farm= pool_liqudity_helper(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls)
     master_chef = MasterChef.at(farm)
+    #lp_token = pool_liquidity.getLPTokenAddress()
+
+    #lp_token = UniswapV2Pair.at(lp_token)
+    
+    
+    
+    
+    #approve_amount = lp_token.balanceOf(pool_liquidity)
+    #print(approve_amount)
+    #pool_id = 1
+    #lp
+
+    #master_chef.addToken(10, lp_token, False,{"from":accounts[0]})
+
+    #amount_to_deposit = approve_amount/10
+    #lp_token.approve(master_chef,approve_amount,{"from":accounts[0]})
+    #depositor = accounts[0]
+    #balance_before_deposit = lp_token.balanceOf(depositor)
+    #tx = master_chef.deposit(pool_id,amount_to_deposit,{"from":pool_liquidity})
+    #balance_after_deposit = lp_token.balanceOf(depositor)
+    #assert "Deposit" in tx.events
+    #assert balance_before_deposit - balance_after_deposit == amount_to_deposit
+
     master_chef.addToken(100, fixed_token2, False,{"from":accounts[0]})
-    pool_id = 1
+    pool_id = 2
     approve_amount = 200* TENPOW18
     amount_to_deposit = 20*TENPOW18
     fixed_token2.approve(master_chef,approve_amount,{"from":accounts[0]})

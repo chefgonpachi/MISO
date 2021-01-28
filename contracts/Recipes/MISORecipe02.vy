@@ -3,26 +3,39 @@
 # MVP for preparing a MISO set menu
 
 interface IMISOTokenFactory:
-    def createToken(
+    def deployToken(
+        templateId: uint256
+    ) -> address: payable
+
+interface ISushiToken:
+    def mint(owner: address, amount: uint256) : nonpayable
+    def approve(spender: address, amount: uint256) -> bool: nonpayable
+    def transfer(to: address, amount: uint256) -> bool: nonpayable
+    def balanceOf(owner: address) -> uint256: nonpayable
+    def initToken(
         name: String[64],
         symbol: String[32],
-        templateId: uint256,
         admin: address,
         initialSupply: uint256
-    ) -> address: nonpayable
+    ) : nonpayable
 
 interface IMISOMarket:
-    def createCrowdsale(
+    def deployMarket(
+        templateId: uint256
+    ) -> address: payable
+
+interface IMISOCrowdsale:
+    def initCrowdsale(
+        funder: address,
         token: address, 
-        tokenSupply: uint256,
         paymentCurrency: address,
+        tokenSupply: uint256,
         startDate: uint256, 
         endDate: uint256, 
         rate: uint256, 
         goal: uint256, 
-        wallet: address,
-        templateId: uint256
-    ) -> address: nonpayable
+        wallet: address
+    ) : nonpayable
 
 interface IMISOLauncher:
     def createLiquidityLauncher( 
@@ -44,12 +57,7 @@ interface IPoolLiquidity:
     def getLPTokenAddress() -> address: view
 
 interface IMISOFarmFactory:
-    def createFarm(
-        rewards: address,
-        rewardsPerBlock: uint256,
-        startBlock: uint256,
-        devaddr: address,
-        accessControls: address,
+    def deployFarm(
         templateId: uint256
     ) -> address: payable
 
@@ -62,12 +70,6 @@ interface IMasterChef:
         accessControls: address
     ) : nonpayable
     def addToken(allocPoint: uint256, lpToken: address, withUpdate: bool) : nonpayable
-
-interface ISushiToken:
-    def mint(owner: address, amount: uint256) : nonpayable
-    def approve(spender: address, amount: uint256) -> bool: nonpayable
-    def transfer(to: address, amount: uint256) -> bool: nonpayable
-    def balanceOf(owner: address) -> uint256: nonpayable
 
 interface IAdminAccess:
     def hasAdminRole(user: address) -> bool: nonpayable
@@ -141,21 +143,25 @@ def prepareMiso(
     assert startTime < endTime  # dev: Start time later then end time
     assert tokensToMint >= tokensToMarket + tokensToLiquidity + tokensToFarm
 
-    token: address = self.tokenFactory.createToken(name, symbol, 1, msg.sender, tokensToMint)
-    # create access control
+    token: address = self.tokenFactory.deployToken(1)
+    ISushiToken(token).initToken(name, symbol, msg.sender, tokensToMint)
 
-    ISushiToken(token).approve(self.misoMarket, tokensToMarket)
+    # GP: create access control
 
-    crowdsale: address = IMISOMarket(self.misoMarket).createCrowdsale(
+    crowdsale: address = IMISOMarket(self.misoMarket).deployMarket(2)
+
+    ISushiToken(token).approve(crowdsale, tokensToMarket)
+
+    IMISOCrowdsale(crowdsale).initCrowdsale(
+        self,
         token,
-        tokensToMarket,
         paymentCurrency, 
-        startTime, 
-        endTime, 
-        marketRate, 
-        marketGoal, 
-        wallet, 
-        2
+        tokensToMarket,
+        startTime,
+        endTime,
+        marketRate,
+        marketGoal,
+        wallet
     )
 
     poolLiquidity: address = self.misoLauncher.createLiquidityLauncher(1)
@@ -173,14 +179,14 @@ def prepareMiso(
     
     ISushiToken(token).transfer(poolLiquidity,tokensToLiquidity)
 
-    farm: address = self.farmFactory.createFarm(
-            token,
-            rewardsPerBlock,
-            startBlock,
-            devAddr,
-            self,
-            1)
+    farm: address = self.farmFactory.deployFarm(1)
 
+    IMasterChef(farm).initFarm(
+                token,
+                rewardsPerBlock,
+                startBlock,
+                devAddr,
+                self)
     
     ISushiToken(token).transfer(farm,tokensToFarm)
     lpToken: address = IPoolLiquidity(poolLiquidity).getLPTokenAddress()

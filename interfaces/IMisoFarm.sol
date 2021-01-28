@@ -8,4 +8,9 @@ interface IMisoFarm {
         address devAddr,
         address accessControls
     ) external;
+
+    function initFarm(
+        bytes calldata data
+    ) external;
+
 }

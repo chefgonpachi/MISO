@@ -29,6 +29,9 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     */
     uint256 public rate;
     
+    ///@notice Total number of tokens to sell
+    uint256 public totalTokens;
+
     /// @notice Amount of wei raised
     uint256 public amountRaised;
 
@@ -50,6 +53,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     /// @notice the balances of accounts
     mapping(address => uint256) private balances;
 
+    mapping(address => uint256) public claimed;
 
     /**
      * Event for token purchase logging
@@ -90,7 +94,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 _rate,
         uint256 _goal,
         address payable _wallet
-    ) external {
+    ) public {
         require(!initialized, "Crowdsale: already initialized"); 
         require(_startTime >= block.timestamp, "Crowdsale: start time is before current time");
         require(_endTime > _startTime, "Crowdsale: start time is not before end time");
@@ -106,7 +110,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         rate = _rate;
         wallet = _wallet;
         paymentCurrency = _paymentCurrency;
-        token = _token;
+        totalTokens = _totalTokens;
         goal = _goal;
 
         require(_getTokenAmount(_goal) <= _totalTokens, "Crowdsale: goal should be equal to or lower than total tokens or equal");
@@ -116,6 +120,62 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         finalized = false;
     }
 
+    function initMarket(
+            bytes calldata _data
+    ) public {
+        (
+        address _funder,
+        address _token,
+        address _paymentCurrency,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        uint256 _rate,
+        uint256 _goal,
+        address payable _wallet
+        ) = abi.decode(_data, (
+            address, 
+            address, 
+            address, 
+            uint256, 
+            uint256, 
+            uint256, 
+            uint256, 
+            uint256,
+            address
+            )
+        );
+    
+        initCrowdsale(_funder, _token, _paymentCurrency, _totalTokens, _startTime, _endTime, _rate, _goal, _wallet);
+    }
+
+    function getCrowdsaleInitData(
+        address _funder,
+        address _token,
+        address _paymentCurrency,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        uint256 _rate,
+        uint256 _goal,
+        address payable _wallet
+        )
+            external
+            pure
+            returns (bytes memory _data)
+            {
+                return abi.encode(
+                    _funder,
+                    _token,
+                    _paymentCurrency,
+                    _totalTokens,
+                    _startTime,
+                    _endTime,
+                    _rate,
+                    _goal,
+                    _wallet
+                    );
+            }
     /**
      * @dev low level token purchase with ETH ***DO NOT OVERRIDE***
      * This function has a non-reentrancy guard, so it shouldn't be called by
@@ -127,6 +187,7 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         _preValidatePurchase(_beneficiary, msg.value);
         _processBuy(_beneficiary, msg.value);
     }
+    
 
     /**
      * @dev low level token purchase with a token ***DO NOT OVERRIDE***
@@ -170,8 +231,8 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         require(isOpen(), "TimedCrowdsale: not open");
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(amount != 0, "Crowdsale: amount is 0");
-        uint256 totalTokens = IERC20(token).balanceOf(address(this));
-        require(_getTokenAmount(amountRaised.add(amount)) <= totalTokens, "Crowdsale: amount of tokens exceeded");
+        uint256 tokensAvail = IERC20(token).balanceOf(address(this));
+        require(_getTokenAmount(amountRaised.add(amount)) <= tokensAvail, "Crowdsale: amount of tokens exceeded");
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
     }
 
@@ -203,13 +264,14 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
     // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
     function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
         require(hasClosed(), "Crowdsale: not closed");
-        
-        uint256 claimerBalance = balances[beneficiary];
+
+        uint256 claimerBalance = tokensClaimable(beneficiary);
         require(claimerBalance > 0, "Crowdsale: claimer balance is 0");
 
         if(goalReached()) {
             uint256 tokenAmount =  claimerBalance;
             // GP: Keep track of tokens delivered/withdrawn
+            claimed[msg.sender] = tokenAmount;
             _deliverTokens(beneficiary, tokenAmount);
         } else {
             uint256 claimAmount = claimerBalance.div(rate);
@@ -218,6 +280,16 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         balances[beneficiary] = 0;
     }
 
+    function tokensClaimable(address beneficiary) public returns (uint256){
+        uint256 unclaimedTokens = IERC20(token).balanceOf(address(this));
+        uint256 claimerBalance = balances[beneficiary];
+        claimerBalance = claimerBalance.sub(claimed[msg.sender]);
+        if(claimerBalance > unclaimedTokens){
+            claimerBalance = unclaimedTokens;
+        }
+        return claimerBalance;
+    }
+    
 
     /**
      * @dev Must be called after crowdsale ends, to do some extra finalization
@@ -230,11 +302,13 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         // GP: The balance can decrease on withdraw, this affects the amount unsold
         // GP: Need to add counter for tokensClaimed and recalc unsoldTokens
         uint256 unsoldTokens = IERC20(token).balanceOf(address(this));
+        
         // GP: Check if the amount weiRaised() not reached, if the funds are able to be refunded
         if(goalReached()) {
             _forwardFunds();
             uint256 soldTokens = _getTokenAmount(amountRaised);
-            unsoldTokens = unsoldTokens.sub(soldTokens);
+            //MZ:??
+            unsoldTokens = totalTokens.sub(soldTokens);
         }
 
         if(unsoldTokens > 0) {

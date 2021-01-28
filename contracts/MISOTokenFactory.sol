@@ -13,6 +13,16 @@ contract MISOTokenFactory is CloneFactory {
 
     bool private initialised;
 
+    /// @notice Struct to track Token template
+    struct Token {
+        bool exists;
+        uint256 templateId;
+        uint256 index;
+    }
+    
+    /// @notice mapping from auction created through this contract to Auction struct
+    mapping(address => Token) public tokenInfo;
+
     /// @notice Tokens created using the factory
     address[] public tokens;
 
@@ -23,14 +33,22 @@ contract MISOTokenFactory is CloneFactory {
     mapping(uint256 => address) private tokenTemplates;
 
     /// @notice Tracks if a token is made by the factory
-    mapping(address => bool) public isChildToken;
     mapping(address => uint256) public templateId;
+
+
+    /// @notice Minimum fee to create a farm through the factory
+    uint256 public minimumFee;
+    uint256 public tokenFee;
+
+    ///@notice Any donations if set are sent here
+    address payable public misoDiv;
+
 
     /// @notice event emitted when first initializing Miso Token Factory
     event MisoInitTokenFactory(address sender);
 
     /// @notice event emitted when a token is created using template id
-    event TokenCreated(address indexed owner, address indexed addr, string name, string symbol, address tokenTemplate);
+    event TokenCreated(address indexed owner, address indexed addr, address tokenTemplate);
     
     /// @notice event emitted when a token template is added
     event TokenTemplateAdded(address newToken, uint256 templateId);
@@ -44,6 +62,7 @@ contract MISOTokenFactory is CloneFactory {
     /**
      * @dev Single gateway to initialize the MISO Token Factory with proper address
      * @dev Can only be initialized once
+     // GP: Add fee inits
     */
     function initMISOTokenFactory(address _accessControls) external  {
         require(!initialised);
@@ -52,24 +71,76 @@ contract MISOTokenFactory is CloneFactory {
         emit MisoInitTokenFactory(msg.sender);
     }
 
+    function setMinimumFee(uint256 _amount) public {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOFarmFactory.setminimumFee: Sender must be operator"
+        );
+        minimumFee = _amount;
+    }
+    
+    function setTokenFee(uint256 _amount) public {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOFarmFactory.setTokenFee: Sender must be operator"
+        );
+        tokenFee = _amount;
+    }    
+    
+    function setDividends(address payable _divaddr) public  {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOFarmFactory.setDev: Sender must be operator"
+        );
+        misoDiv = _divaddr;
+    }
+
     /**
      * @dev Creates a token corresponding to template id
      * @dev Initializes token with parameters passed
-     * @param _name Name for the token
-     * @param _symbol Symbol for the token
      * @param _templateId Template id of token to create 
      */
-    function createToken(string memory _name, string memory _symbol, uint256 _templateId, address _owner, uint256 _initialSupply) external returns (address token) {
+    function deployToken(
+        uint256 _templateId
+    )
+        public
+        payable
+        returns (address token)
+    {
+        require(msg.value >= minimumFee, 'Failed to transfer minimumFee');
         require(tokenTemplates[_templateId] != address(0));
         token = createClone(tokenTemplates[_templateId]);
-        isChildToken[address(token)] = true;
+        // GP: triple chek the token index is correct
+        tokenInfo[address(token)] = Token(true, _templateId, tokens.length - 1);
         tokens.push(address(token));
-        IMisoToken(token).initToken(_name, _symbol, _owner, _initialSupply);
-        if (_initialSupply > 0 ) {
-            IERC20(token).transfer(msg.sender, _initialSupply);
+        emit TokenCreated(msg.sender, address(token), tokenTemplates[_templateId]);
+        if (msg.value > 0) {
+            misoDiv.transfer(msg.value);
         }
-        emit TokenCreated(msg.sender, address(token), _name, _symbol, tokenTemplates[_templateId]);
     }
+
+    /**
+     * @dev Creates a token corresponding to template id
+     * @dev Initializes token with parameters passed
+     * @param _templateId Template id of token to create 
+     */
+    function createToken(
+        uint256 _templateId,
+        bytes calldata _data
+    )
+        external
+        payable
+        returns (address token)
+    {
+        token = deployToken(_templateId);
+        IMisoToken(token).initToken(_data);
+        uint256 initialTokens = IERC20(token).balanceOf(address(this));
+        if (initialTokens > 0 ) {
+            IERC20(token).transfer(msg.sender, initialTokens);
+        }
+    }
+
+
 
     /**
      * @dev Function to add a token template to create through factory
@@ -101,7 +172,7 @@ contract MISOTokenFactory is CloneFactory {
         require(tokenTemplates[_templateId] != address(0));
         address template = tokenTemplates[_templateId];
         tokenTemplates[_templateId] = address(0);
-        delete templateId[tokenTemplates[_templateId]];
+        delete templateId[template];
         emit TokenTemplateRemoved(template, _templateId);
     }
 
@@ -115,7 +186,7 @@ contract MISOTokenFactory is CloneFactory {
         return tokens.length;
     }
 
-    /// @dev Get the total number of tokens in the factory
+    /// @dev Get the template ID in the factory
     function getTemplateId(address _tokenTemplate) public view returns (uint256) {
         return templateId[_tokenTemplate];
     }

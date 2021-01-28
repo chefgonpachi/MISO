@@ -52,6 +52,7 @@ def test_create_liquidity_farm(MasterChef,miso_recipe_03,fixed_token_cal,miso_ac
         rewards_per_block,
         start_block,
         dev_addr,
+        fixed_token_staked,
         100,
         miso_access_controls,
         {"from":accounts[0]})

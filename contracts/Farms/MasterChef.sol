@@ -106,6 +106,19 @@ contract MasterChef is IMisoFarm, AccessControl {
         accessControls = MISOAccessControls(_accessControls);
     }
 
+
+   function initFarm(
+        bytes calldata _data
+    ) public override {
+        (address _rewards,
+        uint256 _rewardsPerBlock,
+        uint256 _startBlock,
+        address _devaddr,
+        address _accessControls) = abi.decode(_data, (address, uint256, uint256, address, address));
+        initFarm(_rewards,_rewardsPerBlock,_startBlock,_devaddr,_accessControls );
+    }
+
+
     function setBonus(
         uint256 _bonusEndBlock,
         uint256 _bonusMultiplier

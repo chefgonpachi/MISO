@@ -26,6 +26,7 @@ contract TokenVault is Owned {
     // Info of each pool.
     PoolInfo[] public poolInfo;
 
+    mapping(address => uint256) tokenId;
     function initERC20Vault() public{
         _initOwned(msg.sender);
     }
@@ -46,7 +47,7 @@ contract TokenVault is Owned {
             withdrawable: _withdrawable,
             endDate: endDate
         }));
-    
+        tokenId[address(_token)] = poolInfo.length - 1;
     }
 
     // Update the given pool's ability to withdraw tokens
@@ -65,13 +66,14 @@ contract TokenVault is Owned {
     // Deposit tokens to Vault.
     // GP: Replace pid with token address
     // GP: Have an index pointer from token address to pid
-    function deposit(uint256 _pid, uint256 _amount, address _withdrawAddress) public {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][_withdrawAddress];
+    function deposit(address _token, uint256 _amount, address _withdrawAddress) public {
+        uint256 pid = tokenId[_token];
+        PoolInfo storage pool = poolInfo[pid];
+        UserInfo storage user = userInfo[pid][_withdrawAddress];
 
         pool.token.transferFrom(address(msg.sender), address(this), _amount);
         user.amount = user.amount.add(_amount);
-        emit Deposit(msg.sender, _pid, _amount);
+        emit Deposit(msg.sender, pid, _amount);
     }
 
     function withdraw(uint256 _pid, uint256 _amount) public {

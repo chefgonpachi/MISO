@@ -190,6 +190,11 @@
           1,
           9
         ],
+        "Crowdsale.tokensClaimable": [
+          1,
+          0,
+          1
+        ],
         "Crowdsale.withdrawTokens": [
           3,
           2,
@@ -265,6 +270,10 @@
           6,
           7
         ],
+        "Crowdsale.getCrowdsaleInitData": [
+          0,
+          1
+        ],
         "Crowdsale.goalReached": [
           1,
           1
@@ -277,13 +286,21 @@
           20,
           20
         ],
+        "Crowdsale.initMarket": [
+          0,
+          1
+        ],
         "Crowdsale.isOpen": [
           1,
           1
         ],
+        "Crowdsale.tokensClaimable": [
+          2,
+          3
+        ],
         "Crowdsale.withdrawTokens": [
-          5,
-          5
+          6,
+          6
         ],
         "SafeMath.add": [
           1,
@@ -304,13 +321,13 @@
       },
       "totals": {
         "branches": [
-          27,
+          28,
           12,
-          30
+          31
         ],
         "statements": [
-          61,
-          63
+          64,
+          69
         ]
       }
     },
@@ -441,9 +458,17 @@
           5,
           5
         ],
+        "DutchAuction.getAuctionInitData": [
+          1,
+          1
+        ],
         "DutchAuction.initAuction": [
           15,
           15
+        ],
+        "DutchAuction.initMarket": [
+          0,
+          1
         ],
         "DutchAuction.priceFunction": [
           3,
@@ -489,8 +514,8 @@
           30
         ],
         "statements": [
-          60,
-          60
+          61,
+          62
         ]
       }
     },
@@ -592,9 +617,13 @@
           3,
           3
         ],
+        "FixedToken.getInitData": [
+          1,
+          1
+        ],
         "FixedToken.initToken": [
-          2,
-          2
+          3,
+          3
         ],
         "SafeMath.add": [
           2,
@@ -612,8 +641,8 @@
           8
         ],
         "statements": [
-          36,
-          40
+          38,
+          42
         ]
       }
     },
@@ -814,19 +843,14 @@
     "MISOFarmFactory": {
       "branches": {
         "MISOFarmFactory.addFarmTemplate": [
-          1,
-          1,
-          1
-        ],
-        "MISOFarmFactory.createFarm": [
-          4,
+          2,
           0,
-          4
+          2
         ],
-        "MISOFarmFactory.getTemplateId": [
-          1,
-          1,
-          1
+        "MISOFarmFactory.deployFarm": [
+          2,
+          0,
+          2
         ],
         "MISOFarmFactory.initMISOFarmFactory": [
           1,
@@ -838,7 +862,7 @@
           0,
           1
         ],
-        "MISOFarmFactory.setDev": [
+        "MISOFarmFactory.setDividends": [
           0,
           0,
           1
@@ -856,34 +880,34 @@
       },
       "statements": {
         "MISOFarmFactory.addFarmTemplate": [
-          4,
-          4
+          6,
+          6
         ],
         "MISOFarmFactory.createFarm": [
-          9,
-          10
+          0,
+          2
+        ],
+        "MISOFarmFactory.deployFarm": [
+          6,
+          7
         ],
         "MISOFarmFactory.getFarmTemplate": [
           1,
           1
-        ],
-        "MISOFarmFactory.getTemplateId": [
-          2,
-          2
         ],
         "MISOFarmFactory.initMISOFarmFactory": [
           7,
           7
         ],
         "MISOFarmFactory.numberOfFarms": [
-          1,
+          0,
           1
         ],
         "MISOFarmFactory.removeFarmTemplate": [
-          4,
-          4
+          5,
+          5
         ],
-        "MISOFarmFactory.setDev": [
+        "MISOFarmFactory.setDividends": [
           0,
           2
         ],
@@ -898,12 +922,12 @@
       },
       "totals": {
         "branches": [
-          8,
-          2,
-          11
+          6,
+          0,
+          9
         ],
         "statements": [
-          28,
+          25,
           35
         ]
       }
@@ -973,6 +997,84 @@
         ]
       }
     },
+    "MISOMarket": {
+      "branches": {
+        "MISOMarket._addAuctionTemplate": [
+          1,
+          1,
+          1
+        ],
+        "MISOMarket.addAuctionTemplate": [
+          1,
+          0,
+          1
+        ],
+        "MISOMarket.createMarket": [
+          0,
+          0,
+          2
+        ],
+        "MISOMarket.initMISOMarket": [
+          1,
+          0,
+          1
+        ],
+        "MISOMarket.removeAuctionTemplate": [
+          1,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "MISOMarket._addAuctionTemplate": [
+          5,
+          5
+        ],
+        "MISOMarket.addAuctionTemplate": [
+          2,
+          2
+        ],
+        "MISOMarket.createMarket": [
+          0,
+          4
+        ],
+        "MISOMarket.deployMarket": [
+          5,
+          5
+        ],
+        "MISOMarket.getAuctionTemplate": [
+          1,
+          1
+        ],
+        "MISOMarket.getTemplateId": [
+          1,
+          1
+        ],
+        "MISOMarket.initMISOMarket": [
+          7,
+          7
+        ],
+        "MISOMarket.numberOfAuctions": [
+          0,
+          1
+        ],
+        "MISOMarket.removeAuctionTemplate": [
+          5,
+          5
+        ]
+      },
+      "totals": {
+        "branches": [
+          4,
+          1,
+          6
+        ],
+        "statements": [
+          26,
+          31
+        ]
+      }
+    },
     "MISOMasterChef": {
       "branches": {
         "AccessControl._grantRole": [
@@ -1001,8 +1103,8 @@
           1
         ],
         "Address._functionCallWithValue": [
-          1,
-          1,
+          0,
+          0,
           3
         ],
         "EnumerableSet._add": [
@@ -1041,8 +1143,8 @@
           2
         ],
         "MISOMasterChef.deposit": [
-          1,
-          1,
+          0,
+          0,
           3
         ],
         "MISOMasterChef.dev": [
@@ -1082,17 +1184,17 @@
         ],
         "MISOMasterChef.updatePool": [
           0,
-          1,
+          0,
           3
         ],
         "MISOMasterChef.withdraw": [
-          2,
-          1,
+          0,
+          0,
           3
         ],
         "SafeERC20._callOptionalReturn": [
-          1,
-          1,
+          0,
+          0,
           2
         ],
         "SafeMath.add": [
@@ -1101,17 +1203,17 @@
           1
         ],
         "SafeMath.div": [
-          1,
+          0,
           0,
           1
         ],
         "SafeMath.mul": [
-          2,
-          1,
+          0,
+          0,
           2
         ],
         "SafeMath.sub": [
-          1,
+          0,
           0,
           1
         ]
@@ -1150,18 +1252,6 @@
           2
         ],
         "AccessControl.revokeRole": [
-          1,
-          1
-        ],
-        "Address._functionCallWithValue": [
-          2,
-          3
-        ],
-        "Address.functionCall": [
-          1,
-          1
-        ],
-        "Address.isContract": [
           1,
           1
         ],
@@ -1274,7 +1364,7 @@
           4
         ],
         "MISOMasterChef.deposit": [
-          5,
+          0,
           6
         ],
         "MISOMasterChef.dev": [
@@ -1285,13 +1375,17 @@
           0,
           4
         ],
+        "MISOMasterChef.getInitData": [
+          0,
+          1
+        ],
         "MISOMasterChef.getMultiplier": [
           0,
           3
         ],
         "MISOMasterChef.initFarm": [
           8,
-          8
+          9
         ],
         "MISOMasterChef.massUpdatePools": [
           0,
@@ -1318,51 +1412,39 @@
           3
         ],
         "MISOMasterChef.updatePool": [
-          1,
+          0,
           6
         ],
         "MISOMasterChef.withdraw": [
-          6,
+          0,
           7
-        ],
-        "SafeERC20._callOptionalReturn": [
-          1,
-          1
-        ],
-        "SafeERC20.safeTransfer": [
-          1,
-          1
-        ],
-        "SafeERC20.safeTransferFrom": [
-          1,
-          1
         ],
         "SafeMath.add": [
           1,
           1
         ],
         "SafeMath.div": [
-          2,
+          0,
           2
         ],
         "SafeMath.mul": [
-          2,
+          0,
           2
         ],
         "SafeMath.sub": [
-          2,
+          0,
           2
         ]
       },
       "totals": {
         "branches": [
-          16,
-          11,
+          7,
+          5,
           44
         ],
         "statements": [
-          65,
-          129
+          40,
+          123
         ]
       }
     },
@@ -1376,8 +1458,8 @@
       },
       "statements": {
         "MISORecipe02.prepareMiso": [
-          18,
-          18
+          21,
+          21
         ]
       },
       "totals": {
@@ -1387,16 +1469,16 @@
           3
         ],
         "statements": [
-          18,
-          18
+          21,
+          21
         ]
       }
     },
     "MISORecipe03": {
       "branches": {
         "MISORecipe03.createLiquidityFarm": [
-          3,
-          1,
+          0,
+          0,
           4
         ],
         "MISORecipe03.createTokenFarm": [
@@ -1407,22 +1489,22 @@
       },
       "statements": {
         "MISORecipe03.createLiquidityFarm": [
-          11,
+          0,
           11
         ],
         "MISORecipe03.createTokenFarm": [
-          5,
+          3,
           5
         ]
       },
       "totals": {
         "branches": [
-          5,
-          1,
+          2,
+          0,
           6
         ],
         "statements": [
-          16,
+          3,
           16
         ]
       }
@@ -1435,9 +1517,14 @@
           2
         ],
         "MISOTokenFactory.createToken": [
-          1,
+          0,
           1,
           1
+        ],
+        "MISOTokenFactory.deployToken": [
+          2,
+          0,
+          2
         ],
         "MISOTokenFactory.initMISOTokenFactory": [
           1,
@@ -1448,6 +1535,21 @@
           1,
           0,
           1
+        ],
+        "MISOTokenFactory.setDividends": [
+          0,
+          0,
+          1
+        ],
+        "MISOTokenFactory.setMinimumFee": [
+          0,
+          0,
+          1
+        ],
+        "MISOTokenFactory.setTokenFee": [
+          0,
+          0,
+          1
         ]
       },
       "statements": {
@@ -1456,7 +1558,11 @@
           6
         ],
         "MISOTokenFactory.createToken": [
-          7,
+          3,
+          3
+        ],
+        "MISOTokenFactory.deployToken": [
+          6,
           7
         ],
         "MISOTokenFactory.getTemplateId": [
@@ -1478,17 +1584,346 @@
         "MISOTokenFactory.removeTokenTemplate": [
           5,
           5
+        ],
+        "MISOTokenFactory.setDividends": [
+          0,
+          2
+        ],
+        "MISOTokenFactory.setMinimumFee": [
+          0,
+          2
+        ],
+        "MISOTokenFactory.setTokenFee": [
+          0,
+          2
         ]
       },
       "totals": {
         "branches": [
-          5,
+          6,
           2,
-          5
+          10
         ],
         "statements": [
-          25,
-          25
+          27,
+          34
+        ]
+      }
+    },
+    "MintableToken": {
+      "branches": {
+        "AccessControl._grantRole": [
+          0,
+          1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          0,
+          1
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          0,
+          1
+        ],
+        "ERC20._approve": [
+          2,
+          0,
+          2
+        ],
+        "ERC20._burn": [
+          0,
+          0,
+          1
+        ],
+        "ERC20._initERC20": [
+          1,
+          0,
+          1
+        ],
+        "ERC20._mint": [
+          1,
+          0,
+          1
+        ],
+        "ERC20._transfer": [
+          2,
+          0,
+          2
+        ],
+        "ERC20Pausable._beforeTokenTransfer": [
+          1,
+          0,
+          1
+        ],
+        "EnumerableSet._add": [
+          0,
+          1,
+          1
+        ],
+        "EnumerableSet._at": [
+          0,
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          0,
+          1
+        ],
+        "MintableToken.mint": [
+          1,
+          0,
+          1
+        ],
+        "MintableToken.pause": [
+          0,
+          0,
+          1
+        ],
+        "MintableToken.unpause": [
+          0,
+          0,
+          1
+        ],
+        "Pausable._unpause": [
+          0,
+          0,
+          1
+        ],
+        "SafeMath.add": [
+          1,
+          0,
+          1
+        ],
+        "SafeMath.sub": [
+          1,
+          0,
+          1
+        ]
+      },
+      "statements": {
+        "AccessControl._grantRole": [
+          1,
+          1
+        ],
+        "AccessControl._revokeRole": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleAdmin": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMember": [
+          0,
+          1
+        ],
+        "AccessControl.getRoleMemberCount": [
+          0,
+          1
+        ],
+        "AccessControl.grantRole": [
+          1,
+          2
+        ],
+        "AccessControl.hasRole": [
+          1,
+          1
+        ],
+        "AccessControl.renounceRole": [
+          0,
+          2
+        ],
+        "AccessControl.revokeRole": [
+          0,
+          1
+        ],
+        "Context._msgSender": [
+          1,
+          1
+        ],
+        "ERC20._approve": [
+          4,
+          4
+        ],
+        "ERC20._burn": [
+          0,
+          5
+        ],
+        "ERC20._initERC20": [
+          5,
+          5
+        ],
+        "ERC20._mint": [
+          5,
+          5
+        ],
+        "ERC20._transfer": [
+          6,
+          6
+        ],
+        "ERC20.allowance": [
+          0,
+          1
+        ],
+        "ERC20.approve": [
+          2,
+          2
+        ],
+        "ERC20.balanceOf": [
+          1,
+          1
+        ],
+        "ERC20.decimals": [
+          0,
+          1
+        ],
+        "ERC20.decreaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.increaseAllowance": [
+          0,
+          1
+        ],
+        "ERC20.name": [
+          1,
+          1
+        ],
+        "ERC20.symbol": [
+          1,
+          1
+        ],
+        "ERC20.totalSupply": [
+          0,
+          1
+        ],
+        "ERC20.transfer": [
+          1,
+          1
+        ],
+        "ERC20.transferFrom": [
+          3,
+          3
+        ],
+        "ERC20Burnable.burn": [
+          0,
+          1
+        ],
+        "ERC20Burnable.burnFrom": [
+          0,
+          2
+        ],
+        "ERC20Pausable._beforeTokenTransfer": [
+          2,
+          2
+        ],
+        "EnumerableSet._add": [
+          3,
+          4
+        ],
+        "EnumerableSet._at": [
+          0,
+          2
+        ],
+        "EnumerableSet._contains": [
+          1,
+          1
+        ],
+        "EnumerableSet._length": [
+          0,
+          1
+        ],
+        "EnumerableSet._remove": [
+          0,
+          6
+        ],
+        "EnumerableSet.add": [
+          1,
+          1
+        ],
+        "EnumerableSet.at": [
+          0,
+          1
+        ],
+        "EnumerableSet.contains": [
+          1,
+          1
+        ],
+        "EnumerableSet.length": [
+          0,
+          1
+        ],
+        "EnumerableSet.remove": [
+          0,
+          1
+        ],
+        "MintableToken._beforeTokenTransfer": [
+          1,
+          1
+        ],
+        "MintableToken.getInitData": [
+          0,
+          1
+        ],
+        "MintableToken.initToken": [
+          5,
+          6
+        ],
+        "MintableToken.mint": [
+          2,
+          2
+        ],
+        "MintableToken.pause": [
+          0,
+          2
+        ],
+        "MintableToken.unpause": [
+          0,
+          2
+        ],
+        "Pausable._pause": [
+          0,
+          2
+        ],
+        "Pausable._unpause": [
+          0,
+          2
+        ],
+        "Pausable.paused": [
+          1,
+          1
+        ],
+        "SafeMath.add": [
+          1,
+          1
+        ],
+        "SafeMath.sub": [
+          1,
+          2
+        ]
+      },
+      "totals": {
+        "branches": [
+          10,
+          2,
+          22
+        ],
+        "statements": [
+          52,
+          97
         ]
       }
     },
@@ -1587,9 +2022,9 @@
           3
         ],
         "PoolLiquidity.launchLiquidityPool": [
+          9,
           5,
-          3,
-          6
+          10
         ],
         "PoolLiquidity.withdrawDeposits": [
           3,
@@ -1688,8 +2123,8 @@
           15
         ],
         "PoolLiquidity.launchLiquidityPool": [
-          10,
-          11
+          12,
+          13
         ],
         "PoolLiquidity.withdrawDeposits": [
           5,
@@ -1718,13 +2153,13 @@
       },
       "totals": {
         "branches": [
-          20,
-          11,
-          42
+          24,
+          13,
+          46
         ],
         "statements": [
-          50,
-          61
+          52,
+          63
         ]
       }
     },
@@ -2013,13 +2448,17 @@
           0,
           1
         ],
+        "SushiToken.getInitData": [
+          0,
+          1
+        ],
         "SushiToken.getPriorVotes": [
           0,
           8
         ],
         "SushiToken.initToken": [
           4,
-          4
+          5
         ],
         "SushiToken.mint": [
           0,
@@ -2038,7 +2477,7 @@
         ],
         "statements": [
           43,
-          101
+          103
         ]
       }
     },
@@ -2492,152 +2931,158 @@
         "0": [],
         "16": [
           [
-            4511,
-            4541,
+            6085,
+            6115,
             "green",
             ""
           ],
           [
-            5145,
-            5175,
+            6724,
+            6754,
             "green",
             ""
           ],
           [
-            7876,
-            7887,
+            9455,
+            9466,
             "green",
             ""
           ],
           [
-            7996,
-            8014,
+            9574,
+            9592,
             "yellow",
             ""
           ],
           [
-            8064,
-            8077,
+            9642,
+            9655,
             "green",
             ""
           ],
           [
-            8624,
-            8634,
+            10665,
+            10675,
             "yellow",
             ""
           ],
           [
-            8685,
-            8696,
+            10726,
+            10737,
             "yellow",
             ""
           ],
           [
-            9064,
-            9077,
+            11114,
+            11127,
             "yellow",
             ""
           ],
           [
-            9253,
-            9269,
+            11322,
+            11338,
             "orange",
             ""
           ],
           [
-            3100,
-            3112,
-            "green",
-            ""
-          ],
-          [
-            3166,
-            3195,
-            "yellow",
-            ""
-          ],
-          [
-            3262,
-            3283,
-            "yellow",
-            ""
-          ],
-          [
-            3350,
-            3359,
-            "yellow",
-            ""
-          ],
-          [
-            3402,
-            3423,
-            "yellow",
-            ""
-          ],
-          [
-            3483,
-            3503,
-            "yellow",
-            ""
-          ],
-          [
-            3562,
-            3578,
-            "yellow",
-            ""
-          ],
-          [
-            3629,
-            3638,
-            "yellow",
-            ""
-          ],
-          [
-            3905,
-            3943,
-            "yellow",
-            ""
-          ],
-          [
-            6262,
-            6270,
-            "green",
-            ""
-          ],
-          [
-            6317,
-            6342,
-            "green",
-            ""
-          ],
-          [
-            6407,
-            6418,
-            "green",
-            ""
-          ],
-          [
-            6533,
-            6589,
-            "green",
-            ""
-          ],
-          [
-            12433,
-            12440,
-            "yellow",
-            ""
-          ],
-          [
-            12445,
-            12461,
+            10330,
+            10362,
             "orange",
             ""
           ],
           [
-            12465,
-            12489,
+            3225,
+            3237,
+            "green",
+            ""
+          ],
+          [
+            3291,
+            3320,
+            "yellow",
+            ""
+          ],
+          [
+            3387,
+            3408,
+            "yellow",
+            ""
+          ],
+          [
+            3475,
+            3484,
+            "yellow",
+            ""
+          ],
+          [
+            3527,
+            3548,
+            "yellow",
+            ""
+          ],
+          [
+            3608,
+            3628,
+            "yellow",
+            ""
+          ],
+          [
+            3687,
+            3703,
+            "yellow",
+            ""
+          ],
+          [
+            3754,
+            3763,
+            "yellow",
+            ""
+          ],
+          [
+            4042,
+            4080,
+            "yellow",
+            ""
+          ],
+          [
+            7841,
+            7849,
+            "green",
+            ""
+          ],
+          [
+            7896,
+            7921,
+            "green",
+            ""
+          ],
+          [
+            7986,
+            7997,
+            "green",
+            ""
+          ],
+          [
+            8112,
+            8168,
+            "green",
+            ""
+          ],
+          [
+            14502,
+            14509,
+            "yellow",
+            ""
+          ],
+          [
+            14514,
+            14530,
+            "orange",
+            ""
+          ],
+          [
+            14534,
+            14558,
             "yellow",
             ""
           ]
@@ -2679,152 +3124,152 @@
       "DutchAuction": {
         "17": [
           [
-            3574,
-            3613,
+            4935,
+            4974,
             "yellow",
             ""
           ],
           [
-            3878,
-            3895,
+            5239,
+            5256,
             "yellow",
             ""
           ],
           [
-            4012,
-            4027,
+            5373,
+            5388,
             "green",
             ""
           ],
           [
-            8045,
-            8075,
+            9406,
+            9436,
             "green",
             ""
           ],
           [
-            4463,
-            4502,
+            5824,
+            5863,
             "yellow",
             ""
           ],
           [
-            4631,
-            4651,
+            5992,
+            6012,
             "yellow",
             ""
           ],
           [
-            2074,
-            2086,
+            2046,
+            2058,
             "yellow",
             ""
           ],
           [
-            2150,
-            2171,
+            2122,
+            2143,
             "yellow",
             ""
           ],
           [
-            2247,
-            2274,
+            2219,
+            2246,
             "yellow",
             ""
           ],
           [
-            2356,
-            2373,
+            2328,
+            2345,
             "yellow",
             ""
           ],
           [
-            8954,
-            9003,
+            10315,
+            10364,
             "green",
             ""
           ],
           [
-            5869,
-            5888,
+            7230,
+            7249,
             "green",
             ""
           ],
           [
-            6112,
-            6129,
+            7473,
+            7490,
             "green",
             ""
           ],
           [
-            6438,
-            6463,
+            7799,
+            7824,
             "green",
             ""
           ],
           [
-            7568,
-            7596,
+            8929,
+            8957,
             "green",
             ""
           ],
           [
-            7653,
-            7679,
+            9014,
+            9040,
             "green",
             ""
           ],
           [
-            5157,
-            5167,
+            6518,
+            6528,
             "green",
             ""
           ],
           [
-            5225,
-            5244,
+            6586,
+            6605,
             "green",
             ""
           ],
           [
-            5550,
-            5575,
+            6911,
+            6936,
             "yellow",
             ""
           ],
           [
-            9653,
-            9681,
+            11014,
+            11042,
             "yellow",
             ""
           ],
           [
-            9685,
-            9711,
+            11046,
+            11072,
             "yellow",
             ""
           ],
           [
-            11665,
-            11672,
+            13026,
+            13033,
             "yellow",
             ""
           ],
           [
-            11677,
-            11693,
+            13038,
+            13054,
             "orange",
             ""
           ],
           [
-            11697,
-            11721,
+            13058,
+            13082,
             "yellow",
             ""
           ],
           [
-            10291,
-            10321,
+            11652,
+            11682,
             "green",
             ""
           ]
@@ -2992,75 +3437,63 @@
         "11": [],
         "22": [
           [
-            2243,
-            2282,
+            2253,
+            2292,
             "red",
             ""
           ],
           [
-            2486,
-            2525,
+            2495,
+            2534,
             "red",
             ""
           ],
           [
-            5134,
-            5176,
+            4989,
+            5031,
             "yellow",
             ""
           ],
           [
-            1909,
-            1921,
+            1920,
+            1932,
             "yellow",
             ""
           ],
           [
-            3623,
-            3650,
+            2740,
+            2779,
+            "red",
+            ""
+          ],
+          [
+            3168,
+            3191,
             "yellow",
             ""
           ],
           [
-            3698,
-            3721,
-            "yellow",
-            ""
-          ],
-          [
-            3832,
-            3854,
-            "yellow",
-            ""
-          ],
-          [
-            4211,
-            4224,
+            3513,
+            3526,
             "orange",
             ""
           ],
           [
-            4558,
-            4600,
-            "green",
+            4364,
+            4406,
+            "yellow",
             ""
           ],
           [
-            6048,
-            6081,
-            "green",
-            ""
-          ],
-          [
-            2725,
-            2764,
-            "red",
+            4506,
+            4532,
+            "yellow",
             ""
           ]
         ],
         "56": [],
         "6": [],
-        "68": [],
+        "67": [],
         "7": [],
         "9": []
       },
@@ -3105,60 +3538,47 @@
         "11": [],
         "25": [
           [
-            4087,
-            4155,
+            3413,
+            3481,
+            "red",
+            ""
+          ],
+          [
+            3501,
+            3548,
+            "red",
+            ""
+          ],
+          [
+            3926,
+            3968,
             "yellow",
             ""
           ],
           [
-            4175,
-            4223,
+            4371,
+            4413,
             "yellow",
             ""
           ],
           [
-            7283,
-            7325,
+            1926,
+            1938,
             "yellow",
             ""
           ],
           [
-            7423,
-            7458,
+            4872,
+            4907,
             "green",
-            ""
-          ],
-          [
-            7840,
-            7882,
-            "yellow",
-            ""
-          ],
-          [
-            6604,
-            6672,
-            "yellow",
-            ""
-          ],
-          [
-            6692,
-            6742,
-            "yellow",
-            ""
-          ],
-          [
-            2354,
-            2366,
-            "yellow",
             ""
           ]
         ],
         "56": [],
         "6": [],
         "64": [],
-        "66": [],
-        "67": [],
         "7": [],
+        "70": [],
         "9": []
       },
       "MISOMasterChef": {
@@ -3205,56 +3625,56 @@
         ],
         "18": [
           [
-            4515,
-            4539,
+            5224,
+            5248,
             "red",
             ""
           ],
           [
-            11430,
-            11451,
+            12139,
+            12160,
             "red",
             ""
           ],
           [
-            11483,
-            11491,
+            12192,
+            12200,
             "red",
             ""
           ],
           [
-            9582,
-            9604,
-            "yellow",
-            ""
-          ],
-          [
-            9765,
-            9776,
-            "orange",
-            ""
-          ],
-          [
-            9855,
-            9866,
-            "yellow",
-            ""
-          ],
-          [
-            7841,
-            7877,
-            "yellow",
-            ""
-          ],
-          [
-            7989,
-            8002,
+            10291,
+            10313,
             "red",
             ""
           ],
           [
-            8283,
-            8300,
+            10474,
+            10485,
+            "red",
+            ""
+          ],
+          [
+            10564,
+            10575,
+            "red",
+            ""
+          ],
+          [
+            8550,
+            8586,
+            "red",
+            ""
+          ],
+          [
+            8698,
+            8711,
+            "red",
+            ""
+          ],
+          [
+            8992,
+            9009,
             "red",
             ""
           ],
@@ -3265,92 +3685,92 @@
             ""
           ],
           [
-            5785,
-            5812,
+            6494,
+            6521,
             "red",
+            ""
+          ],
+          [
+            6598,
+            6609,
+            "red",
+            ""
+          ],
+          [
+            12432,
+            12453,
+            "red",
+            ""
+          ],
+          [
+            6968,
+            6988,
+            "red",
+            ""
+          ],
+          [
+            7067,
+            7089,
+            "red",
+            ""
+          ],
+          [
+            11908,
+            11927,
+            "red",
+            ""
+          ],
+          [
+            7676,
+            7711,
+            "red",
+            ""
+          ],
+          [
+            7715,
+            7728,
+            "red",
+            ""
+          ],
+          [
+            5784,
+            5808,
+            "yellow",
             ""
           ],
           [
             5889,
             5900,
-            "red",
-            ""
-          ],
-          [
-            11723,
-            11744,
-            "red",
-            ""
-          ],
-          [
-            6259,
-            6279,
-            "red",
-            ""
-          ],
-          [
-            6358,
-            6380,
-            "red",
-            ""
-          ],
-          [
-            11199,
-            11218,
-            "red",
-            ""
-          ],
-          [
-            6967,
-            7002,
-            "red",
-            ""
-          ],
-          [
-            7006,
-            7019,
-            "red",
-            ""
-          ],
-          [
-            5075,
-            5099,
-            "yellow",
-            ""
-          ],
-          [
-            5180,
-            5191,
             "orange",
             ""
           ],
           [
-            5270,
-            5295,
+            5979,
+            6004,
             "orange",
             ""
           ],
           [
-            8809,
-            8824,
-            "orange",
-            ""
-          ],
-          [
-            8946,
-            8957,
+            9518,
+            9533,
             "red",
             ""
           ],
           [
-            9054,
-            9065,
-            "yellow",
+            9655,
+            9666,
+            "red",
             ""
           ],
           [
-            10839,
-            10859,
+            9763,
+            9774,
+            "red",
+            ""
+          ],
+          [
+            11548,
+            11568,
             "red",
             ""
           ]
@@ -3359,13 +3779,13 @@
           [
             2479,
             2485,
-            "green",
+            "red",
             ""
           ],
           [
             2565,
             2575,
-            "yellow",
+            "red",
             ""
           ],
           [
@@ -3377,13 +3797,13 @@
           [
             3826,
             3831,
-            "yellow",
+            "red",
             ""
           ],
           [
             1859,
             1865,
-            "yellow",
+            "red",
             ""
           ]
         ],
@@ -3392,13 +3812,13 @@
           [
             3487,
             3508,
-            "yellow",
+            "red",
             ""
           ],
           [
             3616,
             3646,
-            "yellow",
+            "red",
             ""
           ]
         ],
@@ -3406,13 +3826,13 @@
           [
             5082,
             5100,
-            "yellow",
+            "red",
             ""
           ],
           [
             5296,
             5303,
-            "yellow",
+            "red",
             ""
           ],
           [
@@ -3422,7 +3842,7 @@
             ""
           ]
         ],
-        "68": [],
+        "67": [],
         "7": [
           [
             4517,
@@ -3448,20 +3868,20 @@
       "MISORecipe02": {
         "0": [
           [
-            3864,
-            3890,
+            3837,
+            3863,
             "yellow",
             ""
           ],
           [
-            3934,
-            4006,
+            3907,
+            3979,
             "yellow",
             ""
           ],
           [
-            5401,
-            5420,
+            5488,
+            5507,
             "yellow",
             ""
           ]
@@ -3472,25 +3892,25 @@
           [
             2670,
             2704,
-            "yellow",
+            "red",
             ""
           ],
           [
             2747,
             2817,
-            "yellow",
+            "red",
             ""
           ],
           [
             2909,
             2929,
-            "yellow",
+            "red",
             ""
           ],
           [
             3376,
             3428,
-            "yellow",
+            "red",
             ""
           ],
           [
@@ -3513,32 +3933,62 @@
         "11": [],
         "27": [
           [
-            2553,
-            2571,
-            "green",
+            2127,
+            2166,
+            "red",
             ""
           ],
           [
-            3029,
-            3071,
-            "green",
+            2369,
+            2408,
+            "red",
             ""
           ],
           [
-            3173,
-            3199,
+            4045,
+            4062,
             "yellow",
             ""
           ],
           [
-            1674,
-            1686,
+            4421,
+            4463,
+            "green",
+            ""
+          ],
+          [
+            4565,
+            4591,
             "yellow",
             ""
           ],
           [
-            3663,
-            3705,
+            3100,
+            3123,
+            "yellow",
+            ""
+          ],
+          [
+            3455,
+            3468,
+            "orange",
+            ""
+          ],
+          [
+            2622,
+            2661,
+            "red",
+            ""
+          ],
+          [
+            1886,
+            1898,
+            "yellow",
+            ""
+          ],
+          [
+            5055,
+            5097,
             "yellow",
             ""
           ]
@@ -3653,20 +4103,20 @@
         ],
         "36": [
           [
-            1768,
-            1802,
+            2616,
+            2650,
             "red",
             ""
           ],
           [
-            1030,
-            1064,
+            1878,
+            1912,
             "yellow",
             ""
           ],
           [
-            1400,
-            1434,
+            2248,
+            2282,
             "red",
             ""
           ]
@@ -3793,20 +4243,44 @@
             ""
           ],
           [
-            3703,
-            3743,
+            3736,
+            3760,
+            "green",
+            ""
+          ],
+          [
+            3764,
+            3787,
             "yellow",
             ""
           ],
           [
-            3978,
-            3994,
+            3889,
+            3913,
+            "green",
+            ""
+          ],
+          [
+            3917,
+            3940,
+            "yellow",
+            ""
+          ],
+          [
+            4156,
+            4196,
+            "yellow",
+            ""
+          ],
+          [
+            4431,
+            4447,
             "orange",
             ""
           ],
           [
-            3998,
-            4013,
+            4451,
+            4466,
             "orange",
             ""
           ],
@@ -3829,44 +4303,44 @@
             ""
           ],
           [
-            4957,
-            4999,
+            5410,
+            5452,
             "yellow",
             ""
           ],
           [
-            5096,
-            5115,
+            5549,
+            5568,
             "green",
             ""
           ],
           [
-            5157,
-            5181,
+            5610,
+            5634,
             "green",
             ""
           ],
           [
-            5274,
-            5289,
+            5727,
+            5742,
             "yellow",
             ""
           ],
           [
-            5420,
-            5435,
+            5873,
+            5888,
             "yellow",
             ""
           ],
           [
-            6909,
-            6933,
+            7362,
+            7386,
             "red",
             ""
           ],
           [
-            7042,
-            7066,
+            7495,
+            7519,
             "red",
             ""
           ],
@@ -3889,32 +4363,32 @@
             ""
           ],
           [
-            4492,
-            4534,
+            4945,
+            4987,
             "yellow",
             ""
           ],
           [
-            4631,
-            4656,
+            5084,
+            5109,
             "green",
             ""
           ],
           [
-            4767,
-            4780,
+            5220,
+            5233,
             "green",
             ""
           ],
           [
-            5678,
-            5696,
+            6131,
+            6149,
             "yellow",
             ""
           ],
           [
-            7572,
-            7596,
+            8025,
+            8049,
             "red",
             ""
           ]
@@ -4105,122 +4579,122 @@
         ],
         "37": [
           [
-            870,
-            904,
+            1718,
+            1752,
             "red",
             ""
           ],
           [
-            5953,
-            5979,
+            6801,
+            6827,
             "red",
             ""
           ],
           [
-            6094,
-            6111,
+            6942,
+            6959,
             "red",
             ""
           ],
           [
-            6203,
-            6266,
+            7051,
+            7114,
             "red",
             ""
           ],
           [
-            6402,
-            6449,
+            7250,
+            7297,
             "red",
             ""
           ],
           [
-            6750,
-            6777,
+            7598,
+            7625,
             "red",
             ""
           ],
           [
-            6837,
-            6863,
+            7685,
+            7711,
             "red",
             ""
           ],
           [
-            5321,
-            5337,
+            6169,
+            6185,
             "red",
             ""
           ],
           [
-            4670,
-            4693,
+            5518,
+            5541,
             "red",
             ""
           ],
           [
-            4755,
-            4783,
+            5603,
+            5631,
             "red",
             ""
           ],
           [
-            4841,
-            4854,
+            5689,
+            5702,
             "red",
             ""
           ],
           [
-            7571,
-            7587,
+            8419,
+            8435,
             "red",
             ""
           ],
           [
-            7591,
-            7601,
+            8439,
+            8449,
             "red",
             ""
           ],
           [
-            7621,
-            7641,
+            8469,
+            8489,
             "red",
             ""
           ],
           [
-            7787,
-            7800,
+            8635,
+            8648,
             "red",
             ""
           ],
           [
-            8014,
-            8034,
+            8862,
+            8882,
             "red",
             ""
           ],
           [
-            8180,
-            8193,
+            9028,
+            9041,
             "red",
             ""
           ],
           [
-            8695,
-            8711,
+            9543,
+            9559,
             "red",
             ""
           ],
           [
-            8715,
-            8780,
+            9563,
+            9628,
             "red",
             ""
           ],
           [
-            9205,
-            9214,
+            10053,
+            10062,
             "red",
             ""
           ]
@@ -4970,332 +5444,368 @@
         ],
         "16": [
           [
-            10256,
-            10282,
+            12325,
+            12351,
             "green",
             ""
           ],
           [
-            4503,
-            4584,
+            6077,
+            6158,
             "green",
             ""
           ],
           [
-            4595,
-            4640,
+            6169,
+            6214,
             "green",
             ""
           ],
           [
-            4650,
-            4686,
+            6224,
+            6260,
             "green",
             ""
           ],
           [
-            5137,
-            5220,
+            6716,
+            6799,
             "green",
             ""
           ],
           [
-            5230,
-            5278,
+            6809,
+            6857,
             "green",
             ""
           ],
           [
-            5288,
-            5348,
+            6867,
+            6927,
             "green",
             ""
           ],
           [
-            5358,
-            5397,
+            6937,
+            6976,
             "green",
             ""
           ],
           [
-            11111,
+            13180,
+            13212,
+            "green",
+            ""
+          ],
+          [
+            12669,
+            12734,
+            "green",
+            ""
+          ],
+          [
+            9447,
+            9492,
+            "green",
+            ""
+          ],
+          [
+            9566,
+            9628,
+            "green",
+            ""
+          ],
+          [
+            9782,
+            9815,
+            "green",
+            ""
+          ],
+          [
+            9829,
+            9869,
+            "green",
+            ""
+          ],
+          [
+            9960,
+            9993,
+            "green",
+            ""
+          ],
+          [
+            10013,
+            10038,
+            "green",
+            ""
+          ],
+          [
+            10657,
+            10708,
+            "green",
+            ""
+          ],
+          [
+            10718,
+            10763,
+            "green",
+            ""
+          ],
+          [
             11143,
+            11158,
             "green",
             ""
           ],
           [
-            10600,
-            10665,
+            11256,
+            11298,
             "green",
             ""
           ],
           [
-            7868,
-            7913,
-            "green",
-            ""
-          ],
-          [
-            7988,
-            8050,
-            "green",
-            ""
-          ],
-          [
-            8204,
-            8244,
-            "green",
-            ""
-          ],
-          [
-            8335,
-            8368,
-            "green",
-            ""
-          ],
-          [
-            8388,
-            8413,
-            "green",
-            ""
-          ],
-          [
-            8616,
-            8667,
-            "green",
-            ""
-          ],
-          [
-            8677,
-            8722,
-            "green",
-            ""
-          ],
-          [
-            9093,
-            9108,
-            "green",
-            ""
-          ],
-          [
-            9186,
-            9229,
-            "green",
-            ""
-          ],
-          [
-            9285,
-            9321,
+            11354,
+            11390,
             "red",
             ""
           ],
           [
-            9342,
-            9358,
+            11411,
+            11427,
             "green",
             ""
           ],
           [
-            9369,
-            9394,
+            11438,
+            11463,
             "green",
+            ""
+          ],
+          [
+            10261,
+            10317,
+            "green",
+            ""
+          ],
+          [
+            10377,
+            10409,
+            "red",
             ""
           ],
           [
             10429,
-            10453,
+            10450,
             "green",
             ""
           ],
           [
-            10855,
-            10882,
+            12498,
+            12522,
             "green",
             ""
           ],
           [
-            3092,
-            3147,
+            12924,
+            12951,
             "green",
             ""
           ],
           [
-            3158,
-            3244,
+            4879,
+            4986,
+            "red",
+            ""
+          ],
+          [
+            5394,
+            5707,
+            "red",
+            ""
+          ],
+          [
+            3217,
+            3272,
             "green",
             ""
           ],
           [
-            3254,
-            3332,
+            3283,
+            3369,
             "green",
             ""
           ],
           [
-            3342,
-            3384,
+            3379,
+            3457,
             "green",
             ""
           ],
           [
-            3394,
-            3465,
+            3467,
+            3509,
             "green",
             ""
           ],
           [
-            3475,
-            3544,
+            3519,
+            3590,
             "green",
             ""
           ],
           [
-            3554,
-            3611,
+            3600,
+            3669,
             "green",
             ""
           ],
           [
-            3621,
-            3663,
+            3679,
+            3736,
             "green",
             ""
           ],
           [
-            3674,
-            3688,
+            3746,
+            3788,
             "green",
             ""
           ],
           [
-            3698,
-            3720,
+            3799,
+            3813,
             "green",
             ""
           ],
           [
-            3730,
-            3748,
+            3823,
+            3845,
             "green",
             ""
           ],
           [
-            3758,
-            3770,
+            3855,
+            3873,
             "green",
             ""
           ],
           [
-            3780,
-            3796,
+            3883,
+            3895,
             "green",
             ""
           ],
           [
-            3806,
-            3840,
+            3905,
+            3921,
             "green",
             ""
           ],
           [
-            3850,
-            3864,
+            3931,
+            3965,
             "green",
             ""
           ],
           [
-            3874,
-            3886,
+            3975,
+            4001,
             "green",
             ""
           ],
           [
-            3897,
-            4018,
+            4011,
+            4023,
             "green",
             ""
           ],
           [
-            4037,
-            4085,
+            4034,
+            4155,
             "green",
             ""
           ],
           [
-            4095,
-            4113,
+            4174,
+            4222,
             "green",
             ""
           ],
           [
-            4123,
-            4140,
+            4232,
+            4250,
             "green",
             ""
           ],
           [
-            6254,
-            6299,
+            4260,
+            4277,
             "green",
             ""
           ],
           [
-            6309,
-            6389,
+            7833,
+            7878,
             "green",
             ""
           ],
           [
-            6399,
-            6445,
+            7888,
+            7968,
             "green",
             ""
           ],
           [
-            6525,
-            6630,
+            7978,
+            8024,
             "green",
             ""
           ],
           [
-            5728,
-            5785,
+            8104,
+            8209,
             "green",
             ""
           ],
           [
-            5820,
-            5859,
+            7307,
+            7364,
             "green",
             ""
           ],
           [
-            5870,
-            5933,
+            7399,
+            7438,
             "green",
             ""
           ],
           [
-            12425,
-            12491,
+            7449,
+            7512,
             "green",
             ""
           ],
           [
-            7129,
-            7175,
+            14494,
+            14560,
             "green",
             ""
           ],
           [
-            9925,
-            9963,
+            8708,
+            8754,
             "green",
             ""
           ],
           [
-            9764,
-            9787,
+            11994,
+            12032,
+            "green",
+            ""
+          ],
+          [
+            11833,
+            11856,
             "green",
             ""
           ]
@@ -5349,320 +5859,332 @@
       "DutchAuction": {
         "17": [
           [
-            3416,
-            3437,
+            4777,
+            4798,
             "green",
             ""
           ],
           [
-            3566,
-            3667,
+            4927,
+            5028,
             "green",
             ""
           ],
           [
-            3911,
-            3947,
+            5272,
+            5308,
             "green",
             ""
           ],
           [
-            4043,
-            4070,
+            5404,
+            5431,
             "green",
             ""
           ],
           [
-            4216,
-            4253,
+            5577,
+            5614,
             "green",
             ""
           ],
           [
-            8091,
-            8110,
+            9452,
+            9471,
             "green",
             ""
           ],
           [
-            8130,
-            8152,
+            9491,
+            9513,
             "green",
             ""
           ],
           [
-            9239,
-            9308,
+            10600,
+            10669,
             "green",
             ""
           ],
           [
-            4455,
-            4552,
+            4129,
+            4412,
             "green",
             ""
           ],
           [
-            4667,
-            4717,
+            5816,
+            5913,
             "green",
             ""
           ],
           [
-            4731,
-            4770,
+            6028,
+            6078,
             "green",
             ""
           ],
           [
-            2066,
-            2132,
+            6092,
+            6131,
             "green",
             ""
           ],
           [
-            2142,
-            2229,
+            2038,
+            2104,
             "green",
             ""
           ],
           [
-            2239,
-            2338,
+            2114,
+            2201,
             "green",
             ""
           ],
           [
-            2348,
-            2428,
+            2211,
+            2310,
             "green",
             ""
           ],
           [
-            2439,
-            2460,
+            2320,
+            2400,
             "green",
             ""
           ],
           [
-            2470,
-            2504,
+            2411,
+            2432,
             "green",
             ""
           ],
           [
-            2514,
-            2540,
+            2442,
+            2476,
             "green",
             ""
           ],
           [
-            2550,
+            2486,
+            2512,
+            "green",
+            ""
+          ],
+          [
+            2522,
+            2544,
+            "green",
+            ""
+          ],
+          [
+            2554,
             2572,
             "green",
             ""
           ],
           [
             2582,
-            2600,
+            2606,
             "green",
             ""
           ],
           [
-            2610,
-            2634,
-            "green",
-            ""
-          ],
-          [
+            2616,
             2644,
-            2672,
             "green",
             ""
           ],
           [
-            2682,
-            2698,
+            2654,
+            2670,
             "green",
             ""
           ],
           [
-            2821,
-            2859,
+            2793,
+            2831,
             "green",
             ""
           ],
           [
-            2972,
+            2944,
+            2998,
+            "green",
+            ""
+          ],
+          [
+            3008,
             3026,
             "green",
             ""
           ],
           [
-            3036,
-            3054,
+            9761,
+            9808,
             "green",
             ""
           ],
           [
-            8400,
-            8447,
+            10380,
+            10422,
             "green",
             ""
           ],
           [
-            9019,
-            9061,
+            10442,
+            10460,
             "green",
             ""
           ],
           [
-            9081,
-            9099,
+            8710,
+            8760,
             "green",
             ""
           ],
           [
-            7349,
-            7399,
+            3613,
+            3732,
+            "red",
+            ""
+          ],
+          [
+            10804,
+            10859,
             "green",
             ""
           ],
           [
-            9443,
-            9498,
+            7465,
+            7527,
             "green",
             ""
           ],
           [
-            6104,
-            6166,
+            7542,
+            7577,
             "green",
             ""
           ],
           [
-            6181,
-            6216,
+            7591,
+            7645,
             "green",
             ""
           ],
           [
-            6230,
-            6284,
+            7791,
+            7871,
             "green",
             ""
           ],
           [
-            6430,
+            7947,
+            7974,
+            "green",
+            ""
+          ],
+          [
+            8035,
+            8093,
+            "green",
+            ""
+          ],
+          [
+            9967,
+            10021,
+            "green",
+            ""
+          ],
+          [
+            8973,
+            8990,
+            "green",
+            ""
+          ],
+          [
+            9056,
+            9075,
+            "green",
+            ""
+          ],
+          [
+            9170,
+            9202,
+            "green",
+            ""
+          ],
+          [
             6510,
+            6572,
             "green",
             ""
           ],
           [
-            6586,
-            6613,
+            6721,
+            6777,
             "green",
             ""
           ],
           [
-            6674,
-            6732,
+            6903,
+            6983,
             "green",
             ""
           ],
           [
-            8606,
-            8660,
+            6998,
+            7046,
             "green",
             ""
           ],
           [
-            7612,
-            7629,
+            7066,
+            7082,
             "green",
             ""
           ],
           [
-            7695,
-            7714,
+            11006,
+            11112,
             "green",
             ""
           ],
           [
-            7809,
-            7841,
+            11123,
+            11179,
             "green",
             ""
           ],
           [
-            5149,
-            5211,
+            11189,
+            11241,
             "green",
             ""
           ],
           [
-            5360,
-            5416,
+            11251,
+            11291,
             "green",
             ""
           ],
           [
-            5542,
-            5622,
+            13018,
+            13084,
             "green",
             ""
           ],
           [
-            5637,
-            5685,
+            11698,
+            11719,
             "green",
             ""
           ],
           [
-            5705,
-            5721,
-            "green",
-            ""
-          ],
-          [
-            9645,
-            9751,
-            "green",
-            ""
-          ],
-          [
-            9762,
-            9818,
-            "green",
-            ""
-          ],
-          [
-            9828,
-            9880,
-            "green",
-            ""
-          ],
-          [
-            9890,
-            9930,
-            "green",
-            ""
-          ],
-          [
-            11657,
-            11723,
-            "green",
-            ""
-          ],
-          [
-            10337,
-            10358,
-            "green",
-            ""
-          ],
-          [
-            10389,
-            10424,
+            11750,
+            11785,
             "green",
             ""
           ]
@@ -5949,14 +6471,26 @@
         ],
         "35": [
           [
-            345,
-            371,
+            680,
+            726,
             "green",
             ""
           ],
           [
-            381,
-            414,
+            343,
+            369,
+            "green",
+            ""
+          ],
+          [
+            379,
+            412,
+            "green",
+            ""
+          ],
+          [
+            1202,
+            1259,
             "green",
             ""
           ]
@@ -6308,219 +6842,219 @@
         "11": [],
         "22": [
           [
-            2222,
-            2362,
-            "red",
-            ""
-          ],
-          [
+            2232,
             2372,
-            2392,
             "red",
             ""
           ],
           [
-            2465,
-            2603,
+            2382,
+            2402,
             "red",
             ""
           ],
           [
-            2613,
-            2631,
+            2474,
+            2612,
             "red",
             ""
           ],
           [
-            5113,
-            5261,
-            "green",
-            ""
-          ],
-          [
-            5271,
-            5320,
-            "green",
-            ""
-          ],
-          [
-            5385,
-            5424,
-            "green",
-            ""
-          ],
-          [
-            5434,
-            5481,
-            "green",
-            ""
-          ],
-          [
-            1901,
-            1922,
-            "green",
-            ""
-          ],
-          [
-            1932,
-            1950,
-            "green",
-            ""
-          ],
-          [
-            1960,
-            1978,
-            "green",
-            ""
-          ],
-          [
-            1988,
-            2012,
-            "green",
-            ""
-          ],
-          [
-            2022,
-            2042,
-            "green",
-            ""
-          ],
-          [
-            2052,
-            2104,
-            "green",
-            ""
-          ],
-          [
-            2114,
-            2150,
-            "green",
-            ""
-          ],
-          [
-            5644,
-            5676,
-            "green",
-            ""
-          ],
-          [
-            5812,
-            5831,
-            "green",
-            ""
-          ],
-          [
-            3615,
-            3680,
-            "green",
-            ""
-          ],
-          [
-            3690,
-            3755,
-            "green",
-            ""
-          ],
-          [
-            3765,
-            3814,
-            "green",
-            ""
-          ],
-          [
-            3824,
-            3855,
-            "green",
-            ""
-          ],
-          [
-            3866,
-            3912,
-            "green",
-            ""
-          ],
-          [
-            3922,
-            3955,
-            "green",
-            ""
-          ],
-          [
-            3965,
-            3990,
-            "green",
-            ""
-          ],
-          [
-            4000,
-            4092,
-            "green",
-            ""
-          ],
-          [
-            4103,
-            4197,
-            "green",
-            ""
-          ],
-          [
-            4240,
-            4267,
+            2622,
+            2640,
             "red",
             ""
           ],
           [
-            4537,
-            4682,
+            4968,
+            5116,
             "green",
             ""
           ],
           [
-            4736,
-            4752,
+            5126,
+            5175,
             "green",
             ""
           ],
           [
-            4762,
-            4803,
+            5240,
+            5279,
             "green",
             ""
           ],
           [
-            4813,
-            4862,
+            5289,
+            5334,
             "green",
             ""
           ],
           [
-            6101,
-            6109,
+            5344,
+            5391,
             "green",
             ""
           ],
           [
-            6026,
-            6029,
+            1912,
+            1933,
             "green",
             ""
           ],
           [
-            2704,
-            2837,
+            1943,
+            1961,
+            "green",
+            ""
+          ],
+          [
+            1971,
+            1989,
+            "green",
+            ""
+          ],
+          [
+            1999,
+            2023,
+            "green",
+            ""
+          ],
+          [
+            2033,
+            2053,
+            "green",
+            ""
+          ],
+          [
+            2063,
+            2115,
+            "green",
+            ""
+          ],
+          [
+            2125,
+            2161,
+            "green",
+            ""
+          ],
+          [
+            5557,
+            5592,
+            "green",
+            ""
+          ],
+          [
+            5728,
+            5747,
             "red",
             ""
           ],
           [
-            2847,
-            2865,
+            2719,
+            2852,
+            "red",
+            ""
+          ],
+          [
+            2862,
+            2880,
+            "red",
+            ""
+          ],
+          [
+            3160,
+            3225,
+            "green",
+            ""
+          ],
+          [
+            3235,
+            3284,
+            "green",
+            ""
+          ],
+          [
+            3294,
+            3340,
+            "green",
+            ""
+          ],
+          [
+            3350,
+            3383,
+            "green",
+            ""
+          ],
+          [
+            3393,
+            3418,
+            "green",
+            ""
+          ],
+          [
+            3428,
+            3499,
+            "green",
+            ""
+          ],
+          [
+            3542,
+            3569,
+            "red",
+            ""
+          ],
+          [
+            4343,
+            4488,
+            "green",
+            ""
+          ],
+          [
+            4498,
+            4533,
+            "green",
+            ""
+          ],
+          [
+            4543,
+            4559,
+            "green",
+            ""
+          ],
+          [
+            4569,
+            4610,
+            "green",
+            ""
+          ],
+          [
+            4620,
+            4658,
+            "green",
+            ""
+          ],
+          [
+            4668,
+            4717,
+            "green",
+            ""
+          ],
+          [
+            4015,
+            4045,
+            "red",
+            ""
+          ],
+          [
+            4055,
+            4086,
             "red",
             ""
           ]
         ],
         "56": [],
         "6": [],
-        "68": [],
+        "67": [],
         "7": [],
         "9": []
       },
@@ -6673,224 +7207,188 @@
         "11": [],
         "25": [
           [
-            8690,
-            8726,
+            3358,
+            3395,
+            "red",
+            ""
+          ],
+          [
+            3405,
+            3482,
+            "red",
+            ""
+          ],
+          [
+            3493,
+            3549,
+            "red",
+            ""
+          ],
+          [
+            3561,
+            3601,
+            "red",
+            ""
+          ],
+          [
+            5368,
+            5404,
             "green",
             ""
           ],
           [
-            9068,
-            9090,
+            5746,
+            5768,
+            "red",
+            ""
+          ],
+          [
+            3905,
+            4048,
             "green",
             ""
           ],
           [
-            3816,
-            3868,
+            4058,
+            4088,
             "green",
             ""
           ],
           [
-            3878,
-            3933,
+            4350,
+            4496,
             "green",
             ""
           ],
           [
-            3943,
-            4025,
+            4506,
+            4558,
             "green",
             ""
           ],
           [
-            4035,
-            4069,
+            4626,
+            4668,
             "green",
             ""
           ],
           [
-            4079,
-            4156,
+            4678,
+            4711,
             "green",
             ""
           ],
           [
-            4167,
-            4224,
+            4721,
+            4771,
             "green",
             ""
           ],
           [
-            4234,
-            4384,
+            1918,
+            1939,
             "green",
             ""
           ],
           [
-            4394,
-            4477,
+            1949,
+            2001,
             "green",
             ""
           ],
           [
-            7262,
-            7405,
+            2012,
+            2033,
             "green",
             ""
           ],
           [
-            7415,
-            7517,
+            2101,
+            2135,
             "green",
             ""
           ],
           [
-            7527,
-            7557,
+            2082,
+            2085,
             "green",
             ""
           ],
           [
-            7819,
-            7965,
+            2164,
+            2182,
             "green",
             ""
           ],
           [
-            7975,
-            8027,
+            2192,
+            2223,
             "green",
             ""
           ],
           [
-            8095,
-            8137,
+            5567,
+            5611,
             "green",
             ""
           ],
           [
-            8147,
-            8180,
+            2521,
+            2573,
             "green",
             ""
           ],
           [
-            8190,
-            8240,
+            2583,
+            2637,
             "green",
             ""
           ],
           [
-            6327,
-            6379,
+            2647,
+            2728,
             "green",
             ""
           ],
           [
-            6389,
-            6446,
+            2738,
+            2771,
             "green",
             ""
           ],
           [
-            6456,
-            6540,
+            2781,
+            2862,
             "green",
             ""
           ],
           [
-            6550,
-            6586,
+            4851,
+            4988,
             "green",
             ""
           ],
           [
-            6596,
-            6673,
+            4998,
+            5017,
             "green",
             ""
           ],
           [
-            6684,
-            6743,
+            5027,
+            5074,
             "green",
             ""
           ],
           [
-            6753,
-            6895,
+            5084,
+            5134,
             "green",
             ""
           ],
           [
-            2346,
-            2367,
-            "green",
-            ""
-          ],
-          [
-            2377,
-            2429,
-            "green",
-            ""
-          ],
-          [
-            2440,
-            2461,
-            "green",
-            ""
-          ],
-          [
-            2529,
-            2563,
-            "green",
-            ""
-          ],
-          [
-            2510,
-            2513,
-            "green",
-            ""
-          ],
-          [
-            2592,
-            2610,
-            "green",
-            ""
-          ],
-          [
-            2620,
-            2651,
-            "green",
-            ""
-          ],
-          [
-            8889,
-            8933,
-            "green",
-            ""
-          ],
-          [
-            8320,
-            8339,
-            "green",
-            ""
-          ],
-          [
-            8349,
-            8396,
-            "green",
-            ""
-          ],
-          [
-            8406,
-            8456,
-            "green",
-            ""
-          ],
-          [
-            8466,
-            8521,
+            5144,
+            5199,
             "green",
             ""
           ]
@@ -6898,9 +7396,8 @@
         "56": [],
         "6": [],
         "64": [],
-        "66": [],
-        "67": [],
         "7": [],
+        "70": [],
         "9": []
       },
       "MISOMasterChef": {
@@ -7032,152 +7529,152 @@
         ],
         "18": [
           [
-            4494,
-            4606,
+            5203,
+            5315,
             "red",
             ""
           ],
           [
-            4617,
-            4647,
+            5326,
+            5356,
             "red",
             ""
           ],
           [
-            4657,
-            4691,
+            5366,
+            5400,
             "red",
             ""
           ],
           [
-            11422,
-            11465,
+            12131,
+            12174,
             "red",
             ""
           ],
           [
-            11475,
-            11506,
+            12184,
+            12215,
             "red",
             ""
           ],
           [
-            11550,
-            11558,
+            12259,
+            12267,
             "red",
             ""
           ],
           [
-            11568,
-            11607,
+            12277,
+            12316,
             "red",
             ""
           ],
           [
-            4768,
-            4790,
+            5477,
+            5499,
             "red",
             ""
           ],
           [
-            9574,
-            9627,
-            "green",
-            ""
-          ],
-          [
-            9637,
-            9653,
-            "green",
-            ""
-          ],
-          [
-            9792,
-            9832,
+            10283,
+            10336,
             "red",
             ""
           ],
           [
-            9882,
-            9920,
-            "green",
-            ""
-          ],
-          [
-            9934,
-            9989,
-            "green",
-            ""
-          ],
-          [
-            10009,
-            10077,
-            "green",
-            ""
-          ],
-          [
-            10087,
-            10127,
-            "green",
-            ""
-          ],
-          [
-            7893,
-            7900,
-            "green",
-            ""
-          ],
-          [
-            8018,
-            8053,
+            10346,
+            10362,
             "red",
             ""
           ],
           [
-            8067,
-            8074,
+            10501,
+            10541,
             "red",
             ""
           ],
           [
-            8316,
-            8374,
+            10591,
+            10629,
             "red",
             ""
           ],
           [
-            8394,
-            8485,
+            10643,
+            10698,
             "red",
             ""
           ],
           [
-            8495,
-            8530,
+            10718,
+            10786,
             "red",
             ""
           ],
           [
-            10406,
-            10421,
+            10796,
+            10836,
             "red",
             ""
           ],
           [
-            10431,
-            10450,
+            8602,
+            8609,
             "red",
             ""
           ],
           [
-            10460,
-            10514,
+            8727,
+            8762,
             "red",
             ""
           ],
           [
-            10524,
-            10572,
+            8776,
+            8783,
+            "red",
+            ""
+          ],
+          [
+            9025,
+            9083,
+            "red",
+            ""
+          ],
+          [
+            9103,
+            9194,
+            "red",
+            ""
+          ],
+          [
+            9204,
+            9239,
+            "red",
+            ""
+          ],
+          [
+            11115,
+            11130,
+            "red",
+            ""
+          ],
+          [
+            11140,
+            11159,
+            "red",
+            ""
+          ],
+          [
+            11169,
+            11223,
+            "red",
+            ""
+          ],
+          [
+            11233,
+            11281,
             "red",
             ""
           ],
@@ -7230,21 +7727,111 @@
             ""
           ],
           [
-            7633,
-            7648,
+            4313,
+            4377,
             "red",
             ""
           ],
           [
-            7612,
-            7617,
+            8342,
+            8357,
             "red",
             ""
           ],
           [
-            5764,
+            8321,
+            8326,
+            "red",
+            ""
+          ],
+          [
+            6473,
+            6584,
+            "red",
+            ""
+          ],
+          [
+            6625,
+            6642,
+            "red",
+            ""
+          ],
+          [
+            6662,
+            6743,
+            "red",
+            ""
+          ],
+          [
+            6753,
+            6792,
+            "red",
+            ""
+          ],
+          [
+            12424,
+            12467,
+            "red",
+            ""
+          ],
+          [
+            12477,
+            12495,
+            "red",
+            ""
+          ],
+          [
+            7004,
+            7046,
+            "red",
+            ""
+          ],
+          [
+            7105,
+            7126,
+            "red",
+            ""
+          ],
+          [
+            7157,
+            7267,
+            "red",
+            ""
+          ],
+          [
+            4997,
+            5082,
+            "red",
+            ""
+          ],
+          [
+            11943,
+            11978,
+            "red",
+            ""
+          ],
+          [
+            12009,
+            12017,
+            "red",
+            ""
+          ],
+          [
+            7938,
+            8019,
+            "red",
+            ""
+          ],
+          [
+            8039,
+            8112,
+            "red",
+            ""
+          ],
+          [
+            5763,
             5875,
-            "red",
+            "green",
             ""
           ],
           [
@@ -7254,140 +7841,62 @@
             ""
           ],
           [
-            5953,
-            6034,
-            "red",
-            ""
-          ],
-          [
-            6044,
-            6083,
-            "red",
-            ""
-          ],
-          [
-            11715,
-            11758,
-            "red",
-            ""
-          ],
-          [
-            11768,
-            11786,
-            "red",
-            ""
-          ],
-          [
-            6295,
-            6337,
-            "red",
-            ""
-          ],
-          [
-            6396,
-            6417,
-            "red",
-            ""
-          ],
-          [
-            6448,
-            6558,
-            "red",
-            ""
-          ],
-          [
-            11234,
-            11269,
-            "red",
-            ""
-          ],
-          [
-            11300,
-            11308,
-            "red",
-            ""
-          ],
-          [
-            7229,
-            7310,
-            "red",
-            ""
-          ],
-          [
-            7330,
-            7403,
-            "red",
-            ""
-          ],
-          [
-            5054,
-            5166,
+            6042,
+            6092,
             "green",
             ""
           ],
           [
-            5207,
-            5224,
+            6102,
+            6286,
+            "green",
+            ""
+          ],
+          [
+            9488,
+            9504,
             "red",
             ""
           ],
           [
-            5333,
-            5383,
-            "green",
-            ""
-          ],
-          [
-            5393,
-            5577,
-            "green",
-            ""
-          ],
-          [
-            8779,
-            8795,
-            "green",
-            ""
-          ],
-          [
-            8977,
-            9017,
+            9686,
+            9726,
             "red",
             ""
           ],
           [
-            9081,
-            9155,
-            "green",
-            ""
-          ],
-          [
-            9169,
-            9207,
-            "green",
-            ""
-          ],
-          [
-            9227,
-            9295,
-            "green",
-            ""
-          ],
-          [
-            9305,
-            9344,
-            "green",
-            ""
-          ],
-          [
-            10875,
-            10908,
+            9790,
+            9864,
             "red",
             ""
           ],
           [
-            10939,
-            10969,
+            9878,
+            9916,
+            "red",
+            ""
+          ],
+          [
+            9936,
+            10004,
+            "red",
+            ""
+          ],
+          [
+            10014,
+            10053,
+            "red",
+            ""
+          ],
+          [
+            11584,
+            11617,
+            "red",
+            ""
+          ],
+          [
+            11648,
+            11678,
             "red",
             ""
           ]
@@ -7396,37 +7905,37 @@
           [
             2501,
             2509,
-            "green",
+            "red",
             ""
           ],
           [
             2557,
             2613,
-            "green",
+            "red",
             ""
           ],
           [
             3178,
             3224,
-            "green",
+            "red",
             ""
           ],
           [
             3818,
             3846,
-            "green",
+            "red",
             ""
           ],
           [
             1398,
             1448,
-            "green",
+            "red",
             ""
           ],
           [
             1851,
             1880,
-            "green",
+            "red",
             ""
           ],
           [
@@ -7441,19 +7950,19 @@
           [
             778,
             864,
-            "green",
+            "red",
             ""
           ],
           [
             977,
             1073,
-            "green",
+            "red",
             ""
           ],
           [
             3608,
             3693,
-            "green",
+            "red",
             ""
           ]
         ],
@@ -7461,19 +7970,19 @@
           [
             3700,
             3760,
-            "green",
+            "red",
             ""
           ],
           [
             5074,
             5134,
-            "green",
+            "red",
             ""
           ],
           [
             5319,
             5336,
-            "green",
+            "red",
             ""
           ],
           [
@@ -7485,11 +7994,11 @@
           [
             1109,
             1124,
-            "green",
+            "red",
             ""
           ]
         ],
-        "68": [],
+        "67": [],
         "7": [
           [
             6178,
@@ -7702,110 +8211,128 @@
       "MISORecipe02": {
         "0": [
           [
-            3864,
-            3890,
+            3837,
+            3863,
             "green",
             ""
           ],
           [
-            3934,
-            4006,
+            3907,
+            3979,
             "green",
             ""
           ],
           [
-            4012,
-            4101,
+            3985,
+            4034,
             "green",
             ""
           ],
           [
-            4135,
-            4194,
+            4039,
+            4107,
             "green",
             ""
           ],
           [
-            4200,
-            4444,
+            4146,
+            4211,
             "green",
             ""
           ],
           [
-            4450,
-            4519,
+            4217,
+            4270,
             "green",
             ""
           ],
           [
-            4525,
-            4749,
+            4276,
+            4492,
             "green",
             ""
           ],
           [
-            4760,
-            4820,
+            4498,
+            4567,
             "green",
             ""
           ],
           [
-            4826,
-            4996,
+            4573,
+            4797,
             "green",
             ""
           ],
           [
-            5007,
-            5053,
+            4808,
+            4868,
             "green",
             ""
           ],
           [
-            5058,
-            5126,
+            4874,
+            4920,
             "green",
             ""
           ],
           [
-            5131,
-            5185,
+            4926,
+            5084,
             "green",
             ""
           ],
           [
-            5190,
-            5233,
+            5094,
+            5140,
             "green",
             ""
           ],
           [
-            5238,
-            5281,
+            5145,
+            5213,
             "green",
             ""
           ],
           [
-            5286,
-            5326,
+            5218,
+            5272,
             "green",
             ""
           ],
           [
-            5332,
-            5393,
+            5277,
+            5320,
             "green",
             ""
           ],
           [
-            5430,
-            5482,
+            5325,
+            5368,
             "green",
             ""
           ],
           [
-            5488,
-            5532,
+            5373,
+            5413,
+            "green",
+            ""
+          ],
+          [
+            5419,
+            5480,
+            "green",
+            ""
+          ],
+          [
+            5517,
+            5569,
+            "green",
+            ""
+          ],
+          [
+            5575,
+            5619,
             "green",
             ""
           ]
@@ -7816,67 +8343,67 @@
           [
             2670,
             2704,
-            "green",
+            "red",
             ""
           ],
           [
             2747,
             2817,
-            "green",
+            "red",
             ""
           ],
           [
             2823,
             2901,
-            "green",
+            "red",
             ""
           ],
           [
             2939,
             3011,
-            "green",
+            "red",
             ""
           ],
           [
             3022,
             3215,
-            "green",
+            "red",
             ""
           ],
           [
             3221,
             3273,
-            "green",
+            "red",
             ""
           ],
           [
             3278,
             3329,
-            "green",
+            "red",
             ""
           ],
           [
             3334,
             3371,
-            "green",
+            "red",
             ""
           ],
           [
             3376,
             3428,
-            "green",
+            "red",
             ""
           ],
           [
             3433,
             3472,
-            "green",
+            "red",
             ""
           ],
           [
             3478,
             3491,
-            "green",
+            "red",
             ""
           ],
           [
@@ -7900,13 +8427,13 @@
           [
             4685,
             4737,
-            "green",
+            "red",
             ""
           ],
           [
             4808,
             4821,
-            "green",
+            "red",
             ""
           ]
         ]
@@ -7917,152 +8444,206 @@
         "11": [],
         "27": [
           [
-            4237,
-            4271,
+            5629,
+            5663,
             "green",
             ""
           ],
           [
-            2272,
-            2322,
+            2106,
+            2246,
+            "red",
+            ""
+          ],
+          [
+            2256,
+            2276,
+            "red",
+            ""
+          ],
+          [
+            2348,
+            2486,
+            "red",
+            ""
+          ],
+          [
+            2496,
+            2514,
+            "red",
+            ""
+          ],
+          [
+            3883,
+            3915,
             "green",
             ""
           ],
           [
-            2332,
-            2380,
+            3925,
+            3959,
             "green",
             ""
           ],
           [
-            2390,
-            2425,
+            4079,
+            4128,
             "green",
             ""
           ],
           [
-            2435,
-            2462,
+            4400,
+            4547,
             "green",
             ""
           ],
           [
-            2472,
-            2539,
-            "green",
-            ""
-          ],
-          [
-            2588,
-            2638,
-            "green",
-            ""
-          ],
-          [
-            2658,
-            2748,
-            "green",
-            ""
-          ],
-          [
-            3008,
-            3155,
-            "green",
-            ""
-          ],
-          [
-            3165,
-            3200,
-            "green",
-            ""
-          ],
-          [
-            3210,
-            3227,
-            "green",
-            ""
-          ],
-          [
-            3237,
-            3280,
-            "green",
-            ""
-          ],
-          [
-            3290,
-            3329,
-            "green",
-            ""
-          ],
-          [
-            3339,
-            3390,
-            "green",
-            ""
-          ],
-          [
-            1666,
-            1687,
-            "green",
-            ""
-          ],
-          [
-            1697,
-            1715,
-            "green",
-            ""
-          ],
-          [
-            1725,
-            1777,
-            "green",
-            ""
-          ],
-          [
-            1787,
-            1824,
-            "green",
-            ""
-          ],
-          [
-            3642,
-            3792,
-            "green",
-            ""
-          ],
-          [
-            3802,
-            3852,
-            "green",
-            ""
-          ],
-          [
-            3918,
-            3958,
-            "green",
-            ""
-          ],
-          [
-            3968,
-            4014,
-            "green",
-            ""
-          ],
-          [
-            4024,
-            4072,
-            "green",
-            ""
-          ],
-          [
+            4557,
             4592,
-            4625,
             "green",
             ""
           ],
           [
-            4413,
-            4433,
+            4602,
+            4619,
+            "green",
+            ""
+          ],
+          [
+            4629,
+            4672,
+            "green",
+            ""
+          ],
+          [
+            4682,
+            4721,
+            "green",
+            ""
+          ],
+          [
+            4731,
+            4782,
+            "green",
+            ""
+          ],
+          [
+            3092,
+            3157,
+            "green",
+            ""
+          ],
+          [
+            3167,
+            3217,
+            "green",
+            ""
+          ],
+          [
+            3227,
+            3275,
+            "green",
+            ""
+          ],
+          [
+            3285,
+            3320,
+            "green",
+            ""
+          ],
+          [
+            3330,
+            3357,
+            "green",
+            ""
+          ],
+          [
+            3367,
+            3441,
+            "green",
+            ""
+          ],
+          [
+            3484,
+            3511,
+            "red",
+            ""
+          ],
+          [
+            2601,
+            2734,
+            "red",
+            ""
+          ],
+          [
+            2744,
+            2762,
+            "red",
+            ""
+          ],
+          [
+            1878,
+            1899,
+            "green",
+            ""
+          ],
+          [
+            1909,
+            1927,
+            "green",
+            ""
+          ],
+          [
+            1937,
+            1989,
+            "green",
+            ""
+          ],
+          [
+            1999,
+            2036,
+            "green",
+            ""
+          ],
+          [
+            5034,
+            5184,
+            "green",
+            ""
+          ],
+          [
+            5194,
+            5244,
+            "green",
+            ""
+          ],
+          [
+            5310,
+            5350,
+            "green",
+            ""
+          ],
+          [
+            5360,
+            5406,
+            "green",
+            ""
+          ],
+          [
+            5416,
+            5464,
+            "green",
+            ""
+          ],
+          [
+            5973,
+            6006,
+            "green",
+            ""
+          ],
+          [
+            5805,
+            5825,
             "green",
             ""
           ]
@@ -8443,74 +9024,86 @@
         ],
         "36": [
           [
-            1760,
-            1854,
+            2608,
+            2702,
             "red",
             ""
           ],
           [
-            1864,
-            1874,
+            2712,
+            2722,
             "red",
             ""
           ],
           [
-            1022,
-            1113,
+            1870,
+            1961,
             "green",
             ""
           ],
           [
-            1123,
-            1140,
+            1971,
+            1988,
             "green",
             ""
           ],
           [
-            1392,
-            1484,
+            1025,
+            1071,
             "red",
             ""
           ],
           [
-            1494,
-            1502,
+            558,
+            584,
+            "green",
+            ""
+          ],
+          [
+            594,
+            632,
+            "green",
+            ""
+          ],
+          [
+            642,
+            673,
+            "green",
+            ""
+          ],
+          [
+            683,
+            714,
+            "green",
+            ""
+          ],
+          [
+            724,
+            757,
+            "green",
+            ""
+          ],
+          [
+            2240,
+            2332,
             "red",
             ""
           ],
           [
-            560,
-            586,
-            "green",
+            2342,
+            2350,
+            "red",
             ""
           ],
           [
-            596,
-            634,
-            "green",
+            1548,
+            1605,
+            "red",
             ""
           ],
           [
-            644,
-            675,
-            "green",
-            ""
-          ],
-          [
-            685,
-            716,
-            "green",
-            ""
-          ],
-          [
-            726,
-            759,
-            "green",
-            ""
-          ],
-          [
-            2017,
-            2061,
+            2865,
+            2909,
             "green",
             ""
           ]
@@ -8811,50 +9404,62 @@
             ""
           ],
           [
-            3695,
-            3775,
+            3728,
+            3871,
             "green",
             ""
           ],
           [
-            4029,
-            4037,
+            3881,
+            4024,
+            "green",
+            ""
+          ],
+          [
+            4148,
+            4228,
+            "green",
+            ""
+          ],
+          [
+            4482,
+            4490,
             "red",
             ""
           ],
           [
-            4057,
-            4107,
+            4510,
+            4560,
             "green",
             ""
           ],
           [
-            4117,
-            4165,
+            4570,
+            4618,
             "green",
             ""
           ],
           [
-            4176,
-            4237,
+            4629,
+            4690,
             "green",
             ""
           ],
           [
-            4247,
-            4293,
+            4700,
+            4746,
             "green",
             ""
           ],
           [
-            4303,
-            4338,
+            4756,
+            4791,
             "green",
             ""
           ],
           [
-            4348,
-            4383,
+            4801,
+            4836,
             "green",
             ""
           ],
@@ -8949,56 +9554,56 @@
             ""
           ],
           [
-            4936,
-            5078,
+            5389,
+            5531,
             "green",
             ""
           ],
           [
-            5088,
-            5139,
+            5541,
+            5592,
             "green",
             ""
           ],
           [
-            5149,
-            5211,
+            5602,
+            5664,
             "green",
             ""
           ],
           [
-            5306,
-            5349,
+            5759,
+            5802,
             "green",
             ""
           ],
           [
-            5452,
-            5493,
+            5905,
+            5946,
             "green",
             ""
           ],
           [
-            6111,
-            6148,
+            6564,
+            6601,
             "green",
             ""
           ],
           [
-            6228,
-            6264,
+            6681,
+            6717,
             "green",
             ""
           ],
           [
-            6408,
-            6428,
+            6861,
+            6881,
             "green",
             ""
           ],
           [
-            7138,
-            7244,
+            7591,
+            7697,
             "red",
             ""
           ],
@@ -9027,68 +9632,68 @@
             ""
           ],
           [
-            4471,
-            4613,
+            4924,
+            5066,
             "green",
             ""
           ],
           [
-            4623,
-            4680,
+            5076,
+            5133,
             "green",
             ""
           ],
           [
-            4691,
-            4749,
+            5144,
+            5202,
             "green",
             ""
           ],
           [
-            4759,
-            4817,
+            5212,
+            5270,
             "green",
             ""
           ],
           [
-            4827,
-            4876,
+            5280,
+            5329,
             "green",
             ""
           ],
           [
-            5712,
-            5732,
+            6165,
+            6185,
             "green",
             ""
           ],
           [
-            5752,
-            5772,
+            6205,
+            6225,
             "red",
             ""
           ],
           [
-            5782,
-            5802,
+            6235,
+            6255,
             "red",
             ""
           ],
           [
-            7540,
-            7642,
+            7993,
+            8095,
             "red",
             ""
           ],
           [
-            5905,
-            5970,
+            6358,
+            6423,
             "green",
             ""
           ],
           [
-            5980,
-            6000,
+            6433,
+            6453,
             "green",
             ""
           ]
@@ -9502,200 +10107,212 @@
         ],
         "37": [
           [
-            862,
-            950,
+            1710,
+            1798,
             "red",
             ""
           ],
           [
-            960,
-            979,
+            1808,
+            1827,
             "red",
             ""
           ],
           [
-            989,
-            1041,
+            1837,
+            1889,
             "red",
             ""
           ],
           [
-            3115,
-            3143,
+            3963,
+            3991,
             "red",
             ""
           ],
           [
-            3344,
-            3383,
+            4192,
+            4231,
             "red",
             ""
           ],
           [
-            5945,
-            6024,
+            957,
+            1003,
             "red",
             ""
           ],
           [
-            6127,
-            6135,
-            "red",
-            ""
-          ],
-          [
-            6282,
-            6333,
-            "red",
-            ""
-          ],
-          [
-            6465,
-            6473,
-            "red",
-            ""
-          ],
-          [
-            6797,
-            6812,
-            "red",
-            ""
-          ],
-          [
-            6883,
-            6897,
-            "red",
-            ""
-          ],
-          [
-            6936,
-            6954,
-            "red",
-            ""
-          ],
-          [
-            6988,
-            7028,
-            "red",
-            ""
-          ],
-          [
-            531,
-            569,
+            529,
+            555,
             "green",
             ""
           ],
           [
-            579,
-            610,
+            565,
+            603,
             "green",
             ""
           ],
           [
-            620,
-            646,
+            613,
+            644,
             "green",
             ""
           ],
           [
-            656,
-            689,
+            654,
+            687,
             "green",
             ""
           ],
           [
-            5314,
-            5388,
+            6793,
+            6872,
             "red",
             ""
           ],
           [
-            4662,
-            4737,
+            6975,
+            6983,
             "red",
             ""
           ],
           [
-            4747,
-            4823,
+            7130,
+            7181,
             "red",
             ""
           ],
           [
-            4833,
-            4898,
+            7313,
+            7321,
             "red",
             ""
           ],
           [
-            4908,
-            4946,
+            7645,
+            7660,
             "red",
             ""
           ],
           [
-            7924,
-            7981,
+            7731,
+            7745,
             "red",
             ""
           ],
           [
-            8317,
-            8374,
+            7784,
+            7802,
             "red",
             ""
           ],
           [
-            7289,
-            7322,
+            7836,
+            7876,
             "red",
             ""
           ],
           [
-            7333,
-            7392,
+            6162,
+            6236,
             "red",
             ""
           ],
           [
-            7403,
-            7463,
+            5510,
+            5585,
             "red",
             ""
           ],
           [
-            8796,
-            8853,
+            5595,
+            5671,
             "red",
             ""
           ],
           [
-            8884,
-            8956,
+            5681,
+            5746,
             "red",
             ""
           ],
           [
-            8970,
-            9014,
+            5756,
+            5794,
             "red",
             ""
           ],
           [
-            9035,
-            9091,
+            1480,
+            1537,
             "red",
             ""
           ],
           [
-            9197,
-            9229,
+            8772,
+            8829,
             "red",
             ""
           ],
           [
-            9239,
-            9255,
+            9165,
+            9222,
+            "red",
+            ""
+          ],
+          [
+            8137,
+            8170,
+            "red",
+            ""
+          ],
+          [
+            8181,
+            8240,
+            "red",
+            ""
+          ],
+          [
+            8251,
+            8311,
+            "red",
+            ""
+          ],
+          [
+            9644,
+            9701,
+            "red",
+            ""
+          ],
+          [
+            9732,
+            9804,
+            "red",
+            ""
+          ],
+          [
+            9818,
+            9862,
+            "red",
+            ""
+          ],
+          [
+            9883,
+            9939,
+            "red",
+            ""
+          ],
+          [
+            10045,
+            10077,
+            "red",
+            ""
+          ],
+          [
+            10087,
+            10103,
             "red",
             ""
           ]

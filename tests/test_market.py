@@ -83,3 +83,27 @@ def test_create_crowdsale(auction_factory,crowdsale_factory_template, fixed_toke
     fixed_token_cal.approve(auction_factory, CROWDSALE_TOKENS, {"from": accounts[0]})
 
     auction_factory.createCrowdsale(fixed_token_cal, CROWDSALE_TOKENS, ETH_ADDRESS, start_time, end_time, CROWDSALE_RATE, CROWDSALE_GOAL, wallet,template_id, {"from": accounts[0]})
+
+def test_market_create_auction_data(DutchAuction,dutch_auction, auction_factory,dutch_auction_template,fixed_token_cal):
+    assert fixed_token_cal.balanceOf(accounts[0]) == AUCTION_TOKENS
+    template_id = auction_factory.getTemplateId(dutch_auction_template)
+    start_date = chain.time() + 10
+    end_date = start_date + AUCTION_TIME
+    wallet = accounts[1]
+    
+    
+    
+    new_dutch_auction = auction_factory.deployMarket(template_id).return_value
+    chain.sleep(20)
+    fixed_token_cal.approve(new_dutch_auction, AUCTION_TOKENS, {"from": accounts[0]})
+    new_dutch_auction = DutchAuction.at(new_dutch_auction)
+    _data = new_dutch_auction.getAuctionInitData(accounts[0], fixed_token_cal, AUCTION_TOKENS, start_date, end_date, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, wallet, {"from": accounts[0]})
+    
+    new_dutch_auction = auction_factory.createMarket(template_id,_data,new_dutch_auction).return_value
+    new_dutch_auction = DutchAuction.at(new_dutch_auction)
+    assert new_dutch_auction.totalTokensCommitted() == 0
+
+    token_buyer =  accounts[2]
+    eth_to_transfer = 20 * TENPOW18
+    tx = new_dutch_auction.commitEth(accounts[0], {"from":accounts[0],"value":eth_to_transfer})
+    assert "AddedCommitment" in tx.events

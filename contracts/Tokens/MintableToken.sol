@@ -10,13 +10,46 @@ contract MintableToken is AccessControl, ERC20Burnable, ERC20Pausable, IMisoToke
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) external override {
+    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public override {
         _initERC20(_name, _symbol);
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         _setupRole(MINTER_ROLE, _owner);
         _setupRole(PAUSER_ROLE, _owner);
         _mint(msg.sender, _initialSupply);
     }
+
+   function initToken(
+        bytes calldata _data
+    ) public override {
+        (string memory _name,
+        string memory _symbol,
+        address _owner,
+        uint256 _initialSupply) = abi.decode(_data, (string, string, address, uint256));
+
+        initToken(_name,_symbol,_owner,_initialSupply);
+    }
+
+   /** 
+     * @dev Generates init data for Token Factory
+     * @param _name - Token name
+     * @param _symbol - Token symbol
+     * @param _owner - Contract owner
+     * @param _initialSupply Amount of tokens minted on creation
+  */
+    function getInitData(
+        string calldata _name,
+        string calldata _symbol,
+        address _owner,
+        uint256 _initialSupply
+    )
+        external
+        pure
+        returns (bytes memory _data)
+    {
+        return abi.encode(_name, _symbol, _owner, _initialSupply);
+    }
+
+
 
     /**
      * @dev Creates `amount` new tokens for `to`.

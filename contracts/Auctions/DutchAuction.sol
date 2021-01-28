@@ -1,7 +1,6 @@
 pragma solidity ^0.6.9;
 
-// import "../../interfaces/IMisoAuction.sol";
-// import "../Utils/SafeMathPlus.sol";
+// GP: Restory reentracy guard once code coverage is tested
 // import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
@@ -52,7 +51,7 @@ contract DutchAuction {
         uint256 _startPrice,
         uint256 _minimumPrice,
         address payable _wallet
-    ) external {
+    ) public {
         require(!initialized, "DutchAuction: Auction already initialized");
         require(_endTime > _startTime, "DutchAuction: End time must be older than start price");
         require(_startPrice > _minimumPrice, "DutchAuction: Start price must be higher than minimum price");
@@ -75,6 +74,60 @@ contract DutchAuction {
         initialized = true;
     }
 
+    function initMarket(
+        bytes calldata _data
+    ) public {
+        (
+        address _funder,
+        address _token,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        address _paymentCurrency,
+        uint256 _startPrice,
+        uint256 _minimumPrice,
+        address payable _wallet
+        ) = abi.decode(_data, (
+            address,
+            address,
+            uint256,
+            uint256,
+            uint256,
+            address,
+            uint256,
+            uint256,
+            address
+        ));
+        initAuction(_funder, _token, _totalTokens, _startTime, _endTime, _paymentCurrency, _startPrice, _minimumPrice, _wallet);
+    }
+
+    function getAuctionInitData(
+        address _funder,
+        address _token,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        address _paymentCurrency,
+        uint256 _startPrice,
+        uint256 _minimumPrice,
+        address payable _wallet
+    )
+        external 
+        pure
+        returns (bytes memory _data)
+        {
+            return abi.encode(
+                _funder,
+                _token,
+                _totalTokens,
+                _startTime,
+                _endTime,
+                _paymentCurrency,
+                _startPrice,
+                _minimumPrice,
+                _wallet
+            );
+        }
     //--------------------------------------------------------
     // Commit to buying tokens!
     //--------------------------------------------------------

@@ -106,7 +106,14 @@ contract PoolLiquidity {
         require(block.timestamp > deadline, "Deposit deadline has not passed");
         require(block.timestamp < expiry, "Contract has expired");
         /// GP: Check both tokens from the factory
+        address token0 = IUniswapV2Pair(tokenWETHPair).token0();
+        address token1 = IUniswapV2Pair(tokenWETHPair).token1();
 
+        require(token0 == address(token) || token0 == address(WETH),
+                "MISOLauncher.launchLiquidityPool: Token is not part of the pair");
+        require(token1 == address(token) || token1 == address(WETH),
+                "MISOLauncher.launchLiquidityPool: Token is not part of the pair");
+                
         uint256 tokenAmount = getTokenBalance();
         uint256 wethAmount = getWethBalance();
 

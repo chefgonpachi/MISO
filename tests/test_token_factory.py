@@ -11,14 +11,27 @@ def isolation(fn_isolation):
     pass
 
 
+
 ########## TEST CREATE TOKEN ###################
-def test_create_token(token_factory):
+def test_create_token(FixedToken,token_factory):
     name = "Fixed Token"
     symbol = "FXT"
     template_id = 1 # Fixed Token Template
     test_tokens = 100 * TENPOW18 # Fixed Token Template
-    tx = token_factory.createToken(name, symbol, template_id,accounts[0], test_tokens )
-    assert "TokenCreated" in tx.events    
+    token = token_factory.deployToken(template_id, {"from":accounts[0]}).return_value
+    #assert "TokenCreated" in token.events 
+
+    token = FixedToken.at(token)
+    _data = token.getInitData(name, symbol, accounts[0], test_tokens)
+    token = token_factory.createToken(template_id, _data,{"from":accounts[0]}).return_value
+
+    token = FixedToken.at(token)
+    assert token.balanceOf(accounts[0]) == test_tokens
+    
+    
+
+
+
 
 def test_add_token_template_wrong_operator(token_factory, fixed_token_template):
     with reverts():

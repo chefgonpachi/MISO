@@ -17,28 +17,27 @@ contract MISOFarmFactory is CloneFactory {
 
     /// @notice Template id to track respective farm template
     uint256 public farmTemplateId;
-    
-    /// @notice Minimum fee to create a farm through the factory
-    uint256 public minimumFee;
 
-
-    uint256 public tokenFee;
-
-    ///@notice Any donations if set are sent here
-    address payable public misoDev;
-
-    ///@notice mapping from template id to farm template address
+    /// @notice mapping from template id to farm template address
     mapping(uint256 => address) private farmTemplates;
 
     ///@notice Tracks if a farm is made by the factory
     mapping(address => bool) public isChildFarm;
+    mapping(address => uint256) public templateId;
+
+    /// @notice Minimum fee to create a farm through the factory
+    uint256 public minimumFee;
+    uint256 public tokenFee;
+
+    ///@notice Any donations if set are sent here
+    address payable public misoDiv;
 
 
     ///@notice event emitted when first initializing the Miso Farm Factory
     event MisoInitFarmFactory(address sender);
 
     ///@notice event emitted when a farm is created using template id
-    event FarmCreated(address indexed owner, address indexed addr, address token, uint256 startBlock, address farmTemplate);
+    event FarmCreated(address indexed owner, address indexed addr, address farmTemplate);
     
     ///@notice event emitted when farm template is added to factory
     event FarmTemplateAdded(address newFarm, uint256 templateId);
@@ -55,7 +54,7 @@ contract MISOFarmFactory is CloneFactory {
     */
     function initMISOFarmFactory(
         address _accessControls,
-        address payable _misoDev,
+        address payable _misoDiv,
         uint256 _minimumFee,
         uint256 _tokenFee
     ) 
@@ -63,7 +62,7 @@ contract MISOFarmFactory is CloneFactory {
     {
         require(!initialised);
         initialised = true;
-        misoDev = _misoDev;
+        misoDiv = _misoDiv;
         minimumFee = _minimumFee;
         tokenFee = _tokenFee;
         accessControls = MISOAccessControls(_accessControls);
@@ -71,7 +70,7 @@ contract MISOFarmFactory is CloneFactory {
     }
 
 
-    function setMinimumFee (uint256 _amount) public {
+    function setMinimumFee(uint256 _amount) public {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory.setminimumFee: Sender must be operator"
@@ -79,7 +78,7 @@ contract MISOFarmFactory is CloneFactory {
         minimumFee = _amount;
     }
     
-    function setTokenFee (uint256 _amount) public {
+    function setTokenFee(uint256 _amount) public {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory.setTokenFee: Sender must be operator"
@@ -87,48 +86,55 @@ contract MISOFarmFactory is CloneFactory {
         tokenFee = _amount;
     }
 
-    function setDev(address payable _devaddr) public  {
+    function setDividends(address payable _divaddr) public  {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory.setDev: Sender must be operator"
         );
-        misoDev = _devaddr;
+        misoDiv = _divaddr;
+    }
+
+    /** 
+     * @dev Deploys a farm corresponding to the _templateId
+     * @param _templateId Template id of the farm to create
+    */
+    function deployFarm(
+        uint256 _templateId
+    )
+        public
+        payable
+        returns (address farm)
+    {
+        require(msg.value >= minimumFee, 'Failed to transfer minimumFee');
+        require(farmTemplates[_templateId] != address(0));
+        farm = createClone(farmTemplates[_templateId]);
+        isChildFarm[address(farm)] = true;
+        farms.push(address(farm));
+        emit FarmCreated(msg.sender, address(farm), farmTemplates[_templateId]);
+        if (msg.value > 0) {
+            misoDiv.transfer(msg.value);
+        }
     }
 
     /** 
      * @dev Creates a farm corresponding to the _templateId
      * @dev Initializes farm with the parameters passed
-     * @param _rewards Rewards token address
-     * @param _rewardsPerBlock - Rewards per block for the whole farm
-     * @param _startBlock - Starting block
-     * @param _devaddr Any donations if set are sent here
-     * @param _accessControls Gives right to access
      * @param _templateId Template id of the farm to create
+     * @param _data Data to be passed to the farm contract for init
     */
     function createFarm(
-            address _rewards,
-            uint256 _rewardsPerBlock,
-            uint256 _startBlock,
-            address _devaddr,
-            address _accessControls,
-            uint256 _templateId
-    ) external payable returns (address farm) {
-        require(_startBlock >= block.number, 'Starting block has passed');
-        require(msg.value >= minimumFee, 'Failed to transfer minimumFee');
-        require(farmTemplates[_templateId] != address(0));
-        require(_rewards != address(0));
-
-        farm = createClone(farmTemplates[_templateId]);
-        isChildFarm[address(farm)] = true;
-        farms.push(address(farm));
-        IMisoFarm(farm).initFarm(_rewards, _rewardsPerBlock, _startBlock, _devaddr, _accessControls);
-
-        emit FarmCreated(msg.sender, address(farm), _rewards, _startBlock, farmTemplates[_templateId]);
-        if (msg.value > 0) {
-            misoDev.transfer(msg.value);
-        }
+        uint256 _templateId,
+        bytes calldata _data
+    )
+        external
+        payable
+        returns (address farm)
+    {
+        farm = deployFarm(_templateId);
+        IMisoFarm(farm).initFarm(_data);
     }
-    
+
+
     /**
      * @dev Function to add a farm template to create through factory
      * @dev Should have operator access
@@ -139,9 +145,10 @@ contract MISOFarmFactory is CloneFactory {
             accessControls.hasOperatorRole(msg.sender),
             "MISOFarmFactory.addFarmTemplate: Sender must be operator"
         );
-        // GP: Check exisiting / duplicates
+        require(templateId[_template] == 0);
         farmTemplateId++;
         farmTemplates[farmTemplateId] = _template;
+        templateId[_template] = farmTemplateId;
         emit FarmTemplateAdded(_template, farmTemplateId);
     }
 
@@ -158,13 +165,14 @@ contract MISOFarmFactory is CloneFactory {
         require(farmTemplates[_templateId] != address(0));
         address template = farmTemplates[_templateId];
         farmTemplates[_templateId] = address(0);
+        delete templateId[template];
         emit FarmTemplateRemoved(template, _templateId);
     }
 
  
     /// @dev Get the address of the farm template
-    function getFarmTemplate(uint256 templateId) public view returns (address farmTemplate) {
-        return farmTemplates[templateId];
+    function getFarmTemplate(uint256 _farmTemplate) public view returns (address farmTemplate) {
+        return farmTemplates[_farmTemplate];
     }
 
     /// @dev Get the total number of farms in the factory
@@ -172,13 +180,5 @@ contract MISOFarmFactory is CloneFactory {
         return farms.length;
     }
 
-    // GP: Replace this with a mapping to avoid gas limits
-    function getTemplateId(address _farmTemplate) public view returns (uint256) {
-        for(uint i = 1; i <= farmTemplateId; i++) {
-            if(farmTemplates[i] == _farmTemplate) {
-                return i;
-            }
-        }
-    }
 
 }

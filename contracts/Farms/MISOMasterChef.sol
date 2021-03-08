@@ -1,6 +1,18 @@
 pragma solidity 0.6.12;
 
 
+// ------------------------------------------------------------------------
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ███████ Instant ████████████████████████████████████████████████████████
+// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
+// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
+// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ------------------------------------------------------------------------
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
@@ -9,6 +21,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../Access/MISOAccessControls.sol";
 import "../../interfaces/IMisoFarm.sol";
+import "../Utils/SafeTransfer.sol";
 
 
 // MasterChef is the master of Rewards. He can make Rewards and he is a fair guy.
@@ -23,8 +36,9 @@ import "../../interfaces/IMisoFarm.sol";
 // MISO Update - Removed minter - Contract holds token
 // MISO Update - Dev tips parameterised
 // MISO Update - Replaced owner with access controls
+// MISO Update - Added SafeTransfer
 
-contract MISOMasterChef is IMisoFarm, MISOAccessControls {
+contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -48,9 +62,9 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
 
     // Info of each pool.
     struct PoolInfo {
-        IERC20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. tokens to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that tokens distribution occurs.
+        IERC20 lpToken;             // Address of LP token contract.
+        uint256 allocPoint;         // How many allocation points assigned to this pool. tokens to distribute per block.
+        uint256 lastRewardBlock;    // Last block number that tokens distribution occurs.
         uint256 accRewardsPerShare; // Accumulated tokens per share, times 1e12. See below.
     }
 
@@ -78,7 +92,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
     PoolInfo[] public poolInfo;
     // Info of each user that stakes LP tokens.
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
-    // Total allocation poitns. Must be the sum of all allocation points in all pools.
+    // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint;
     // The block number when rewards mining starts.
     uint256 public startBlock;
@@ -104,7 +118,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
         initialised = true;
     }
 
-   function initFarm(
+    function initFarm(
         bytes calldata _data
     ) public override {
         (address _rewards,
@@ -116,14 +130,14 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
     }
 
 
-   /** 
+    /** 
      * @dev Generates init data for Farm Factory
      * @param _rewards Rewards token address
      * @param _rewardsPerBlock - Rewards per block for the whole farm
      * @param _startBlock - Starting block
      * @param _divaddr Any donations if set are sent here
      * @param _accessControls Gives right to access
-  */
+     */
     function getInitData(
             address _rewards,
             uint256 _rewardsPerBlock,
@@ -297,14 +311,14 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls {
     function safeRewardsTransfer(address _to, uint256 _amount) internal {
         uint256 rewardsBal = rewards.balanceOf(address(this));
         if (_amount > rewardsBal) {
-            rewards.transfer(_to, rewardsBal);
+            _safeTransfer(address(rewards), _to, rewardsBal);
         } else {
-            rewards.transfer(_to, _amount);
+            _safeTransfer(address(rewards), _to, _amount);
         }
     }
 
     // Returns the number of blocks remaining with the current rewards balance
-    function blocksRemaining() public returns (uint256){
+    function blocksRemaining() public view returns (uint256){
         uint256 rewardsBal = rewards.balanceOf(address(this));
         if (rewardsPerBlock > 0) {
             return rewardsBal / rewardsPerBlock;

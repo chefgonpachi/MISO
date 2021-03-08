@@ -1,67 +1,93 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
+
+// ---------------------------------------------------------------------
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ███████ Instant ████████████████████████████████████████████████████████
+// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
+// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
+// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ---------------------------------------------------------------------
+
 
 import "./Utils/CloneFactory.sol";
 import "../interfaces/IMisoMarket.sol";
 import "../interfaces/IERC20.sol";
 import "./Access/MISOAccessControls.sol";
+import "./Utils/SafeTransfer.sol";
 
 
-contract MISOMarket is CloneFactory {
+contract MISOMarket is CloneFactory, SafeTransfer {
 
-    /// @notice Responsible for access rights to the contract
+    /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
 
-    bool private initialised;    
+    /// @notice Whether market has been initialized or not.
+    bool private initialised;
 
-    /// @notice Struct to track Auction template
+    /// @notice Struct to track Auction template.
     struct Auction {
         bool exists;
-        uint256 templateId;
-        uint256 index;
+        uint64 templateId;
+        uint128 index;
     }
 
-    /// @notice Auctions created using factory
+    /// @notice Auctions created using factory.
     address[] public auctions;
 
-    /// @notice Template id to track respective auction template
+    /// @notice Template id to track respective auction template.
     uint256 public auctionTemplateId;
 
-    /// @notice mapping from market template id to market template address
+    /// @notice Mapping from market template id to market template address.
     mapping(uint256 => address) private auctionTemplates;
 
-    /// @notice mapping from market template address to market template id
+    /// @notice Mapping from market template address to market template id.
     mapping(address => uint256) private auctionTemplateToId;
 
-    /// @notice mapping from auction created through this contract to Auction struct
+    /// @notice Mapping from auction created through this contract to Auction struct.
     mapping(address => Auction) public auctionInfo;
 
-    /// @notice Minimum fee to create a farm through the factory
-    uint256 public minimumFee;
-    uint256 public tokenFee;
+    /// @notice Struct to define fees.
+    struct MarketFees {
+        uint128 minimumFee;
+        uint32 integratorFeePct;
+    }
 
-    ///@notice Any donations if set are sent here
+    /// @notice Minimum fee to create a farm through the factory.
+    MarketFees public marketFees;
+
+    ///@notice Any donations if set are sent here.
     address payable public misoDiv;
 
-    ///@notice event emitted when first initializing the Market factory
+    ///@notice Event emitted when first initializing the Market factory.
     event MisoInitMarket(address sender);
 
-    /// @notice event emitted when template is added to factory 
+    /// @notice Event emitted when template is added to factory.
     event AuctionTemplateAdded(address newAuction, uint256 templateId);
 
-    /// @notice event emitted when auction template is removed
+    /// @notice Event emitted when auction template is removed.
     event AuctionTemplateRemoved(address auction, uint256 templateId);
 
-    /// @notice event emitted when auction is created using template id
+    /// @notice Event emitted when auction is created using template id.
     event MarketCreated(address indexed owner, address indexed addr, address marketTemplate);
+
+    /// @notice event emitted when auction is created using template id
+    event MarketInitialized(address indexed addr, uint256 templateId, bytes data);
 
     constructor() public {
     }
 
     /**
-     * @dev Can only be initialized once
-     * @param _templates Initial array of MISOMarket templates 
+     * @notice Initializes the market with a list of auction templates.
+     * @dev Can only be initialized once.
+     * @param _accessControls Sets address to get the access controls from.
+     * @param _templates Initial array of MISOMarket templates.
      */
     function initMISOMarket(address _accessControls, address[] memory _templates) external {
+        /// @dev Maybe missing require message?
         require(!initialised);
         accessControls = MISOAccessControls(_accessControls);
 
@@ -69,115 +95,155 @@ contract MISOMarket is CloneFactory {
         for(uint i = 0; i < _templates.length; i++) {
             _addAuctionTemplate(_templates[i]);
         }
-        
+
         initialised = true;
         emit MisoInitMarket(msg.sender);
     }
 
+    /**
+     * @notice Sets the minimum fee.
+     * @param _amount Fee amount.
+     */
     function setMinimumFee(uint256 _amount) public {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "MISOFarmFactory.setminimumFee: Sender must be operator"
+            "MISOMarket: Sender must be operator"
         );
-        minimumFee = _amount;
+        marketFees.minimumFee = uint128(_amount);
     }
-    
-    function setTokenFee(uint256 _amount) public {
+
+    /**
+     * @notice Sets integrator fee percentage.
+     * @param _amount Percentage amount.
+     */
+    function setIntegratorFeePct(uint256 _amount) public {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "MISOFarmFactory.setTokenFee: Sender must be operator"
+            "MISOMarket: Sender must be operator"
         );
-        tokenFee = _amount;
-    }    
-    
-    function setDividends(address payable _divaddr) public  {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "MISOFarmFactory.setDev: Sender must be operator"
-        );
+        /// @dev this is out of 1000, ie 25% = 250
+        require(_amount <= 1000, "MISOMarket: Percentage is out of 1000");
+        marketFees.integratorFeePct = uint32(_amount);
+    }
+
+    /**
+     * @notice Sets dividend address.
+     * @param _divaddr Dividend address.
+     */
+    function setDividends(address payable _divaddr) public {
+        require(accessControls.hasAdminRole(msg.sender), "MISOFarmFactory.setDev: Sender must be operator");
         misoDiv = _divaddr;
     }
 
     /**
-     * @dev Creates a new MISOMarket from template _templateId
-     * @param _templateId Id of the crowdsale template to create
-    */
-
-    // GP: Add fees like Token Factory
+     * @notice Creates a new MISOMarket from template _templateId and transfers fees.
+     * @param _templateId Id of the crowdsale template to create.
+     * @param _integratorFeeAccount Address to pay the fee to.
+     * @return newMarket Market address.
+     */
+    /// @dev GP: Add fees like Token Factory
     function deployMarket(
-        uint256 _templateId
+        uint256 _templateId,
+        address payable _integratorFeeAccount
     )
-        public
-        payable
-        returns (address newMarket)
+        public payable returns (address newMarket)
     {
-        require(msg.value >= minimumFee, 'Failed to transfer minimumFee');
-        require(auctionTemplates[_templateId] != address(0));
-        newMarket = createClone(auctionTemplates[_templateId]);
-        auctionInfo[address(newMarket)] = Auction(true, _templateId, auctions.length - 1);
-        auctions.push(address(newMarket));
-        emit MarketCreated(msg.sender, address(newMarket), auctionTemplates[_templateId]);
-        if (msg.value > 0) {
-            misoDiv.transfer(msg.value);
+        MarketFees memory _marketFees = marketFees;
+        address auctionTemplate = auctionTemplates[_templateId];
+        require(msg.value >= uint256(_marketFees.minimumFee), "MISOMarket: Failed to transfer minimumFee");
+        require(auctionTemplate != address(0), "MISOMarket: Auction template doesn't exist");
+        uint256 integratorFee;
+        uint256 misoFee = msg.value;
+        if (_integratorFeeAccount != address(0) && _integratorFeeAccount != misoDiv) {
+            integratorFee = misoFee * uint256(_marketFees.integratorFeePct) / 1000;
+            misoFee = misoFee - integratorFee;
         }
+        if (misoFee > 0) {
+            misoDiv.transfer(misoFee);
+        }
+        if (integratorFee > 0) {
+            _integratorFeeAccount.transfer(integratorFee);
+        }
+        newMarket = createClone(auctionTemplate);
+        auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
+        auctions.push(address(newMarket));
+        emit MarketCreated(msg.sender, address(newMarket), auctionTemplate);
     }
 
     /**
-     * @dev Creates a new MISOMarket using _templateId
-     * @dev Initializes auction with the parameters passed
-     * @param _templateId Id of the auction template to create
-     * @param _data - Data to be sent to template on Init
-    */
+     * @notice Creates a new MISOMarket using _templateId.
+     * @dev Initializes auction with the parameters passed.
+     * @param _templateId Id of the auction template to create.
+     * @param _token The token address to be sold.
+     * @param _tokenSupply Amount of tokens to be sold at market.
+     * @param _integratorFeeAccount Address to send refferal bonus, if set.
+     * @param _data Data to be sent to template on Init.
+     * @return newMarket Market address.
+     */
     function createMarket(
         uint256 _templateId,
         address _token,
         uint256 _tokenSupply,
+        address payable _integratorFeeAccount,
         bytes calldata _data
-    ) external returns (address newMarket) {
-        newMarket = deployMarket(_templateId);
+    )
+        external payable returns (address newMarket)
+    {
+        newMarket = deployMarket(_templateId, _integratorFeeAccount);
         if (_tokenSupply > 0) {
-            require(IERC20(_token).transferFrom(msg.sender, address(this), _tokenSupply)); 
-            require(IERC20(_token).approve(newMarket, _tokenSupply));  
+            _safeTransferFrom(_token, msg.sender, _tokenSupply);
+            require(IERC20(_token).approve(newMarket, _tokenSupply), "1");
         }
         IMisoMarket(newMarket).initMarket(_data);
+        if (_tokenSupply > 0) {
+            uint256 remainingBalance = IERC20(_token).balanceOf(address(this));
+            if (remainingBalance > 0) {
+                _safeTransfer(_token, msg.sender, remainingBalance);
+            }
+        }
+
+        emit MarketInitialized(address(newMarket), _templateId, _data);
         return newMarket;
     }
 
-
     /**
-     * @dev Function to add a action template to create through factory
-     * @dev Should have operator access
-     * @param _template Auction template to create a auction
+     * @notice Function to add an auction template to create through factory.
+     * @dev Should have operator access.
+     * @param _template Auction template to create an auction.
      */
     function addAuctionTemplate(address _template) external {
         require(
             accessControls.hasOperatorRole(msg.sender),
-            "MISOMarket.addAuctionTemplate: Sender must be operator"
+            "MISOMarket: Sender must be operator"
         );
         _addAuctionTemplate(_template);    
     }
 
-     /**
-     * @dev Function to remove a Launcher template
-     * @dev Should have operator access
-     * @param _templateId Refers to template that is to be deleted
-    */
+    /**
+     * @dev Function to remove an auction template.
+     * @dev Should have operator access.
+     * @param _templateId Refers to template that is to be deleted.
+     */
     function removeAuctionTemplate(uint256 _templateId) external {
         require(
             accessControls.hasOperatorRole(msg.sender),
-            "MISOMarket.removeAuctionTemplate: Sender must be operator"
+            "MISOMarket: Sender must be operator"
         );
-        require(auctionTemplates[_templateId] != address(0));
+        // require(auctionTemplates[_templateId] != address(0), "MISOMarket: Auction template doesn't exist");
         address template = auctionTemplates[_templateId];
         auctionTemplates[_templateId] = address(0);
         delete auctionTemplateToId[template];
         emit AuctionTemplateRemoved(template, _templateId);
     }
 
+    /**
+     * @notice Function to add an auction template to create through factory.
+     * @param _template Auction template address to create an auction.
+     */
     function _addAuctionTemplate(address _template) internal {
         require(
             auctionTemplateToId[_template] == 0,
-            "MISOMarket._addAuctionTemplate: Template already exists"
+            "MISOMarket: Template already exists"
         );
         auctionTemplateId++;
         auctionTemplates[auctionTemplateId] = _template;
@@ -185,19 +251,33 @@ contract MISOMarket is CloneFactory {
         emit AuctionTemplateAdded(_template, auctionTemplateId);
     }
 
-    /// @dev Get the address of the auction template
-    function getAuctionTemplate(uint256 _templateId) public view returns (address tokenTemplate) {
+    /**
+     * @notice Get the address based on template ID.
+     * @param _templateId Auction template ID.
+     * @return Address of the required template ID.
+     */
+    function getAuctionTemplate(uint256 _templateId) public view returns (address) {
         return auctionTemplates[_templateId];
     }
-    
-    /// @dev Get the template id of the auction template
+
+    /**
+     * @notice Get the ID based on template address.
+     * @param _auctionTemplate Auction template address.
+     * @return ID of the required template address.
+     */
     function getTemplateId(address _auctionTemplate) public view returns (uint256) {
         return auctionTemplateToId[_auctionTemplate];
     }
 
-    /// @dev Get total number of auctions in the factory
+    /**
+     * @notice Get the total number of auctions in the factory.
+     * @return Auction count.
+     */
     function numberOfAuctions() public view returns (uint) {
         return auctions.length;
     }
 
+    function minimumFee() public view returns(uint128) {
+        return marketFees.minimumFee;
+    }
 }

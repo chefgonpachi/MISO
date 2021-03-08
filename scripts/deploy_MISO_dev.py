@@ -111,7 +111,7 @@ def main():
     dev_addr = wallet
 
     tx = farm_factory.createFarm(rewards_token, rewards_per_block, start_block, dev_addr, access_control, 1, {'from': operator})
-    masterchef = MasterChef.at(web3.toChecksumAddress(tx.events['FarmCreated']['addr']))
+    masterchef = MISOMasterChef.at(web3.toChecksumAddress(tx.events['FarmCreated']['addr']))
     print("masterchef: " + str(masterchef))
 
     rewards_token.transfer(masterchef, 100 * TENPOW18, {'from': operator})

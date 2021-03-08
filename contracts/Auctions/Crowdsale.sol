@@ -1,66 +1,94 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
+
+
+// ------------------------------------------------------------------------
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ███████ Instant ████████████████████████████████████████████████████████
+// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
+// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
+// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ------------------------------------------------------------------------
+
 
 import "../../interfaces/IERC20.sol";
-import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-//MZ: commented out non rentrant
-//import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "../Utils/SafeTransfer.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "../../interfaces/IPointList.sol";
+import "../Utils/Documents.sol";
 
-contract Crowdsale is Context /* ReentrancyGuard */ {
+/// @notice Attribution to delta.financial
+
+
+contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
     using SafeMath for uint256;
+
+    /// @notice MISOMarket template id for the factory contract.
+    uint256 public constant marketTemplate = 1;
 
     /// @notice The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    /// @notice The token being sold
-    address public token;
-
-    /// @notice Address where funds are collected
-    address payable private wallet;
-    
-    /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address
-    address public paymentCurrency;
-
     /** 
-    * @notice How many token units a buyer gets per token or wei.
+    * @notice rate - How many token units a buyer gets per token or wei.
     * The rate is the conversion between wei and the smallest and indivisible token unit.
     * So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
-    * 1 wei will give you 1 unit, or 0.001 TOK. 
+    * 1 wei will give you 1 unit, or 0.001 TOK.
     */
-    uint256 public rate;
-    
-    ///@notice Total number of tokens to sell
-    uint256 public totalTokens;
+    /// @notice goal - Minimum amount of funds to be raised in weis or tokens.
+    struct MarketPrice {
+        uint128 rate;
+        uint128 goal; 
+    }
+    MarketPrice public marketPrice;
 
-    /// @notice Amount of wei raised
-    uint256 public amountRaised;
+    /// @notice Starting time of crowdsale.
+    /// @notice Ending time of crowdsale.
+    /// @notice Total number of tokens to sell.
+    struct MarketInfo {
+        uint64 startTime;
+        uint64 endTime; 
+        uint128 totalTokens;
+    }
+    MarketInfo public marketInfo;
 
-    /// @notice minimum amount of funds to be raised in weis or tokens
-    uint256 public goal;
+    /// @notice Amount of wei raised.
+    /// @notice Whether crowdsale has been initialized or not.
+    /// @notice Whether crowdsale has been finalized or not.
+    struct MarketStatus {
+        uint128 amountRaised;
+        bool initialized; 
+        bool finalized;
+        bool hasPointList;
+    }
+    MarketStatus public marketStatus;
 
-    /// @notice starting time of crowdsale
-    uint256 public startTime;
+    /// @notice The token being sold.
+    address public auctionToken;
+    /// @notice Address where funds are collected.
+    address payable private wallet;
+    /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address.
+    address public paymentCurrency;
+    /// @notice Address that can finalize crowdsale.
+    address public operator;
+    /// @notice Address that manages auction approvals.
+    address public pointList;
 
-    /// @notice ending time of crowdsale
-    uint256 public endTime;
-    
-    bool private initialized;
-    bool private finalized;
-
-    /// @notice MISOMarket template id for the factory contract
-    uint256 public constant marketTemplate = 1;
-
-    /// @notice the balances of accounts
-    mapping(address => uint256) private balances;
-
+    /// @notice The commited amount of accounts.
+    mapping(address => uint256) public commitments;
+    /// @notice Amount of tokens to claim per address.
     mapping(address => uint256) public claimed;
 
     /**
-     * Event for token purchase logging
-     * @param purchaser who paid for the tokens
-     * @param beneficiary who got the tokens
-     * @param value value of wei or token paid for purchase
-     * @param amount amount of tokens purchased
+     * @notice Event for token purchase logging.
+     * @param purchaser Who paid for the tokens.
+     * @param beneficiary Who got the tokens.
+     * @param value Value of wei or token paid for purchase.
+     * @param amount Amount of tokens purchased.
      */
     event TokensPurchased(
         address indexed purchaser,
@@ -69,20 +97,23 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 amount
     );
 
+    /// @notice Event for finalization of the crowdsale
     event CrowdsaleFinalized();
 
     /**
-     * @dev Init function
-     * @param _funder The address that funds the token for crowdsale
-     * @param _token Address of the token being sold
-     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address
-     * @param _totalTokens The total number of tokens to sell in crowdsale 
-     * @param _startTime Crowdsale start time  
-     * @param _endTime Crowdsale end time
-     * @param _rate Number of token units a buyer gets per wei or token
-     * @param _goal Minimum amount of funds to be raised in weis or tokens
-     * @param _wallet Address where collected funds will be forwarded to
-   
+     * @notice Initializes main contract variables and transfers funds for the sale.
+     * @dev Init function.
+     * @param _funder The address that funds the token for crowdsale.
+     * @param _token Address of the token being sold.
+     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address.
+     * @param _totalTokens The total number of tokens to sell in crowdsale.
+     * @param _startTime Crowdsale start time.
+     * @param _endTime Crowdsale end time.
+     * @param _rate Number of token units a buyer gets per wei or token.
+     * @param _goal Minimum amount of funds to be raised in weis or tokens.
+     * @param _operator Address that can finalize crowdsale.
+     * @param _pointList Address that will manage auction approvals.
+     * @param _wallet Address where collected funds will be forwarded to.
      */
     function initCrowdsale(
         address _funder,
@@ -93,36 +124,341 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
+        address _operator,
+        address _pointList,
         address payable _wallet
     ) public {
-        require(!initialized, "Crowdsale: already initialized"); 
+        require(!marketStatus.initialized, "Crowdsale: already initialized"); 
+        require(_startTime < 10000000000, 'Crowdsale: enter an unix timestamp in seconds, not miliseconds');
+        require(_endTime < 10000000000, 'Crowdsale: enter an unix timestamp in seconds, not miliseconds');
         require(_startTime >= block.timestamp, "Crowdsale: start time is before current time");
         require(_endTime > _startTime, "Crowdsale: start time is not before end time");
         require(_rate > 0, "Crowdsale: rate is 0");
+        require(_paymentCurrency != address(0), "Crowdsale: payment currency is the zero address");
         require(_wallet != address(0), "Crowdsale: wallet is the zero address");
-        require(_token != address(0), "Crowdsale: token is the zero address");
+        require(_operator != address(0), "Crowdsale: operator is the zero address");
         require(_totalTokens > 0, "Crowdsale: total tokens is 0");
         require(_goal > 0, "Crowdsale: goal is 0");
 
-        token = _token;
-        startTime = _startTime;
-        endTime = _endTime;
-        rate = _rate;
-        wallet = _wallet;
+        marketPrice.rate = uint128(_rate);
+        marketPrice.goal = uint128(_goal);
+
+        marketInfo.startTime = uint64(_startTime);
+        marketInfo.endTime = uint64(_endTime);
+        marketInfo.totalTokens = uint128(_totalTokens);
+
+        auctionToken = _token;
         paymentCurrency = _paymentCurrency;
-        totalTokens = _totalTokens;
-        goal = _goal;
+        wallet = _wallet;
+        operator = _operator;
+
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.hasPointList = true;
+        }
 
         require(_getTokenAmount(_goal) <= _totalTokens, "Crowdsale: goal should be equal to or lower than total tokens or equal");
-        
+
         _safeTransferFrom(_token, _funder, _totalTokens);
-        initialized = true;
-        finalized = false;
+        marketStatus.initialized = true;
     }
 
-    function initMarket(
-            bytes calldata _data
-    ) public {
+
+    ///--------------------------------------------------------
+    /// Commit to buying tokens!
+    ///--------------------------------------------------------
+
+    receive() external payable {
+        // revertBecauseUserDidNotProvideAgreement();
+        // GP: Allow token direct transfers for testnet
+        buyTokensEth(msg.sender, true);
+    }
+
+
+    function marketParticipationAgreement() public pure returns (string memory) {
+        return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
+    }
+    /** 
+     * @dev Not using modifiers is a purposeful choice for code readability.
+    */ 
+    function revertBecauseUserDidNotProvideAgreement() internal pure {
+        revert("No agreement provided, please review the smart contract before interacting with it");
+    }
+
+    /**
+     * @notice Checks the amount to commit and processes the buy. Refunds the buyer if commit is too high.
+     * @dev low level token purchase with ETH ***DO NOT OVERRIDE***
+     * This function has a non-reentrancy guard, so it shouldn't be called by
+     * another `nonReentrant` function.
+     * @param _beneficiary Recipient of the token purchase.
+     */
+    function buyTokensEth(
+        address payable _beneficiary,
+        bool readAndAgreedToMarketParticipationAgreement
+    ) 
+        public payable /* nonReentrant */   
+    {
+        require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
+        if(readAndAgreedToMarketParticipationAgreement == false) {
+            revertBecauseUserDidNotProvideAgreement();
+        }
+        _preValidatePurchase(_beneficiary, msg.value);
+
+        /// @notice Get ETH able to be committed.
+        uint256 ethToTransfer = calculateCommitment(msg.value);
+
+        /// @notice Accept ETH Payments.
+        uint256 ethToRefund = msg.value.sub(ethToTransfer);
+        if (ethToTransfer > 0) {
+            _processBuy(_beneficiary, ethToTransfer);
+        }
+
+        /// @notice Return any ETH to be refunded.
+        if (ethToRefund > 0) {
+            _beneficiary.transfer(ethToRefund);
+        }
+    }
+
+    /**
+     * @notice Checks if the commitment doesn't exceed the goal of this sale.
+     * @param _commitment Number of tokens to be commited.
+     * @return committed The amount able to be purchased during a sale.
+     */
+    function calculateCommitment(uint256 _commitment)
+        public
+        view
+        returns (uint256 committed)
+    {
+        if (uint256(marketStatus.amountRaised).add(_commitment) > uint256(marketPrice.goal)) {
+            return uint256(marketPrice.goal).sub(uint256(marketStatus.amountRaised));
+        }
+        return _commitment;
+    }
+
+    /**
+     * @notice Prevalidates purchase, transfers funds and processes the buy.
+     * @dev Low level token purchase with a token ***DO NOT OVERRIDE***
+     * This function has a non-reentrancy guard, so it shouldn't be called by
+     * another `nonReentrant` function.
+     * @param _beneficiary Recipient of the token purchase.
+     * @param _tokenAmount Value in wei or token involved in the purchase.
+     */
+    function buyTokens(
+        address _beneficiary,
+        uint256 _tokenAmount,
+        bool readAndAgreedToMarketParticipationAgreement
+    ) 
+        public /* nonReentrant */ 
+    {
+        require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
+        if(readAndAgreedToMarketParticipationAgreement == false) {
+            revertBecauseUserDidNotProvideAgreement();
+        }
+        _preValidatePurchase(_beneficiary, _tokenAmount);
+        _safeTransferFrom(paymentCurrency, msg.sender, _tokenAmount);
+        _processBuy(_beneficiary, _tokenAmount);
+    }
+
+    /**
+     * @notice Updates commitment of the buyer and the amount raised, emits an event.
+     * @param beneficiary Recipient of the token purchase.
+     * @param amount Value in wei or token involved in the purchase.
+     */
+    function _processBuy(address beneficiary, uint256 amount) internal {
+        commitments[beneficiary] = commitments[beneficiary].add(amount);
+
+        /// @notice Update state.
+        // update state
+        marketStatus.amountRaised = uint128(uint256(marketStatus.amountRaised).add(amount));
+
+        emit TokensPurchased(msg.sender, beneficiary, amount, _getTokenAmount(amount));
+    }
+
+    /**
+     * @notice Validation of an incoming purchase.
+     * @param beneficiary Address performing the token purchase.
+     * @param amount Value in wei or token involved in the purchase.
+     */
+    function _preValidatePurchase(address beneficiary, uint256 amount) internal view {
+        require(block.timestamp >= uint256(marketInfo.startTime), "Crowdsale: not started");
+        require(block.timestamp <= uint256(marketInfo.endTime), "Crowdsale: already closed");
+        require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
+        require(amount != 0, "Crowdsale: amount is 0");
+        if (marketStatus.hasPointList) {
+            uint256 newCommitment = commitments[beneficiary].add(amount);
+            require(IPointList(pointList).hasPoints(beneficiary, newCommitment));
+        }
+        uint256 tokensAvail = IERC20(auctionToken).balanceOf(address(this));
+        require(_getTokenAmount(uint256(marketStatus.amountRaised).add(amount)) <= tokensAvail, "Crowdsale: amount of tokens exceeded");
+    }
+
+    function withdrawTokens() public  {
+        withdrawTokens(msg.sender);
+    }
+
+    /**
+     * @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
+     * @dev Withdraw tokens only after crowdsale ends.
+     * @param beneficiary Whose tokens will be withdrawn.
+     */
+    // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
+    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {    
+        if (auctionSuccessful()) {
+            require(marketStatus.finalized, "Crowdsale: not finalized");
+            /// @dev Successful auction! Transfer claimed tokens.
+            uint256 tokensToClaim = tokensClaimable(beneficiary);
+            require(tokensToClaim > 0, "Crowdsale: no tokens to claim"); 
+            claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
+            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+        } else {
+            /// @dev Auction did not meet reserve price.
+            /// @dev Return committed funds back to user.
+
+            require(block.timestamp > uint256(marketInfo.endTime), "Crowdsale: auction has not finished yet");
+            uint256 accountBalance = commitments[beneficiary];
+            /// @dev claimerBalance = tokensClaimable(beneficiary);
+            /// @dev claimAmount = claimerBalance.div(uint256(marketPrice.rate));
+            commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
+            _tokenPayment(paymentCurrency, beneficiary, accountBalance);
+        }
+    }
+
+    /**
+     * @notice Adjusts users commitment depending on amount already claimed and unclaimed tokens left.
+     * @return claimerCommitment How many tokens the user is able to claim.
+     */
+    function tokensClaimable(address _user) public view returns (uint256 claimerCommitment) {
+        uint256 unclaimedTokens = IERC20(auctionToken).balanceOf(address(this));
+        claimerCommitment = _getTokenAmount(commitments[_user]);
+        claimerCommitment = claimerCommitment.sub(claimed[_user]);
+        /// @dev MZ: Is this good to calculate dust for last withdraw?
+        /// @dev Does not transfer back the equivalent amount of dust.
+        if(claimerCommitment > unclaimedTokens){
+            claimerCommitment = unclaimedTokens;
+        }
+    }
+    
+    //--------------------------------------------------------
+    // Finalize Auction
+    //--------------------------------------------------------
+    
+    /**
+     * @notice Manually finalizes the Crowdsale.
+     * @dev Must be called after crowdsale ends, to do some extra finalization work.
+     * Calls the contracts finalization function.
+     */
+    function finalize() public {
+        require(            
+            msg.sender == operator || finalizeTimeExpired(),
+            "Crowdsale: sender must be an operator"
+        );
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "Crowdsale: already finalized");
+        MarketInfo storage info = marketInfo;
+
+        if (auctionSuccessful()) {
+            /// @dev Successful auction
+            /// @dev Transfer contributed tokens to wallet.
+            require(auctionEnded(), "Crowdsale: Has not finished yet"); 
+            _tokenPayment(paymentCurrency, wallet, uint256(status.amountRaised));
+            /// @dev Transfer unsold tokens to wallet.
+            uint256 soldTokens = _getTokenAmount(uint256(status.amountRaised));
+            uint256 unsoldTokens = uint256(info.totalTokens).sub(soldTokens);
+            if(unsoldTokens > 0) {
+                _tokenPayment(auctionToken, wallet, unsoldTokens);
+            }
+        } else if ( block.timestamp <= uint256(info.startTime) ) {
+            /// @dev Cancelled Auction
+            /// @dev You can cancel the auction before it starts
+            require( uint256(status.amountRaised) == 0, "Crowdsale: Funds already raised" );
+            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+        } else {
+            /// @dev Failed auction
+            /// @dev Return auction tokens back to wallet.
+            require(auctionEnded(), "Crowdsale: Has not finished yet"); 
+            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+        }
+
+        status.finalized = true;
+
+        emit CrowdsaleFinalized();
+    }
+
+    /**
+     * @notice Calculates the number of tokens to purchase.
+     * @dev Override to extend the way in which ether is converted to tokens.
+     * @param amount Value in wei or token to be converted into tokens.
+     * @return tokenAmount Number of tokens that can be purchased with the specified amount.
+     */
+    function _getTokenAmount(uint256 amount) internal view returns (uint256) {
+        return amount.mul(uint256(marketPrice.rate));
+    }
+
+    /**
+     * @notice Checks if the sale is open.
+     * @return isOpen True if the crowdsale is open, false otherwise.
+     */
+    function isOpen() public view returns (bool) {
+        return block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime);
+    }
+
+    /**
+     * @notice Checks if the sale minimum amount was raised.
+     * @return auctionSuccessful True if the amountRaised is equal or higher than goal.
+     */
+    function auctionSuccessful() public view returns (bool) {
+        return uint256(marketStatus.amountRaised) >= uint256(marketPrice.goal);
+    }
+
+    /**
+     * @notice Checks if the sale has ended.
+     * @return auctionEnded True if successful or time has ended.
+     */
+    function auctionEnded() public view returns (bool) {
+        return block.timestamp > uint256(marketInfo.endTime) || _getTokenAmount(uint256(marketStatus.amountRaised)) == uint256(marketInfo.totalTokens);
+    }
+
+    /**
+     * @return Returns true if market has been finalized
+     */
+    function finalized() public view returns (bool) {
+        return marketStatus.finalized;
+    }
+
+    /**
+     * @return True if 7 days have passed since the end of the auction
+    */
+    function finalizeTimeExpired() public view returns (bool) {
+        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+    }
+    
+
+    //--------------------------------------------------------
+    // Documents
+    //--------------------------------------------------------
+
+    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+        require(msg.sender == operator);
+        _setDocument( _name, _uri, _documentHash);
+    }
+
+    function removeDocument(bytes32 _name) external {
+        require(msg.sender == operator);
+        _removeDocument(_name);
+    }
+
+
+
+   //--------------------------------------------------------
+    // Market Launchers
+    //--------------------------------------------------------
+
+
+    /**
+     * @notice Decodes and hands Crowdsale data to the initCrowdsale function.
+     * @param _data Encoded data for initialization.
+     */
+    function initMarket(bytes calldata _data) public {
         (
         address _funder,
         address _token,
@@ -132,23 +468,42 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
+        address _operator,
+        address _pointList,
         address payable _wallet
         ) = abi.decode(_data, (
-            address, 
-            address, 
-            address, 
-            uint256, 
-            uint256, 
-            uint256, 
-            uint256, 
+            address,
+            address,
+            address,
             uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            address,
+            address,
             address
             )
         );
     
-        initCrowdsale(_funder, _token, _paymentCurrency, _totalTokens, _startTime, _endTime, _rate, _goal, _wallet);
+        initCrowdsale(_funder, _token, _paymentCurrency, _totalTokens, _startTime, _endTime, _rate, _goal, _operator, _pointList, _wallet);
     }
 
+    /**
+     * @notice Collects data to initialize the crowd sale.
+     * @param _funder The address that funds the token for crowdsale.
+     * @param _token Address of the token being sold.
+     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address.
+     * @param _totalTokens The total number of tokens to sell in crowdsale.
+     * @param _startTime Crowdsale start time.
+     * @param _endTime Crowdsale end time.
+     * @param _rate Number of token units a buyer gets per wei or token.
+     * @param _goal Minimum amount of funds to be raised in weis or tokens.
+     * @param _operator Address that can finalize crowdsale.
+     * @param _pointList Address that will manage auction approvals.
+     * @param _wallet Address where collected funds will be forwarded to.
+     * @return _data All the data in bytes format.
+     */
     function getCrowdsaleInitData(
         address _funder,
         address _token,
@@ -158,254 +513,24 @@ contract Crowdsale is Context /* ReentrancyGuard */ {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
+        address _operator,
+        address _pointList,
         address payable _wallet
-        )
-            external
-            pure
-            returns (bytes memory _data)
-            {
-                return abi.encode(
-                    _funder,
-                    _token,
-                    _paymentCurrency,
-                    _totalTokens,
-                    _startTime,
-                    _endTime,
-                    _rate,
-                    _goal,
-                    _wallet
-                    );
-            }
-    /**
-     * @dev low level token purchase with ETH ***DO NOT OVERRIDE***
-     * This function has a non-reentrancy guard, so it shouldn't be called by
-     * another `nonReentrant` function.
-     * @param _beneficiary Recipient of the token purchase
-     */
-    function buyTokensEth(address _beneficiary) public payable /* nonReentrant */  {
-        require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
-        _preValidatePurchase(_beneficiary, msg.value);
-        _processBuy(_beneficiary, msg.value);
-    }
-    
-
-    /**
-     * @dev low level token purchase with a token ***DO NOT OVERRIDE***
-     * This function has a non-reentrancy guard, so it shouldn't be called by
-     * another `nonReentrant` function.
-     * @param _beneficiary Recipient of the token purchase
-     * @param _tokenAmount Value in wei or token involved in the purchase
-     */
-    function buyTokens(address _beneficiary, uint256 _tokenAmount) public /* nonReentrant */ {
-        require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
-        _preValidatePurchase(_beneficiary, _tokenAmount);
-        _safeTransferFrom(paymentCurrency, msg.sender, _tokenAmount);
-        _processBuy(_beneficiary, _tokenAmount);
-    }
-
-    /**
-     * @param beneficiary Recipient of the token purchase
-     * @param amount Value in wei or token involved in the purchase
-     */ 
-    function _processBuy(address beneficiary, uint256 amount) internal {
-        // calculate token amount to be created
-        uint256 tokens = _getTokenAmount(amount);
-        balances[beneficiary] = balances[beneficiary].add(tokens);
-
-        // update state
-        amountRaised = amountRaised.add(amount);
-
-        emit TokensPurchased(_msgSender(), beneficiary, amount, tokens);
-
-    }
-
-    /**
-     * @dev Validation of an incoming purchase.
-     * @param beneficiary Address performing the token purchase
-     * @param amount Value in wei or token involved in the purchase
-     */
-    function _preValidatePurchase(address beneficiary, uint256 amount)
-        internal
-        view
+    )
+        external pure returns (bytes memory _data)
     {
-        require(isOpen(), "TimedCrowdsale: not open");
-        require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(amount != 0, "Crowdsale: amount is 0");
-        uint256 tokensAvail = IERC20(token).balanceOf(address(this));
-        require(_getTokenAmount(amountRaised.add(amount)) <= tokensAvail, "Crowdsale: amount of tokens exceeded");
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-    }
-
-    /**
-     * @dev Source of tokens. Override this method to modify the way in which the crowdsale ultimately gets and sends
-     * its tokens.
-     * @param beneficiary Recipient of the token purchase
-     * @param tokenAmount Number of tokens to be emitted
-     */
-    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
-        _safeTransfer(token, beneficiary, tokenAmount);
-    }
-
-    /**
-     * @dev Executed when a purchase has been validated and is ready to be executed.
-     * @param beneficiary Address receiving the tokens
-     * @param tokenAmount Number of tokens to be purchased
-     */
-    function _processPurchase(address beneficiary, uint256 tokenAmount)
-        internal
-    {
-        _deliverTokens(beneficiary, tokenAmount);
-    }
-
-    /**
-     * @dev Withdraw tokens only after crowdsale ends.
-     * @param beneficiary Whose tokens will be withdrawn.
-     */
-    // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
-    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
-        require(hasClosed(), "Crowdsale: not closed");
-
-        uint256 claimerBalance = tokensClaimable(beneficiary);
-        require(claimerBalance > 0, "Crowdsale: claimer balance is 0");
-
-        if(goalReached()) {
-            uint256 tokenAmount =  claimerBalance;
-            // GP: Keep track of tokens delivered/withdrawn
-            claimed[msg.sender] = tokenAmount;
-            _deliverTokens(beneficiary, tokenAmount);
-        } else {
-            uint256 claimAmount = claimerBalance.div(rate);
-            beneficiary.transfer(claimAmount);
-        }
-        balances[beneficiary] = 0;
-    }
-
-    function tokensClaimable(address beneficiary) public returns (uint256){
-        uint256 unclaimedTokens = IERC20(token).balanceOf(address(this));
-        uint256 claimerBalance = balances[beneficiary];
-        claimerBalance = claimerBalance.sub(claimed[msg.sender]);
-        if(claimerBalance > unclaimedTokens){
-            claimerBalance = unclaimedTokens;
-        }
-        return claimerBalance;
-    }
-    
-
-    /**
-     * @dev Must be called after crowdsale ends, to do some extra finalization
-     * work. Calls the contracts finalization function.
-     */
-    function finalize() public {
-
-        require(!finalized, "Crowdsale: already finalized");
-        require(hasClosed(), "Crowdsale: not closed");
-        // GP: The balance can decrease on withdraw, this affects the amount unsold
-        // GP: Need to add counter for tokensClaimed and recalc unsoldTokens
-        uint256 unsoldTokens = IERC20(token).balanceOf(address(this));
-        
-        // GP: Check if the amount weiRaised() not reached, if the funds are able to be refunded
-        if(goalReached()) {
-            _forwardFunds();
-            uint256 soldTokens = _getTokenAmount(amountRaised);
-            //MZ:??
-            unsoldTokens = totalTokens.sub(soldTokens);
-        }
-
-        if(unsoldTokens > 0) {
-            _deliverTokens(wallet, unsoldTokens);
-        }
-
-        finalized = true;
-
-        emit CrowdsaleFinalized();
-    }
-
-
-    /**
-     * @dev Override to extend the way in which ether is converted to tokens.
-     * @param amount Value in wei or token to be converted into tokens
-     * @return Number of tokens that can be purchased with the specified amount
-     */
-    function _getTokenAmount(uint256 amount)
-        internal
-        view
-        returns (uint256)
-    {
-        return amount.mul(rate);
-    }
-
-    /**
-     * @dev Determines how ETH is stored/forwarded on purchases.
-     */
-    function _forwardFunds() internal {
-        wallet.transfer(address(this).balance);
-    }
-
-    /**
-     * @dev
-     * Note that other contracts will transfer funds with a base gas stipend
-     * of 2300, which is not enough to call buyTokens. Consider calling
-     * buyTokens directly when purchasing tokens from a contract.
-     */
-    receive() external payable {
-        buyTokensEth(_msgSender());
-    }
-
-    /**
-     * @return the balance of an account.
-     */
-    function balanceOf(address account) public view returns (uint256) {
-        return balances[account];
-    }
-
-    /**
-     * @return true if the crowdsale is open, false otherwise.
-     */
-    function isOpen() public view returns (bool) {
-        return block.timestamp >= startTime && block.timestamp <= endTime;
-    }
-
-    /**
-     * @dev Checks whether funding goal was reached.
-     * @return Whether funding goal was reached
-     */
-    function goalReached() public view returns (bool) {
-        return amountRaised >= goal;
-    }
-
-    /**
-     * @dev Checks whether the period in which the crowdsale is open has already elapsed.
-     * @return Whether crowdsale period has elapsed
-     */
-    function hasClosed() public view returns (bool) {
-        return block.timestamp > endTime;
-    }
-
-
-    //--------------------------------------------------------
-    // Helper Functions
-    //--------------------------------------------------------
-    /**
-     * @dev There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-     * @dev Im trying to make it a habit to put external calls last (reentrancy)
-     * @dev You can put this in an internal function if you like.
-    */
-    function _safeTransfer(address _token, address _to, uint256 _amount) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) = _token.call(
-            // 0xa9059cbb = bytes4(keccak256("transfer(address,uint256)"))
-            abi.encodeWithSelector(0xa9059cbb, _to, _amount)
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 Transfer failed 
-    }
-
-
-    function _safeTransferFrom(address _token, address _from, uint256 _amount) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) = _token.call(
-            // 0x23b872dd = bytes4(keccak256("transferFrom(address,address,uint256)"))
-            abi.encodeWithSelector(0x23b872dd, _from, address(this), _amount)
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 TransferFrom failed 
+        return abi.encode(
+            _funder,
+            _token,
+            _paymentCurrency,
+            _totalTokens,
+            _startTime,
+            _endTime,
+            _rate,
+            _goal,
+            _operator,
+            _pointList,
+            _wallet
+            );
     }
 }

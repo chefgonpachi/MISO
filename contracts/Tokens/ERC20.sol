@@ -35,8 +35,10 @@ import "../../../interfaces/IERC20.sol";
 contract ERC20 is IERC20, Context {
     using SafeMath for uint256;
     using Address for address;
+    bytes32 public DOMAIN_SEPARATOR;
 
     mapping (address => uint256) private _balances;
+    mapping(address => uint256) public nonces;
 
     mapping (address => mapping (address => uint256)) private _allowances;
 
@@ -61,13 +63,19 @@ contract ERC20 is IERC20, Context {
         _name = name;
         _symbol = symbol;
         _decimals = 18;
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        DOMAIN_SEPARATOR = keccak256(abi.encode(keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), chainId, address(this)));
+ 
         _initialized = true;
     }
 
     /**
      * @dev Returns the name of the token.
      */
-    function name() public override view returns (string memory) {
+    function name() public  view returns (string memory) {
         return _name;
     }
 
@@ -75,7 +83,7 @@ contract ERC20 is IERC20, Context {
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() public override view returns (string memory) {
+    function symbol() public  view returns (string memory) {
         return _symbol;
     }
 
@@ -92,7 +100,7 @@ contract ERC20 is IERC20, Context {
      * no way affects any of the arithmetic of the contract, including
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
-    function decimals() public override view returns (uint8) {
+    function decimals() public  view returns (uint8) {
         return _decimals;
     }
 
@@ -118,7 +126,7 @@ contract ERC20 is IERC20, Context {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+    function transfer(address recipient, uint256 amount) public virtual returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -142,6 +150,41 @@ contract ERC20 is IERC20, Context {
         return true;
     }
 
+  // See https://eips.ethereum.org/EIPS/eip-191
+    string private constant EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA = "\x19\x01";
+    // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 private constant PERMIT_SIGNATURE_HASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
+
+    /// @notice Approves `value` from `owner_` to be spend by `spender`.
+    /// @param owner_ Address of the owner.
+    /// @param spender The address of the spender that gets approved to draw from `owner_`.
+    /// @param value The maximum collective amount that `spender` can draw.
+    /// @param deadline This permit must be redeemed before this deadline (UTC timestamp in seconds).
+    function permit(
+        address owner_,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external override {
+        require(owner_ != address(0), "ERC20: Owner cannot be 0");
+        require(block.timestamp < deadline, "ERC20: Expired");
+        bytes32 digest =
+            keccak256(
+                abi.encodePacked(
+                    EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA,
+                    DOMAIN_SEPARATOR,
+                    keccak256(abi.encode(PERMIT_SIGNATURE_HASH, owner_, spender, value, nonces[owner_]++, deadline))
+                )
+            );
+        address recoveredAddress = ecrecover(digest, v, r, s);
+        require(recoveredAddress == owner_, "ERC20: Invalid Signature");
+        _approve(_msgSender(), spender, value);
+
+    }
+
     /**
      * @dev See {IERC20-transferFrom}.
      *
@@ -154,7 +197,7 @@ contract ERC20 is IERC20, Context {
      * - the caller must have allowance for ``sender``'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;

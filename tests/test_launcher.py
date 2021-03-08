@@ -40,7 +40,7 @@ def test_launcher_remove_template(launcher,pool_liquidity_template_2):
     tx = launcher.addLiquidityLauncherTemplate(pool_liquidity_template_2, {"from": accounts[0]} )
     assert "LiquidityTemplateAdded" in tx.events
     tx = launcher.removeLiquidityLauncherTemplate(2,{"from": accounts[0]})
-    
+    assert launcher.getTemplateId(pool_liquidity_template_2, {"from": accounts[0]}) == 0
     assert "LiquidityTemplateRemoved" in tx.events
 
 

@@ -35,6 +35,7 @@ def prepare_miso(miso_recipe_02, miso_access_controls):
     dev_addr = wallet
     tokensToFarm = 100 * TENPOW18
     alloc_point = 10
+    integratorFeeAccount = accounts[1]
 
     txn = miso_recipe_02.prepareMiso(
         name,
@@ -61,10 +62,11 @@ def prepare_miso(miso_recipe_02, miso_access_controls):
         start_block,
         dev_addr, 
         tokensToFarm,
-        alloc_point, {'from': accounts[0]}
+        alloc_point, 
+        integratorFeeAccount, {'from': accounts[0]}
     )
 
-    token,lp_token,pool_liquidity,farm = txn.return_value
+    token, crowdsale, lp_token, pool_liquidity, farm = txn.return_value
     return [token,lp_token,pool_liquidity,farm]
 
 
@@ -96,9 +98,9 @@ def pool_liqudity_helper(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, 
     
     return [token,lp_token,pool_liquidity,farm]
 
-def test_master_chef(UniswapV2Pair, SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls,MasterChef,fixed_token2):
+def test_master_chef(UniswapV2Pair, SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls,MISOMasterChef,fixed_token2):
     token,lp_token,pool_liquidity,farm= pool_liqudity_helper(SushiToken, PoolLiquidity, weth_token, miso_recipe_02, miso_access_controls)
-    master_chef = MasterChef.at(farm)
+    master_chef = MISOMasterChef.at(farm)
     #lp_token = pool_liquidity.getLPTokenAddress()
 
     #lp_token = UniswapV2Pair.at(lp_token)
@@ -123,13 +125,14 @@ def test_master_chef(UniswapV2Pair, SushiToken, PoolLiquidity, weth_token, miso_
     #assert balance_before_deposit - balance_after_deposit == amount_to_deposit
 
     master_chef.addToken(100, fixed_token2, False,{"from":accounts[0]})
-    pool_id = 2
+    pool_id = 1 # TODO poolLength is 2
     approve_amount = 200* TENPOW18
     amount_to_deposit = 20*TENPOW18
     fixed_token2.approve(master_chef,approve_amount,{"from":accounts[0]})
     depositor = accounts[0]
     balance_before_deposit = fixed_token2.balanceOf(depositor)
-    tx = master_chef.deposit(pool_id,amount_to_deposit,{"from":depositor})
+
+    tx = master_chef.deposit(pool_id, amount_to_deposit,{"from":depositor})
     balance_after_deposit = fixed_token2.balanceOf(depositor)
     assert "Deposit" in tx.events
     assert balance_before_deposit - balance_after_deposit == amount_to_deposit

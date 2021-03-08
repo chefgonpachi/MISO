@@ -1,4 +1,4 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
 
 
 import "../Utils/Owned.sol";
@@ -6,40 +6,42 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../Utils/CloneFactory.sol";
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IOwned.sol";
-import "../../interfaces/IWhiteList.sol";
+import "../../interfaces/IPointList.sol";
+import "../Utils/SafeTransfer.sol";
 
 
 // ----------------------------------------------------------------------------
-// MISO WhiteList Factory
+// MISO PointList Factory
 //
 // Appropriated from BokkyPooBahs Fixed Supply Token 👊 Factory
 //
 // ----------------------------------------------------------------------------
 
-contract WhiteListFactory is  Owned, CloneFactory {
+contract PointListFactory is  Owned, CloneFactory, SafeTransfer {
     using SafeMath for uint;
 
-    address public whiteListTemplate;
+    address public pointListTemplate;
 
     address public newAddress;
-    uint256 public minimumFee = 0.1 ether;
+    uint256 public minimumFee;
     mapping(address => bool) public isChild;
-    address[] public children;
+    address[] public lists;
 
 
-    event WhiteListDeployed(address indexed operator, address indexed addr, address whiteList, address owner);
+    event PointListDeployed(address indexed operator, address indexed addr, address pointList, address owner);
     event FactoryDeprecated(address _newAddress);
     event MinimumFeeUpdated(uint oldFee, uint newFee);
     
-    function initWhiteListFactory( address _whiteListTemplate, uint256 _minimumFee) public  {
+    function initPointListFactory( address _pointListTemplate, uint256 _minimumFee) public  {
         _initOwned(msg.sender);
-        whiteListTemplate = _whiteListTemplate;
+        pointListTemplate = _pointListTemplate;
         minimumFee = _minimumFee;
     }
 
     function numberOfChildren() public view returns (uint) {
-        return children.length;
+        return lists.length;
     }
+
     function deprecateFactory(address _newAddress) public {
         require(isOwner());
         require(newAddress == address(0));
@@ -52,20 +54,26 @@ contract WhiteListFactory is  Owned, CloneFactory {
         minimumFee = _minimumFee;
     }
 
-    function deployWhiteList(
+    function deployPointList(
         address _listOwner,
-        address[] memory _whiteListed
+        address[] memory _accounts,
+        uint256[] memory _amounts
+
     )
-        public payable returns (address whiteList)
+        public payable returns (address pointList)
     {
         require(msg.value >= minimumFee);
-        whiteList = createClone(whiteListTemplate);
-        IWhiteList(whiteList).initWhiteList(address(this));
-        IWhiteList(whiteList).addWhiteList(_whiteListed);
-        IOwned(whiteList).transferOwnership(_listOwner);
-        isChild[address(whiteList)] = true;
-        children.push(address(whiteList));
-        emit WhiteListDeployed(msg.sender, address(whiteList), whiteListTemplate, _listOwner);
+        pointList = createClone(pointListTemplate);
+        if (_accounts.length > 0) {
+            IPointList(pointList).initPointList(address(this));
+            IPointList(pointList).setPoints(_accounts, _amounts);
+            IOwned(pointList).transferOwnership(_listOwner);
+        } else {
+            IPointList(pointList).initPointList(_listOwner);          
+        }
+        isChild[address(pointList)] = true;
+        lists.push(address(pointList));
+        emit PointListDeployed(msg.sender, address(pointList), pointListTemplate, _listOwner);
         if (msg.value > 0) {
             payable(owner()).transfer(msg.value);
         }
@@ -74,8 +82,10 @@ contract WhiteListFactory is  Owned, CloneFactory {
     // footer functions
     function transferAnyERC20Token(address tokenAddress, uint256 tokens) public returns (bool success) {
         require(isOwner());
-        return IERC20(tokenAddress).transfer(owner(), tokens);
+        _safeTransfer(tokenAddress, owner(), tokens);
+        return true;
     }
+    
     receive () external payable {
         revert();
     }

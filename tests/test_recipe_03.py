@@ -36,7 +36,7 @@ def fixed_token_staked(FixedToken):
 
     return fixed_token_staked
 
-def test_create_liquidity_farm(MasterChef,miso_recipe_03,fixed_token_cal,miso_access_controls):
+def test_create_liquidity_farm(MISOMasterChef,miso_recipe_03,fixed_token_cal,miso_access_controls):
     
     tokens_to_farm = 1000 * TENPOW18
     rewards_per_block = 1 * TENPOW18
@@ -52,16 +52,15 @@ def test_create_liquidity_farm(MasterChef,miso_recipe_03,fixed_token_cal,miso_ac
         rewards_per_block,
         start_block,
         dev_addr,
-        fixed_token_staked,
         100,
         miso_access_controls,
         {"from":accounts[0]})
     
-    master_chef = MasterChef.at(master_chef.return_value)
+    master_chef = MISOMasterChef.at(master_chef.return_value)
 
     master_chef
 
-def test_create_token_farm(MasterChef,miso_recipe_03,fixed_token_staked,fixed_token_cal,miso_access_controls):
+def test_create_token_farm(MISOMasterChef,miso_recipe_03,fixed_token_staked,fixed_token_cal,miso_access_controls):
     
     tokens_to_farm = 1000 * TENPOW18
     rewards_per_block = 1 * TENPOW18
@@ -82,7 +81,7 @@ def test_create_token_farm(MasterChef,miso_recipe_03,fixed_token_staked,fixed_to
         miso_access_controls,
         {"from":accounts[0]})
     
-    master_chef = MasterChef.at(master_chef.return_value)
+    master_chef = MISOMasterChef.at(master_chef.return_value)
 
     master_chef    
 

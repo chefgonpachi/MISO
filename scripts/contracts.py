@@ -20,6 +20,12 @@ def publish():
     else:
         return True
 
+def wait_deploy(contract):
+    # GP: Wait for contract to deploy. 
+    time.sleep(2)
+
+
+
 def deploy_access_control(operator):
     access_control_address = CONTRACTS[network.show_active()]["access_control"]
     if access_control_address == '':
@@ -59,7 +65,7 @@ def deploy_miso_token_factory(access_control):
 def deploy_mintable_token_template():
     mintable_token_template_address = CONTRACTS[network.show_active()]["mintable_token_template"]
     if mintable_token_template_address == '':
-        mintable_token_template = MintableToken.deploy({"from":accounts[0]}, publish_source=publish()) 
+        mintable_token_template = MintableToken.deploy({"from":accounts[0]}, publish_source=publish())
     else:
         mintable_token_template = MintableToken.at(mintable_token_template_address)
     return mintable_token_template
@@ -67,7 +73,7 @@ def deploy_mintable_token_template():
 def deploy_fixed_token_template():
     fixed_token_template_address = CONTRACTS[network.show_active()]["fixed_token_template"]
     if fixed_token_template_address == '':
-        fixed_token_template = FixedToken.deploy({"from":accounts[0]}, publish_source=publish()) 
+        fixed_token_template = FixedToken.deploy({"from":accounts[0]}, publish_source=publish())
     else:
         fixed_token_template = FixedToken.at(fixed_token_template_address)
     return fixed_token_template
@@ -85,6 +91,7 @@ def deploy_mintable_token(miso_token_factory,mintable_token_template):
     if mintable_token_address == '':
         tx1 = miso_token_factory.addTokenTemplate(mintable_token_template,{"from":accounts[0]})
         template_id = tx1.events['TokenTemplateAdded']['templateId']
+        # GP: Change to createToken to accept data 
         tx2 = miso_token_factory.createToken(NAME,SYMBOL,template_id, accounts[0], 0, {"from":accounts[0]})
         mintable_token = MintableToken.at(web3.toChecksumAddress(tx2.events['TokenCreated']['addr']))
     else:
@@ -114,6 +121,7 @@ def deploy_miso_market(access_control, templates):
         if network.show_active() == "development": publish = False 
         else: publish = True
         miso_market = MISOMarket.deploy({"from":accounts[0]}, publish_source=publish)
+        wait_deploy(miso_market)
         miso_market.initMISOMarket(access_control, templates, {"from":accounts[0]})
 
     else:
@@ -141,7 +149,6 @@ def deploy_miso_launcher(access_control, weth_token):
     miso_launcher_address = CONTRACTS[network.show_active()]["miso_launcher"]
     if miso_launcher_address == '':
         miso_launcher = MISOLiquidityLauncher.deploy({"from":accounts[0]}, publish_source=publish())
-        time.sleep(2) 
         miso_launcher.initMISOLiquidityLauncher(access_control, weth_token, {"from":accounts[0]})
 
     else:
@@ -160,8 +167,7 @@ def deploy_masterchef_template():
 def deploy_farm_factory(access_control ):
     farm_factory_address = CONTRACTS[network.show_active()]["farm_factory"]
     if farm_factory_address == '':
-        farm_factory = MISOFarmFactory.deploy({"from":accounts[0]}, publish_source=publish())        
-        time.sleep(2) 
+        farm_factory = MISOFarmFactory.deploy({"from":accounts[0]}, publish_source=publish())
         miso_dev = accounts[0]
         minimum_fee = 0
         token_fee = 0

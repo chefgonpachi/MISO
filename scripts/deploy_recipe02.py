@@ -84,6 +84,7 @@ def main():
     dev_addr = wallet
     tokensToFarm = 100 * TENPOW18
     alloc_point = 10
+    integratorFeeAccount = accounts[1]
 
     tx = recipe_02.prepareMiso(
         name,
@@ -109,7 +110,8 @@ def main():
         start_block,
         dev_addr, 
         tokensToFarm,
-        alloc_point, {'from': accounts[0]}
+        alloc_point,
+        integratorFeeAccount, {'from': accounts[0]}
     )
     time.sleep(1)
     print("tx events: " + str(tx.events))

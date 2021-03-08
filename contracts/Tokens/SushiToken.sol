@@ -6,7 +6,9 @@ import "../../interfaces/IMisoToken.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 
-// GP: Change this to access control, remove owner, and set the minter role for mint
+// MISO Edits
+// Change this to access control, remove owner. 
+// Set the minter role as minter
 
 // SushiToken with Governance.
 contract SushiToken is AccessControl, ERC20, IMisoToken {
@@ -88,7 +90,7 @@ contract SushiToken is AccessControl, ERC20, IMisoToken {
     bytes32 public constant DELEGATION_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
     /// @notice A record of states for signing / validating signatures
-    mapping (address => uint) public nonces;
+    mapping (address => uint) public sigNonces;
 
       /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
@@ -163,7 +165,7 @@ contract SushiToken is AccessControl, ERC20, IMisoToken {
 
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "SUSHI::delegateBySig: invalid signature");
-        require(nonce == nonces[signatory]++, "SUSHI::delegateBySig: invalid nonce");
+        require(nonce == sigNonces[signatory]++, "SUSHI::delegateBySig: invalid nonce");
         require(now <= expiry, "SUSHI::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }

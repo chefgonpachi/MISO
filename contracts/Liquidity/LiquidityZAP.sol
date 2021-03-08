@@ -24,6 +24,17 @@ pragma solidity ^0.6.12;
 //  https://github.com/cVault-finance/CORE-periphery/blob/master/contracts/COREv1Router.sol
 //
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// ------------------------------------------------------------------------
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ███████ Instant ████████████████████████████████████████████████████████
+// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
+// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
+// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ------------------------------------------------------------------------
 
 
 import "../UniswapV2/interfaces/IUniswapV2Pair.sol";
@@ -31,8 +42,9 @@ import "../../interfaces/IWETH9.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/SafeMathPlus.sol";
 import "../UniswapV2/UniswapV2Library.sol";
+import "../Utils/SafeTransfer.sol";
 
-contract LiquidityZAP {
+contract LiquidityZAP is SafeTransfer{
 
     using SafeMathPlus for uint256;
 
@@ -57,12 +69,12 @@ contract LiquidityZAP {
 
 
     function zapETH() external payable returns (uint256 liquidity) {
-        require(msg.value > 0, "ETH amount must be greater than 0");
+        require(msg.value > 0, "LiquidityZAP: ETH amount must be greater than 0");
         return addLiquidityETHOnly(msg.sender);
     }
 
     function zapTokens(uint amount) external returns (uint256 liquidity) {
-        require(amount > 0, "Token amount must be greater than 0");
+        require(amount > 0, "LiquidityZAP: Token amount must be greater than 0");
         return addLiquidityTokensOnly(msg.sender, msg.sender, amount);
     }
 
@@ -84,16 +96,16 @@ contract LiquidityZAP {
 
     /// @dev Add liquidity functions
     function addLiquidityTokensOnly(address from, address payable to, uint amount) public returns (uint256 liquidity) {
-        require(to != address(0), "Invalid address");
+        require(to != address(0), "LiquidityZAP: Invalid address");
 
         uint256 buyAmount = amount.div(2);
-        require(buyAmount > 0, "Insufficient Token amount");
+        require(buyAmount > 0, "LiquidityZAP: Insufficient Token amount");
 
         (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
         uint256 outETH = UniswapV2Library.getAmountOut(buyAmount, reserveTokens, reserveWeth);
         
-        safeTransferFrom(_token, from, address(this), amount);
-        safeTransfer(_token, _tokenWETHPair, buyAmount);
+        _safeTransferFrom(_token, from, address(this), amount);
+        _safeTransfer(_token, _tokenWETHPair, buyAmount);
 
         (address token0, address token1) = UniswapV2Library.sortTokens(address(_WETH), _token);
         IUniswapV2Pair(_tokenWETHPair).swap(address(_WETH) == token0 ? outETH : 0, address(_WETH) == token1 ? outETH : 0, address(this), "");
@@ -103,10 +115,10 @@ contract LiquidityZAP {
     }
 
     function addLiquidityETHOnly(address payable to) public payable returns (uint256 liquidity ) {
-        require(to != address(0), "Invalid address");
+        require(to != address(0), "LiquidityZAP: Invalid address");
 
         uint256 buyAmount = msg.value.div(2);
-        require(buyAmount > 0, "Insufficient ETH amount");
+        require(buyAmount > 0, "LiquidityZAP: Insufficient ETH amount");
         _WETH.deposit{value : msg.value}();
 
         (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
@@ -135,14 +147,13 @@ contract LiquidityZAP {
             optimalWETHAmount = wethAmount;
 
         assert(_WETH.transfer(_tokenWETHPair, optimalWETHAmount));
-        assert(IERC20(_token).transfer(_tokenWETHPair, optimalTokenAmount));
+        _safeTransfer(_token, _tokenWETHPair, optimalTokenAmount);
 
         liquidity = IUniswapV2Pair(_tokenWETHPair).mint(to);
         
         //refund dust
         if (tokenAmount > optimalTokenAmount)
-            IERC20(_token).transfer(to, tokenAmount.sub(optimalTokenAmount));
-
+            _safeTransfer(_token, to, tokenAmount.sub(optimalTokenAmount));
         if (wethAmount > optimalWETHAmount) {
             uint256 withdrawAmount = wethAmount.sub(optimalWETHAmount);
             _WETH.withdraw(withdrawAmount);
@@ -165,20 +176,20 @@ contract LiquidityZAP {
 
 
     function removeLiquidityETHOnly(address payable to, uint256 liquidity) public returns (uint amountOut){
-        require(to != address(0), "Invalid address");
+        require(to != address(0), "LiquidityZAP: Invalid address");
         (uint amountToken, uint amountETH) = removeLiquidity( _token,address(_WETH),liquidity,address(this));
 
         (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
         uint256 outETH = UniswapV2Library.getAmountOut(amountToken, reserveTokens, reserveWeth);
 
-        safeTransfer(_token, _tokenWETHPair, amountToken);
+        _safeTransfer(_token, _tokenWETHPair, amountToken);
 
         (address token0, address token1) = UniswapV2Library.sortTokens(address(_WETH), _token);
         IUniswapV2Pair(_tokenWETHPair).swap(address(_WETH) == token0 ? outETH : 0, address(_WETH) == token1 ? outETH : 0, address(this), "");
 
         amountOut = IERC20(address(_WETH)).balanceOf(address(this));
         _WETH.withdraw(amountOut);
-        safeTransferETH(to, amountOut);   
+        _safeTransferETH(to, amountOut);   
     }
 
     function removeAllLiquidityETHOnly(address payable to) public returns (uint amount) {
@@ -187,7 +198,7 @@ contract LiquidityZAP {
     }
 
     function removeLiquidityTokenOnly(address to, uint256 liquidity) public returns (uint amount){
-        require(to != address(0), "Invalid address");
+        require(to != address(0), "LiquidityZAP: Invalid address");
         (uint amountToken, uint amountETH) = removeLiquidity( _token,address(_WETH),liquidity,address(this));
 
         (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
@@ -198,7 +209,7 @@ contract LiquidityZAP {
         (address token0, address token1) = UniswapV2Library.sortTokens(address(_WETH), _token);
         IUniswapV2Pair(_tokenWETHPair).swap(_token == token0 ? outTokens : 0, _token == token1 ? outTokens : 0, address(this), "");
         amount = IERC20(_token).balanceOf(address(this));
-        safeTransfer(_token, to, amount);
+        _safeTransfer(_token, to, amount);
     }
 
     function removeAllLiquidityTokenOnly(address payable to) public returns (uint amount) {
@@ -225,30 +236,6 @@ contract LiquidityZAP {
         (wethReserves, tokenReserves) = token0 == _token ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 
-
-    /// @dev Transfer helper from UniswapV2 Router
-    function safeApprove(address token, address to, uint value) internal {
-        // bytes4(keccak256(bytes('approve(address,uint256)')));
-        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: APPROVE_FAILED');
-    }
-
-    function safeTransfer(address token, address to, uint value) internal {
-        // bytes4(keccak256(bytes('transfer(address,uint256)')));
-        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
-    }
-
-    function safeTransferFrom(address token, address from, address to, uint value) internal {
-        // bytes4(keccak256(bytes('transferFrom(address,address,uint256)')));
-        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
-    }
-
-    function safeTransferETH(address to, uint value) internal {
-        (bool success,) = to.call{value:value}(new bytes(0));
-        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
-    }
 
 }
 

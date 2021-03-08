@@ -1,45 +1,92 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
 
-// GP: Restory reentracy guard once code coverage is tested
-// import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+// ------------------------------------------------------------------------
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ███████ Instant ████████████████████████████████████████████████████████
+// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
+// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
+// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ████████████████████████████████████████████████████████████████████████
+// ------------------------------------------------------------------------
+
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../Utils/SafeTransfer.sol";
+import "../../interfaces/IPointList.sol";
+import "../Utils/Documents.sol";
 
-contract DutchAuction {
+contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
     using SafeMath for uint256;
+
+    /// @notice MISOMarket template id for the factory contract.
+    uint256 public constant marketTemplate = 2;
     /// @dev The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    uint256 public startTime;
-    uint256 public endTime;
-    uint256 public startPrice;
-    uint256 public minimumPrice;
-    uint256 public totalTokens; // Amount to be sold
-    uint256 public priceDrop; // Price reduction from startPrice at endTime
-    uint256 public commitmentsTotal;
-    bool private initialized;
-    bool public finalized;
-    address public auctionToken;
-    address public paymentCurrency;
-    address payable public wallet; // Where the auction funds will get paid
-    mapping(address => uint256) public commitments;
+    /// @notice Main market variables.
+    struct MarketInfo {
+        uint64 startTime;
+        uint64 endTime;
+        uint128 totalTokens;
+    }
+    MarketInfo public marketInfo;
+
+    /// @notice Market price variables.
+    struct MarketPrice {
+        uint128 startPrice;
+        uint128 minimumPrice;
+    }
+    MarketPrice public marketPrice;
+
+    /// @notice Market dynamic variables.
+    struct MarketStatus {
+        uint128 commitmentsTotal;
+        bool initialized; 
+        bool finalized;
+        bool hasPointList;
+    }
+
+    MarketStatus public marketStatus;
+
+    /// @notice The token being sold.
+    address public auctionToken; 
+    /// @notice The currency the auction accepts for payment. Can be ETH or token address.
+    address public paymentCurrency;  
+    /// @notice Where the auction funds will get paid.
+    address payable public wallet;  
+    /// @notice Address that can finalize auction.
+    address public operator;
+    /// @notice Address that manages auction approvals.
+    address public pointList;
+
+    /// @notice The commited amount of accounts.
+    mapping(address => uint256) public commitments; 
+    /// @notice Amount of tokens to claim per address.
     mapping(address => uint256) public claimed;
 
-    // MISOMarket template id
-    uint256 public constant marketTemplate = 2;
-
-    event AddedCommitment(address addr, uint256 commitment);
+    /// @notice Event for adding a commitment.
+    event AddedCommitment(address addr, uint256 commitment);   
+    /// @notice Event for finalization of the auction.
+    event AuctionFinalized();
 
     /**
-     * @dev Init function
-     * @param _funder The address that funds the token for crowdsale
-     * @param _token Address of the token being sold
-     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address
-     * @param _totalTokens The total number of tokens to sell in auction
-     * @param _startTime Auction start time
-     * @param _endTime Auction end time
-     * @param _startPrice Starting price of the auction
-     * @param _minimumPrice The minimum auction price
-     * @param _wallet Address where collected funds will be forwarded to
+     * @notice Initializes main contract variables and transfers funds for the auction.
+     * @dev Init function.
+     * @param _funder The address that funds the token for crowdsale.
+     * @param _token Address of the token being sold.
+     * @param _totalTokens The total number of tokens to sell in auction.
+     * @param _startTime Auction start time.
+     * @param _endTime Auction end time.
+     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address.
+     * @param _startPrice Starting price of the auction.
+     * @param _minimumPrice The minimum auction price.
+     * @param _operator Address that can finalize auction.
+     * @param _pointList Address that will manage auction approvals.
+     * @param _wallet Address where collected funds will be forwarded to.
      */
     function initAuction(
         address _funder,
@@ -50,174 +97,48 @@ contract DutchAuction {
         address _paymentCurrency,
         uint256 _startPrice,
         uint256 _minimumPrice,
+        address _operator,
+        address _pointList,
         address payable _wallet
     ) public {
-        require(!initialized, "DutchAuction: Auction already initialized");
-        require(_endTime > _startTime, "DutchAuction: End time must be older than start price");
-        require(_startPrice > _minimumPrice, "DutchAuction: Start price must be higher than minimum price");
-        require(_minimumPrice > 0, "DutchAuction: Minimum price must be greater than 0"); 
+        require(!marketStatus.initialized, "DutchAuction: auction already initialized");
+        require(_startTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
+        require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
+        require(_totalTokens > 0,"DutchAuction: total tokens must be greater than zero");
+        require(_startPrice > _minimumPrice, "DutchAuction: start price must be higher than minimum price");
+        require(_minimumPrice > 0, "DutchAuction: minimum price must be greater than 0"); 
+        require(_paymentCurrency != address(0), "DutchAuction: payment currency is the zero address");
+        require(_operator != address(0), "DutchAuction: operator is the zero address");
+        require(_wallet != address(0), "DutchAuction: wallet is the zero address");
+        
+
+        // GP: consider checking tokens for different decimals
+
+        marketInfo.startTime = uint64(_startTime);
+        marketInfo.endTime = uint64(_endTime);
+        marketInfo.totalTokens = uint128(_totalTokens);
+
+        marketPrice.startPrice = uint128(_startPrice);
+        marketPrice.minimumPrice = uint128(_minimumPrice);
+
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
-        totalTokens = _totalTokens;
-        startTime = _startTime;
-        endTime = _endTime;
-        startPrice = _startPrice;
-        minimumPrice = _minimumPrice;
         wallet = _wallet;
-
-        uint256 numerator = startPrice.sub(minimumPrice);
-        uint256 denominator = endTime.sub(startTime);
-        priceDrop = numerator.div(denominator);
-
-        // There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-        _safeTransferFrom(auctionToken, _funder, _totalTokens);
-        initialized = true;
-    }
-
-    function initMarket(
-        bytes calldata _data
-    ) public {
-        (
-        address _funder,
-        address _token,
-        uint256 _totalTokens,
-        uint256 _startTime,
-        uint256 _endTime,
-        address _paymentCurrency,
-        uint256 _startPrice,
-        uint256 _minimumPrice,
-        address payable _wallet
-        ) = abi.decode(_data, (
-            address,
-            address,
-            uint256,
-            uint256,
-            uint256,
-            address,
-            uint256,
-            uint256,
-            address
-        ));
-        initAuction(_funder, _token, _totalTokens, _startTime, _endTime, _paymentCurrency, _startPrice, _minimumPrice, _wallet);
-    }
-
-    function getAuctionInitData(
-        address _funder,
-        address _token,
-        uint256 _totalTokens,
-        uint256 _startTime,
-        uint256 _endTime,
-        address _paymentCurrency,
-        uint256 _startPrice,
-        uint256 _minimumPrice,
-        address payable _wallet
-    )
-        external 
-        pure
-        returns (bytes memory _data)
-        {
-            return abi.encode(
-                _funder,
-                _token,
-                _totalTokens,
-                _startTime,
-                _endTime,
-                _paymentCurrency,
-                _startPrice,
-                _minimumPrice,
-                _wallet
-            );
+        operator = _operator;
+        
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.hasPointList = true;
         }
-    //--------------------------------------------------------
-    // Commit to buying tokens!
-    //--------------------------------------------------------
 
-    /**
-     * @notice Buy Tokens by committing ETH to this contract address
-     * @dev Needs sufficient gas limit for additional state changes
-     */
-    receive() external payable {
-        commitEth(msg.sender);
+        _safeTransferFrom(_token, _funder, _totalTokens);
+        marketStatus.initialized = true;
     }
 
-    /// @notice Commit ETH to buy tokens on sale
-    function commitEth(address payable _from) public payable {
-        require(address(paymentCurrency) == ETH_ADDRESS, "DutchAuction: Payment currency is not ETH address"); 
-        // Get ETH able to be committed
-        uint256 ethToTransfer = calculateCommitment(msg.value);
 
-        // Accept ETH Payments
-        uint256 ethToRefund = msg.value.sub(ethToTransfer);
-        if (ethToTransfer > 0) {
-            _addCommitment(_from, ethToTransfer);
-        }
-        // Return any ETH to be refunded
-        if (ethToRefund > 0) {
-            _from.transfer(ethToRefund);
-        }
-    }
-
-    /// @notice Commit approved ERC20 tokens to buy tokens on sale
-    function commitTokens(uint256 _amount) public {
-        commitTokensFrom(msg.sender, _amount);
-    }
-
-    /// @dev Users must approve contract prior to committing tokens to auction
-    function commitTokensFrom(address _from, uint256 _amount)
-        public
-    /* nonReentrant */
-    {
-        require(address(paymentCurrency) != ETH_ADDRESS, "DutchAuction: Payment currency is not a token");
-        uint256 tokensToTransfer = calculateCommitment(_amount);
-        if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, _amount);
-            _addCommitment(_from, tokensToTransfer);
-        }
-    }
-
-    //--------------------------------------------------------
-    // Finalize Auction
-    //--------------------------------------------------------
-
-    /**
-     * @notice Auction finishes successfully above the reserve
-     * @dev Transfer contract funds to initialized wallet.
-     */
-    function finalizeAuction() public /* nonReentrant */
-    {
-        require(!finalized, "DutchAuction: Auction already finalized");
-        if (auctionSuccessful()) {
-            /// @dev Successful auction
-            /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, commitmentsTotal);
-        } else {
-            /// @dev Failed auction
-            /// @dev Return auction tokens back to wallet.
-            require(block.timestamp > endTime, "DutchAuction: Auction has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, totalTokens);
-        }
-        finalized = true;
-    }
-
-    /// @notice Withdraw your tokens once the Auction has ended.
-    function withdrawTokens() public /* nonReentrant */
-    {
-        if (auctionSuccessful()) {
-            /// @dev Successful auction! Transfer claimed tokens.
-            /// @dev AG: Could be only > min to allow early withdraw
-            uint256 tokensToClaim = tokensClaimable(msg.sender);
-            require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
-            claimed[msg.sender] = tokensToClaim;
-            _tokenPayment(auctionToken, msg.sender, tokensToClaim);
-        } else {
-            /// @dev Auction did not meet reserve price.
-            /// @dev Return committed funds back to user.
-            require(block.timestamp > endTime, "DutchAuction: Auction has not finished yet");
-            uint256 fundsCommitted = commitments[msg.sender];
-            commitments[msg.sender] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, msg.sender, fundsCommitted);
-        }
-    }
+  
 
     /**
      Dutch Auction Price Function
@@ -235,25 +156,34 @@ contract DutchAuction {
      Amount raised /          End Time
     */
 
-    /// @notice The average price of each token from all commitments.
+    /**
+     * @notice Calculates the average price of each token from all commitments.
+     * @return Average token price.
+     */
     function tokenPrice() public view returns (uint256) {
-        return commitmentsTotal.mul(1e18).div(totalTokens);
+        return uint256(marketStatus.commitmentsTotal).mul(1e18).div(uint256(marketInfo.totalTokens));
     }
 
-    /// @notice Returns price during the auction
+    /**
+     * @notice Returns auction price in any time.
+     * @return Fixed start price or minimum price if outside of auction time, otherwise calculated current price.
+     */
     function priceFunction() public view returns (uint256) {
         /// @dev Return Auction Price
-        if (block.timestamp <= startTime) {
-            return startPrice;
+        if (block.timestamp <= uint256(marketInfo.startTime)) {
+            return uint256(marketPrice.startPrice);
         }
-        if (block.timestamp >= endTime) {
-            return minimumPrice;
+        if (block.timestamp >= uint256(marketInfo.endTime)) {
+            return uint256(marketPrice.minimumPrice);
         }
-        uint256 priceDiff = block.timestamp.sub(startTime).mul(priceDrop);
-        return startPrice.sub(priceDiff);
+
+        return _currentPrice();
     }
 
-    /// @notice The current clearing price of the Dutch auction
+    /**
+     * @notice The current clearing price of the Dutch auction.
+     * @return The bigger from tokenPrice and priceFunction.
+     */
     function clearingPrice() public view returns (uint256) {
         /// @dev If auction successful, return tokenPrice
         if (tokenPrice() > priceFunction()) {
@@ -262,96 +192,364 @@ contract DutchAuction {
         return priceFunction();
     }
 
-    /// @notice How many tokens the user is able to claim
-    function tokensClaimable(address _user) public view returns (uint256) {
-        uint256 tokensAvailable =
-            commitments[_user].mul(1e18).div(clearingPrice());
-        return tokensAvailable.sub(claimed[msg.sender]);
+
+    ///--------------------------------------------------------
+    /// Commit to buying tokens!
+    ///--------------------------------------------------------
+
+    receive() external payable {
+        // revertBecauseUserDidNotProvideAgreement();
+        // GP: Allow token direct transfers for testnet
+        commitEth(msg.sender, true);    
     }
 
-    /// @notice Total amount of tokens committed at current auction price
-    function totalTokensCommitted() public view returns (uint256) {
-        return commitmentsTotal.mul(1e18).div(clearingPrice());
+    function marketParticipationAgreement() public pure returns (string memory) {
+        return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
+    }
+    /** 
+     * @dev Not using modifiers is a purposeful choice for code readability.
+    */ 
+    function revertBecauseUserDidNotProvideAgreement() internal pure {
+        revert("No agreement provided, please review the smart contract before interacting with it");
     }
 
-    /// @notice Returns the amout able to be committed during an auction
-    function calculateCommitment(uint256 _commitment)
-        public
-        view
-        returns (uint256 committed)
+    /**
+     * @notice Checks the amount of ETH to commit and adds the commitment. Refunds the buyer if commit is too high.
+     * @param _beneficiary Auction participant ETH address.
+     */
+    function commitEth(
+        address payable _beneficiary,
+        bool readAndAgreedToMarketParticipationAgreement
+    )
+        public payable
     {
-        uint256 maxCommitment = totalTokens.mul(clearingPrice()).div(1e18);
-        if (commitmentsTotal.add(_commitment) > maxCommitment) {
-            return maxCommitment.sub(commitmentsTotal);
+        require(paymentCurrency == ETH_ADDRESS, "DutchAuction: payment currency is not ETH address"); 
+        if(readAndAgreedToMarketParticipationAgreement == false) {
+            revertBecauseUserDidNotProvideAgreement();
         }
-        return _commitment;
-    }
+        // Get ETH able to be committed
+        uint256 ethToTransfer = calculateCommitment(msg.value);
 
-    /// @notice Successful if tokens sold equals totalTokens
-    function auctionSuccessful() public view returns (bool) {
-        return commitmentsTotal.mul(1e18).div(totalTokens) >= clearingPrice();
-    }
-
-    /// @notice Returns bool if successful or time has ended
-    function auctionEnded() public view returns (bool) {
-        return auctionSuccessful() || block.timestamp > endTime;
-    }
-
-    /// @notice Commits to an amount during an auction
-    function _addCommitment(address _addr, uint256 _commitment) internal {
-        require(block.timestamp >= startTime && block.timestamp <= endTime, "DutchAuction: Outside auction hours"); 
-        commitments[_addr] = commitments[_addr].add(_commitment);
-        commitmentsTotal = commitmentsTotal.add(_commitment);
-        emit AddedCommitment(_addr, _commitment);
-    }
-
-    //--------------------------------------------------------
-    // Helper Functions
-    //--------------------------------------------------------
-
-    /// @dev Helper function to handle both ETH and ERC20 payments
-    function _tokenPayment(
-        address _token,
-        address payable _to,
-        uint256 _amount
-    ) internal {
-        if (address(_token) == ETH_ADDRESS) {
-            _to.transfer(_amount);
-        } else {
-            _safeTransfer(_token, _to, _amount);
+        /// @notice Accept ETH Payments.
+        uint256 ethToRefund = msg.value.sub(ethToTransfer);
+        if (ethToTransfer > 0) {
+            _addCommitment(_beneficiary, ethToTransfer);
+        }
+        /// @notice Return any ETH to be refunded.
+        if (ethToRefund > 0) {
+            _beneficiary.transfer(ethToRefund);
         }
     }
 
     /**
-     * There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-     * Im trying to make it a habit to put external calls last (reentrancy)
-     * You can put this in an internal function if you like.
+     * @notice Buy Tokens by commiting approved ERC20 tokens to this contract address.
+     * @param _amount Amount of tokens to commit.
      */
-    function _safeTransfer(
-        address token,
-        address to,
-        uint256 amount
-    ) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) =
-            token.call(
-                // 0xa9059cbb = bytes4(keccak256("transferFrom(address,address,uint256)"))
-                abi.encodeWithSelector(0xa9059cbb, to, amount)
-            );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 Transfer failed
+    function commitTokens(uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public {
+        commitTokensFrom(msg.sender, _amount, readAndAgreedToMarketParticipationAgreement);
     }
 
-    function _safeTransferFrom(
-        address token,
-        address from,
-        uint256 amount
-    ) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) =
-            token.call(
-                // 0x23b872dd = bytes4(keccak256("transferFrom(address,address,uint256)"))
-                abi.encodeWithSelector(0x23b872dd, from, address(this), amount)
-            );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 TransferFrom failed
+
+    /**
+     * @notice Checks how much is user able to commit and processes that commitment.
+     * @dev Users must approve contract prior to committing tokens to auction.
+     * @param _from User ERC20 address.
+     * @param _amount Amount of approved ERC20 tokens.
+     */
+    function commitTokensFrom(
+        address _from,
+        uint256 _amount,
+        bool readAndAgreedToMarketParticipationAgreement
+    )
+        public /* nonReentrant */ 
+    {
+        require(address(paymentCurrency) != ETH_ADDRESS, "DutchAuction: Payment currency is not a token");
+        if(readAndAgreedToMarketParticipationAgreement == false) {
+            revertBecauseUserDidNotProvideAgreement();
+        }
+        uint256 tokensToTransfer = calculateCommitment(_amount);
+        if (tokensToTransfer > 0) {
+            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _addCommitment(_from, tokensToTransfer);
+        }
     }
+
+    /**
+     * @notice Calculates the pricedrop factor.
+     * @return Value calculated from auction start and end price difference divided the auction duration.
+     */
+    function priceDrop() public view returns (uint256) {
+        MarketInfo memory _marketInfo = marketInfo;
+        MarketPrice memory _marketPrice = marketPrice;
+
+        uint256 numerator = uint256(_marketPrice.startPrice).sub(uint256(_marketPrice.minimumPrice));
+        uint256 denominator = uint256(_marketInfo.endTime).sub(uint256(_marketInfo.startTime));
+        return numerator / denominator;
+    }
+
+
+   /**
+     * @notice How many tokens the user is able to claim.
+     * @param _user Auction participant address.
+     * @return User commitments reduced by already claimed tokens.
+     */
+    function tokensClaimable(address _user) public view returns (uint256) {
+        uint256 tokensAvailable = commitments[_user].mul(1e18).div(clearingPrice());
+        return tokensAvailable.sub(claimed[msg.sender]);
+    }
+
+    /**
+     * @notice Calculates total amount of tokens committed at current auction price.
+     * @return Number of tokens commited.
+     */
+    function totalTokensCommitted() public view returns (uint256) {
+        return uint256(marketStatus.commitmentsTotal).mul(1e18).div(clearingPrice());
+    }
+
+    /**
+     * @notice Calculates the amout able to be committed during an auction.
+     * @param _commitment Commitment user would like to make.
+     * @return committed Amount allowed to commit.
+     */
+    function calculateCommitment(uint256 _commitment) public view returns (uint256 committed) {
+        uint256 maxCommitment = uint256(marketInfo.totalTokens).mul(clearingPrice()).div(1e18);
+        if (uint256(marketStatus.commitmentsTotal).add(_commitment) > maxCommitment) {
+            return maxCommitment.sub(uint256(marketStatus.commitmentsTotal));
+        }
+        return _commitment;
+    }
+
+    /**
+     * @notice Checks if the auction is open.
+     * @return True if current time is greater than startTime and less than endTime.
+     */
+    function isOpen() public view returns (bool) {
+        return block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime);
+    }
+
+    /**
+     * @notice Successful if tokens sold equals totalTokens.
+     * @return True if tokenPrice is bigger or equal clearingPrice.
+     */
+    function auctionSuccessful() public view returns (bool) {
+        return tokenPrice() >= clearingPrice();
+    }
+
+    /**
+     * @notice Checks if the auction has ended.
+     * @return True if auction is successful or time has ended.
+     */
+    function auctionEnded() public view returns (bool) {
+        return auctionSuccessful() || block.timestamp > uint256(marketInfo.endTime);
+    }
+
+    /**
+     * @return Returns true if market has been finalized
+     */
+    function finalized() public view returns (bool) {
+        return marketStatus.finalized;
+    }
+
+    /**
+     * @return Returns true if 14 days have passed since the end of the auction
+     */
+    function finalizeTimeExpired() public view returns (bool) {
+        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+    }
+
+    /**
+     * @notice Calculates price during the auction.
+     * @return Current auction price.
+     */
+    function _currentPrice() private view returns (uint256) {
+        uint256 priceDiff = block.timestamp.sub(uint256(marketInfo.startTime)).mul(priceDrop());
+        return uint256(marketPrice.startPrice).sub(priceDiff);
+    }
+
+    /**
+     * @notice Updates commitment for this address and total commitment of the auction.
+     * @param _addr Bidders address.
+     * @param _commitment The amount to commit.
+     */
+    function _addCommitment(address _addr, uint256 _commitment) internal {
+        require(block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime), "DutchAuction: outside auction hours");
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "DutchAuction: auction already finalized");
+        
+        uint256 newCommitment = commitments[_addr].add(_commitment);
+        if (status.hasPointList) {
+            require(IPointList(pointList).hasPoints(_addr, newCommitment));
+        }
+        
+        commitments[_addr] = newCommitment;
+        status.commitmentsTotal = uint128(uint256(status.commitmentsTotal).add(_commitment));
+        emit AddedCommitment(_addr, _commitment);
+    }
+
+
+    //--------------------------------------------------------
+    // Finalize Auction
+    //--------------------------------------------------------
+
+    /**
+     * @notice Auction finishes successfully above the reserve.
+     * @dev Transfer contract funds to initialized wallet.
+     */
+    function finalize() public /* nonReentrant */ 
+    {
+        require(msg.sender == operator || finalizeTimeExpired(), "DutchAuction: sender must be an operator");
+        MarketStatus storage status = marketStatus;
+
+        require(!status.finalized, "DutchAuction: auction already finalized");
+        if (auctionSuccessful()) {
+            /// @dev Successful auction
+            /// @dev Transfer contributed tokens to wallet.
+            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+        } else if ( block.timestamp <= uint256(marketInfo.startTime) ) {
+            /// @dev Cancelled Auction
+            /// @dev You can cancel the auction before it starts
+            require( uint256(status.commitmentsTotal) == 0, "DutchAuction: auction already committed" );
+            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+        } else {
+            /// @dev Failed auction
+            /// @dev Return auction tokens back to wallet.
+            require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet"); 
+            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+        }
+        status.finalized = true;
+        emit AuctionFinalized();
+
+    }
+
+    /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
+    function withdrawTokens() public  {
+        withdrawTokens(msg.sender);
+    }
+
+   /**
+     * @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
+     * @dev Withdraw tokens only after auction ends.
+     * @param beneficiary Whose tokens will be withdrawn.
+     */
+    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
+        if (auctionSuccessful()) {
+            require(marketStatus.finalized, "DutchAuction: not finalized");
+            /// @dev Successful auction! Transfer claimed tokens.
+            uint256 tokensToClaim = tokensClaimable(beneficiary);
+            require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
+            claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
+            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+        } else {
+            /// @dev Auction did not meet reserve price.
+            /// @dev Return committed funds back to user.
+            require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet");
+            uint256 fundsCommitted = commitments[beneficiary];
+            commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
+            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+        }
+    }
+
+
+    //--------------------------------------------------------
+    // Documents
+    //--------------------------------------------------------
+
+    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+        require(msg.sender == operator);
+        _setDocument( _name, _uri, _documentHash);
+    }
+
+    function removeDocument(bytes32 _name) external {
+        require(msg.sender == operator);
+        _removeDocument(_name);
+    }
+
+
+
+   //--------------------------------------------------------
+    // Market Launchers
+    //--------------------------------------------------------
+
+    /**
+     * @notice Decodes and hands auction data to the initAuction function.
+     * @param _data Encoded data for initialization.
+     */
+    function initMarket(
+        bytes calldata _data
+    ) public {
+        (
+        address _funder,
+        address _token,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        address _paymentCurrency,
+        uint256 _startPrice,
+        uint256 _minimumPrice,
+        address _operator,
+        address _pointList,
+        address payable _wallet
+        ) = abi.decode(_data, (
+            address,
+            address,
+            uint256,
+            uint256,
+            uint256,
+            address,
+            uint256,
+            uint256,
+            address,
+            address,
+            address
+        ));
+        initAuction(_funder, _token, _totalTokens, _startTime, _endTime, _paymentCurrency, _startPrice, _minimumPrice, _operator, _pointList, _wallet);
+    }
+
+    /**
+     * @notice Collects data to initialize the auction and encodes them.
+     * @param _funder The address that funds the token for crowdsale.
+     * @param _token Address of the token being sold.
+     * @param _totalTokens The total number of tokens to sell in auction.
+     * @param _startTime Auction start time.
+     * @param _endTime Auction end time.
+     * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address.
+     * @param _startPrice Starting price of the auction.
+     * @param _minimumPrice The minimum auction price.
+     * @param _operator Address that can finalize auction.
+     * @param _pointList Address that will manage auction approvals.
+     * @param _wallet Address where collected funds will be forwarded to.
+     * @return _data All the data in bytes format.
+     */
+    function getAuctionInitData(
+        address _funder,
+        address _token,
+        uint256 _totalTokens,
+        uint256 _startTime,
+        uint256 _endTime,
+        address _paymentCurrency,
+        uint256 _startPrice,
+        uint256 _minimumPrice,
+        address _operator,
+        address _pointList,
+        address payable _wallet
+    )
+        external 
+        pure
+        returns (bytes memory _data)
+        {
+            return abi.encode(
+                _funder,
+                _token,
+                _totalTokens,
+                _startTime,
+                _endTime,
+                _paymentCurrency,
+                _startPrice,
+                _minimumPrice,
+                _operator,
+                _pointList,
+                _wallet
+            );
+        }
+        
 }

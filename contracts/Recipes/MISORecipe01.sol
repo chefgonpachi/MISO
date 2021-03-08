@@ -1,4 +1,4 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../../interfaces/IERC20.sol";
@@ -28,6 +28,7 @@ interface IMISOMarket {
         uint256 _endDate, 
         uint256 _rate, 
         uint256 _goal, 
+        address _operator,
         address payable _wallet,
         uint256 _templateId
     ) external returns (address newCrowdsale);
@@ -127,27 +128,6 @@ contract MISORecipe01 {
 
         token.approve(address(misoMarket), tokensToMarket);
 
-        // Scope for creating crowdsale
-        {
-        uint256 startTime = block.timestamp + 5;
-        uint256 endTime = block.timestamp + 100;
-        uint256 marketRate = 100;
-        uint256 marketGoal = 200;
-        address payable wallet = msg.sender;
-
-        IMisoCrowdsale crowdsale = IMisoCrowdsale(misoMarket.createCrowdsale(
-            address(token), 
-            tokensToMarket, 
-            0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
-            startTime, 
-            endTime, 
-            marketRate, 
-            marketGoal, 
-            wallet, 
-            2
-        ));
-        }
-
         // Scope for adding liquidity
         IPoolLiquidity poolLiquidity = IPoolLiquidity(misoLauncher.createLiquidityLauncher(1));
 
@@ -173,6 +153,28 @@ contract MISORecipe01 {
         
         token.transfer(address(poolLiquidity),tokensToLiquidity);
 
+        }
+
+        // Scope for creating crowdsale
+        {
+        uint256 startTime = block.timestamp + 5;
+        uint256 endTime = block.timestamp + 100;
+        uint256 marketRate = 100;
+        uint256 marketGoal = 200;
+        address payable wallet = msg.sender;
+
+        IMisoCrowdsale crowdsale = IMisoCrowdsale(misoMarket.createCrowdsale(
+            address(token), 
+            tokensToMarket, 
+            0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
+            startTime, 
+            endTime, 
+            marketRate,
+            marketGoal, 
+            address(poolLiquidity), 
+            wallet, 
+            2
+        ));
         }
 
         // Scope for creating farm

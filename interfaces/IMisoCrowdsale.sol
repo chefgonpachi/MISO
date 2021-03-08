@@ -1,4 +1,4 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
 
 interface IMisoCrowdsale {
     function initCrowdsale(
@@ -10,6 +10,7 @@ interface IMisoCrowdsale {
         uint256 _endDate,
         uint256 _rate,
         uint256 _goal,
+        address _operator,
         address payable _wallet
     ) external;
 }

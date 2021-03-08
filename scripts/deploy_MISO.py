@@ -21,14 +21,14 @@ def main():
     sushi_token_template = deploy_sushi_token_template()
 
     if miso_token_factory.tokenTemplateId() == 0 :
-        miso_token_factory.addTokenTemplate(mintable_token_template, {'from': operator} )
-        miso_token_factory.addTokenTemplate(fixed_token_template, {'from': operator} )
-        miso_token_factory.addTokenTemplate(sushi_token_template, {'from': operator} )
+        miso_token_factory.addTokenTemplate(mintable_token_template , {'from': operator} )
+        miso_token_factory.addTokenTemplate(fixed_token_template , {'from': operator} )
+        miso_token_factory.addTokenTemplate(sushi_token_template , {'from': operator} )
 
     # Setup MISO Market  
     crowdsale_template = deploy_crowdsale_template()
     dutch_auction_template = deploy_dutch_auction_template()
-    miso_market = deploy_miso_market(access_control, [dutch_auction_template, crowdsale_template])
+    miso_market = deploy_miso_market(access_control, [dutch_auction_template , crowdsale_template ])
     uniswap_factory = deploy_uniswap_factory()
 
     # MISOLiquidityLauncher
@@ -37,7 +37,7 @@ def main():
     pool_liquidity_template = deploy_pool_liquidity_template()    
     miso_launcher = deploy_miso_launcher(access_control, weth_token)
     if miso_launcher.launcherTemplateId() == 0:
-        miso_launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
+        miso_launcher.addLiquidityLauncherTemplate(pool_liquidity_template , {"from": accounts[0]} )
 
     # MISOFarmFactory
     masterchef_template = deploy_masterchef_template()    

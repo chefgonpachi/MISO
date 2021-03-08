@@ -4,8 +4,10 @@
 
 interface IMISOTokenFactory:
     def deployToken(
-        templateId: uint256
+        templateId: uint256,        
+        intergratorFee: address,
     ) -> address: payable
+    def minimumFee() -> uint256: nonpayable
 
 interface ISushiToken:
     def mint(owner: address, amount: uint256) : nonpayable
@@ -21,8 +23,10 @@ interface ISushiToken:
 
 interface IMISOMarket:
     def deployMarket(
-        templateId: uint256
+        templateId: uint256,
+        intergratorFee: address
     ) -> address: payable
+    def minimumFee() -> uint256: nonpayable
 
 interface IMISOCrowdsale:
     def initCrowdsale(
@@ -34,6 +38,8 @@ interface IMISOCrowdsale:
         endDate: uint256, 
         rate: uint256, 
         goal: uint256, 
+        operator: address,
+        pointList: address,
         wallet: address
     ) : nonpayable
 
@@ -58,8 +64,10 @@ interface IPoolLiquidity:
 
 interface IMISOFarmFactory:
     def deployFarm(
-        templateId: uint256
+        templateId: uint256,
+        intergratorFeeAcct: address
     ) -> address: payable
+    def minimumFee() -> uint256: nonpayable
 
 interface IMasterChef:
     def initFarm(
@@ -78,7 +86,7 @@ interface IAdminAccess:
 
 
 tokenFactory: public(IMISOTokenFactory)
-misoMarket: public(address)
+misoMarket: public(IMISOMarket)
 weth: public(address)
 misoLauncher: public(IMISOLauncher)
 farmFactory: public(IMISOFarmFactory)
@@ -106,7 +114,7 @@ def __init__(
 
     self.tokenFactory = IMISOTokenFactory(tokenFactory)
     self.weth = weth
-    self.misoMarket = misoMarket
+    self.misoMarket = IMISOMarket(misoMarket)
     self.misoLauncher = IMISOLauncher(misoLauncher)
     self.sushiswapFactory = sushiswapFactory
     self.farmFactory = IMISOFarmFactory(farmFactory)
@@ -137,32 +145,23 @@ def prepareMiso(
     startBlock: uint256,
     devAddr: address, 
     tokensToFarm: uint256,
-    allocPoint: uint256
-) -> (address, address, address, address):
+    allocPoint: uint256,
+    integratorFeeAccount: address
+) -> (address, address, address, address, address):
 
     assert startTime < endTime  # dev: Start time later then end time
     assert tokensToMint >= tokensToMarket + tokensToLiquidity + tokensToFarm
 
-    token: address = self.tokenFactory.deployToken(1)
+    tokenFee: uint256 = self.tokenFactory.minimumFee()
+    crowdsaleFee: uint256 = self.misoMarket.minimumFee()
+    farmFee: uint256 = self.farmFactory.minimumFee()
+
+    assert msg.value >= crowdsaleFee + tokenFee + farmFee
+
+    token: address = self.tokenFactory.deployToken(1, integratorFeeAccount,  value=tokenFee)
     ISushiToken(token).initToken(name, symbol, msg.sender, tokensToMint)
 
     # GP: create access control
-
-    crowdsale: address = IMISOMarket(self.misoMarket).deployMarket(2)
-
-    ISushiToken(token).approve(crowdsale, tokensToMarket)
-
-    IMISOCrowdsale(crowdsale).initCrowdsale(
-        self,
-        token,
-        paymentCurrency, 
-        tokensToMarket,
-        startTime,
-        endTime,
-        marketRate,
-        marketGoal,
-        wallet
-    )
 
     poolLiquidity: address = self.misoLauncher.createLiquidityLauncher(1)
 
@@ -177,9 +176,27 @@ def prepareMiso(
         locktime
     ) 
     
-    ISushiToken(token).transfer(poolLiquidity,tokensToLiquidity)
+    ISushiToken(token).transfer(poolLiquidity, tokensToLiquidity)
 
-    farm: address = self.farmFactory.deployFarm(1)
+    crowdsale: address = self.misoMarket.deployMarket(2, integratorFeeAccount, value=crowdsaleFee)
+
+    ISushiToken(token).approve(crowdsale, tokensToMarket)
+
+    IMISOCrowdsale(crowdsale).initCrowdsale(
+        self,
+        token,
+        paymentCurrency, 
+        tokensToMarket,
+        startTime,
+        endTime,
+        marketRate,
+        marketGoal,
+        poolLiquidity,
+        ZERO_ADDRESS,
+        poolLiquidity
+    )
+
+    farm: address = self.farmFactory.deployFarm(1, integratorFeeAccount, value=farmFee)
 
     IMasterChef(farm).initFarm(
                 token,
@@ -199,5 +216,5 @@ def prepareMiso(
     if tokensRemaining > 0:
         ISushiToken(token).transfer(wallet, tokensRemaining)
 
-    return (token, lpToken, poolLiquidity, farm)
+    return (token, crowdsale, lpToken, poolLiquidity, farm)
 

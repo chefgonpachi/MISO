@@ -9,6 +9,7 @@ from settings import *
 #####################################
 # MISOAccessControls
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def miso_access_controls(MISOAccessControls):
     access_controls = MISOAccessControls.deploy({'from': accounts[0]})
@@ -26,6 +27,7 @@ def public_access_controls(MISOAccessControls):
 #####################################
 # MISOTokenFactory
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def token_factory(MISOTokenFactory, miso_access_controls, fixed_token_template, mintable_token_template):
     token_factory = MISOTokenFactory.deploy({'from': accounts[0]})
@@ -47,6 +49,7 @@ def token_factory(MISOTokenFactory, miso_access_controls, fixed_token_template, 
 #####################################
 # FixedToken
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def fixed_token(FixedToken):
     fixed_token = FixedToken.deploy({'from': accounts[0]})
@@ -67,11 +70,12 @@ def fixed_token(FixedToken):
 #####################################
 # FixedToken for Crowdsale
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def fixed_token2(FixedToken):
     fixed_token = FixedToken.deploy({'from': accounts[0]})
-    name = "Crowdsale Token"
-    symbol = "CWT"
+    name = "Fixed Token TWO"
+    symbol = "FTT"
     owner = accounts[0]
 
     fixed_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
@@ -79,24 +83,36 @@ def fixed_token2(FixedToken):
     return fixed_token
 
 #####################################
+# FixedToken for Dutch Auction with Lists
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def dutch_list_token(FixedToken):
+    dutch_list_token = FixedToken.deploy({'from': accounts[0]})
+    name = "Batch Auction Token"
+    symbol = "BAT"
+    owner = accounts[0]
+    dutch_list_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
+    return dutch_list_token
+
+
+#####################################
 # FixedToken for BatchAuction
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def batch_auction_token(FixedToken):
     batch_auction_token = FixedToken.deploy({'from': accounts[0]})
     name = "Batch Auction Token"
     symbol = "BAT"
     owner = accounts[0]
-
     batch_auction_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
-
     return batch_auction_token
 
 @pytest.fixture(scope='module', autouse=True)
 def fixed_token_template(FixedToken):
     fixed_token_template = FixedToken.deploy({'from': accounts[0]})
     return fixed_token_template
-
 
     
 #####################################
@@ -149,6 +165,7 @@ def sushi_token_template(SushiToken):
 #####################################
 # WETH9
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def weth_token(WETH9):
     weth_token = WETH9.deploy({'from': accounts[0]})
@@ -156,8 +173,22 @@ def weth_token(WETH9):
 
 
 #####################################
+# Point List
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def point_list(PointList):
+    point_list = PointList.deploy({"from": accounts[0]})
+    point_list.initPointList(accounts[0], {"from": accounts[0]})
+    point_list.addOperatorRole(accounts[0], {'from': accounts[0]})
+
+    return point_list
+
+
+#####################################
 # MISOMarket
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def auction_factory(MISOMarket, miso_access_controls, dutch_auction_template, crowdsale_template):
     auction_factory = MISOMarket.deploy({'from': accounts[0]})
@@ -170,6 +201,7 @@ def auction_factory(MISOMarket, miso_access_controls, dutch_auction_template, cr
 #####################################
 # DutchAuction
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def dutch_auction(DutchAuction, fixed_token):
     assert fixed_token.balanceOf(accounts[0]) == AUCTION_TOKENS
@@ -177,18 +209,63 @@ def dutch_auction(DutchAuction, fixed_token):
     start_time = chain.time() +10
     end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
+    operator = accounts[0]
     dutch_auction = DutchAuction.deploy({"from": accounts[0]})
 
     fixed_token.approve(dutch_auction, AUCTION_TOKENS, {"from": accounts[0]})
 
-    dutch_auction.initAuction(accounts[0], fixed_token, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, wallet, {"from": accounts[0]})
+    dutch_auction.initAuction(
+        accounts[0],
+        fixed_token,
+        AUCTION_TOKENS,
+        start_time,
+        end_time,
+        ETH_ADDRESS,
+        AUCTION_START_PRICE,
+        AUCTION_RESERVE,
+        operator,
+        ZERO_ADDRESS,
+        wallet,
+        {"from": accounts[0]}
+    )
     assert dutch_auction.clearingPrice() == AUCTION_START_PRICE
     chain.sleep(10)
     return dutch_auction 
 
+@pytest.fixture(scope='module', autouse=True)
+def dutch_auction_list(DutchAuction, dutch_list_token, point_list):
+    assert dutch_list_token.balanceOf(accounts[0]) == AUCTION_TOKENS
+    
+    start_time = chain.time() +10
+    end_time = start_time + AUCTION_TIME
+    wallet = accounts[1]
+    operator = accounts[0]
+    dutch_auction_list = DutchAuction.deploy({"from": accounts[0]})
+
+    dutch_list_token.approve(dutch_auction_list, AUCTION_TOKENS, {"from": accounts[0]})
+
+    dutch_auction_list.initAuction(
+        accounts[0],
+        dutch_list_token,
+        AUCTION_TOKENS,
+        start_time,
+        end_time,
+        ETH_ADDRESS,
+        AUCTION_START_PRICE,
+        AUCTION_RESERVE,
+        operator,
+        point_list,
+        wallet,
+        {"from": accounts[0]}
+    )
+    assert dutch_auction_list.clearingPrice() == AUCTION_START_PRICE
+    chain.sleep(10)
+    return dutch_auction_list 
+
 #####################################
 # BatchAuction
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def batch_auction(BatchAuction, batch_auction_token):
     assert batch_auction_token.balanceOf(accounts[0]) == AUCTION_TOKENS
@@ -200,7 +277,20 @@ def batch_auction(BatchAuction, batch_auction_token):
 
     batch_auction_token.approve(batch_auction, AUCTION_TOKENS, {"from": accounts[0]})
 
-    batch_auction.initAuction(accounts[0], batch_auction_token, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_MINIMUM_COMMITMENT, wallet, {"from": accounts[0]})
+    batch_auction.initAuction(
+        accounts[0],
+        batch_auction_token,
+        AUCTION_TOKENS,
+        start_time,
+        end_time,
+        ETH_ADDRESS,
+        AUCTION_MINIMUM_COMMITMENT,
+        accounts[0],
+        ZERO_ADDRESS,
+        wallet,
+        {"from": accounts[0]}
+    )
+
     chain.sleep(10)
     return batch_auction 
 
@@ -212,60 +302,67 @@ def dutch_auction_template(DutchAuction):
 #####################################
 # Crowdsale
 ######################################
-@pytest.fixture(scope='module', autouse=True)
-def crowdsale(Crowdsale, mintable_token):
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
-    mintable_token.mint(accounts[0], AUCTION_TOKENS, {"from": accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == AUCTION_TOKENS
-
-    start_time = chain.time() + 10
-    end_time = start_time + CROWDSALE_TIME
-    wallet = accounts[4]
-    
-    mintable_token.approve(crowdsale, AUCTION_TOKENS, {"from": accounts[0]})
-    crowdsale.initCrowdsale(accounts[0], mintable_token, ETH_ADDRESS, CROWDSALE_TOKENS, start_time, end_time, CROWDSALE_RATE, CROWDSALE_GOAL, wallet, {"from": accounts[0]})
-    assert mintable_token.balanceOf(crowdsale) == AUCTION_TOKENS
-    chain.sleep(10)
-    return crowdsale 
-
-@pytest.fixture(scope='module', autouse=True)
-def crowdsale_token(Crowdsale, mintable_token, fixed_token2):
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
-    mintable_token.mint(accounts[0], AUCTION_TOKENS, {"from": accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == AUCTION_TOKENS
-
-    start_time = chain.time() + 10
-    end_time = start_time + CROWDSALE_TIME
-    wallet = accounts[4]
-    
-    mintable_token.approve(crowdsale, AUCTION_TOKENS, {"from": accounts[0]})
-    crowdsale.initCrowdsale(accounts[0], mintable_token, fixed_token2, CROWDSALE_TOKENS, start_time, end_time, CROWDSALE_RATE, CROWDSALE_GOAL, wallet, {"from": accounts[0]})
-    assert mintable_token.balanceOf(crowdsale) == AUCTION_TOKENS
-    chain.sleep(10)
-    return crowdsale 
 
 @pytest.fixture(scope='module', autouse=True)
 def crowdsale_template(Crowdsale, mintable_token):
     crowdsale_template = Crowdsale.deploy({"from":accounts[0]})
     return crowdsale_template
+
+#####################################
+# FixedToken for Hyperbolic Auction
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def hyperbolic_auction_token(FixedToken):
+    batch_auction_token = FixedToken.deploy({'from': accounts[0]})
+    name = "Hyperbolic Auction Token"
+    symbol = "HAT"
+    owner = accounts[0]
+    batch_auction_token.initToken(name, symbol, owner,AUCTION_TOKENS, {'from': owner})
+    return batch_auction_token
+
+
+#####################################
+# Hyperbolic Auction
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def hyperbolic_auction(HyperbolicAuction, hyperbolic_auction_token):
+    assert hyperbolic_auction_token.balanceOf(accounts[0]) == AUCTION_TOKENS
     
+    start_time = chain.time() +10
+    end_time = start_time + AUCTION_TIME
+    wallet = accounts[1]
+    operator = accounts[0]
+    hyperbolic_auction = HyperbolicAuction.deploy({"from": accounts[0]})
+
+    hyperbolic_auction_token.approve(hyperbolic_auction, AUCTION_TOKENS, {"from": accounts[0]})
+
+    hyperbolic_auction.initAuction(
+        accounts[0],
+        hyperbolic_auction_token,
+        AUCTION_TOKENS,
+        start_time,
+        end_time,
+        ETH_ADDRESS,
+        HYPERBOLIC_AUCTION_FACTOR,
+        AUCTION_RESERVE,
+        operator,
+        ZERO_ADDRESS,
+        wallet,
+        {"from": accounts[0]}
+    )
+    chain.sleep(10)
+    return hyperbolic_auction
+
 #####################################
 # UninswapV2Factory
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def uniswap_factory(UniswapV2Factory):
     uniswap_factory = UniswapV2Factory.deploy(accounts[0], {"from": accounts[0]})
     return uniswap_factory
-
-
-#####################################
-# Point List
-######################################
-@pytest.fixture(scope='module', autouse=True)
-def point_list(PointList, public_access_controls):
-    point_list = PointList.deploy({"from": accounts[0]})
-    point_list.initPointList(public_access_controls, {"from": accounts[0]})
-    return point_list
 
 
 #####################################
@@ -277,21 +374,18 @@ def pool_liquidity_template(PoolLiquidity):
     pool_liquidity_template = PoolLiquidity.deploy({"from": accounts[0]})
     return pool_liquidity_template
 
-@pytest.fixture(scope='module', autouse=True)
-def seed_liquidity_template(SeedLiquidity):
-    seed_liquidity_template = SeedLiquidity.deploy({"from": accounts[0]})
-    return seed_liquidity_template
+# @pytest.fixture(scope='module', autouse=True)
+# def seed_liquidity_template(SeedLiquidity):
+#     seed_liquidity_template = SeedLiquidity.deploy({"from": accounts[0]})
+#     return seed_liquidity_template
 
-
 @pytest.fixture(scope='module', autouse=True)
-def launcher(MISOLiquidityLauncher, miso_access_controls, pool_liquidity_template, seed_liquidity_template, weth_token):
+def launcher(MISOLiquidityLauncher, miso_access_controls, pool_liquidity_template, weth_token):
     launcher = MISOLiquidityLauncher.deploy({"from": accounts[0]})
     launcher.initMISOLiquidityLauncher(miso_access_controls, weth_token)
     assert launcher.accessControls() == miso_access_controls
     assert launcher.WETH() == weth_token
-
     launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
-    # launcher.addLiquidityLauncherTemplate(seed_liquidity_template, {"from": accounts[0]} )
 
     return launcher
 
@@ -319,9 +413,10 @@ def launcher_pool_liquidity(PoolLiquidity, launcher):
 #####################################
 # Farm Factory
 ######################################
+
 @pytest.fixture(scope='module', autouse=True)
 def farm_factory(MISOFarmFactory,miso_access_controls,farm_template):
-    miso_dev = accounts[0]
+    miso_dev = accounts[5]
     minimum_fee = 0 
     token_fee = 0
     farm_factory = MISOFarmFactory.deploy({"from":accounts[0]})
@@ -335,7 +430,7 @@ def farm_template(MISOMasterChef):
     farm_template = MISOMasterChef.deploy({"from":accounts[0]})
     return farm_template
 
-#####################################
+######################################
 # MISORecipe
 ######################################
 
@@ -358,3 +453,14 @@ def miso_recipe_03(MISORecipe03,weth_token,uniswap_factory,farm_factory):
     miso_recipe_03 = MISORecipe03.deploy(weth_token,uniswap_factory,farm_factory, {"from":accounts[0]})
     
     return miso_recipe_03
+
+#####################################
+# Token Lock
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def token_lock(TokenVault,fixed_token2):
+    token_lock = TokenVault.deploy({"from":accounts[0]})
+    #ixed_token2.approve(token_lock, AUCTION_TOKENS,{"from": accounts[0]})
+    return token_lock
+
+

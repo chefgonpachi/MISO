@@ -27,6 +27,6 @@ def main():
     verify("miso_market", MISOMarket) 
     verify("weth_token", WETH9) 
     verify("access_control", MISOAccessControls) 
-    verify("masterchef_template", MasterChef) 
+    verify("masterchef_template", MISOMasterChef) 
     verify("farm_factory", MISOFarmFactory) 
 

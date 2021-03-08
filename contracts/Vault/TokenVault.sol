@@ -1,91 +1,140 @@
-pragma solidity ^0.6.9;
+pragma solidity 0.6.12;
 
-import "../Utils/Owned.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/SafeMathPlus.sol";
+import "../Utils/SafeTransfer.sol";
 
-contract TokenVault is Owned {
-    using SafeMathPlus for uint256;
-   
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(address indexed user,uint256 indexed pid,uint256 amount);
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+
+contract TokenVault is SafeTransfer {
+    using SafeMath for uint256;
+    using EnumerableSet for EnumerableSet.AddressSet;
+    
+    struct Item{
+        uint256 amount;
+        uint256 unlockTime;
+        address owner;
+        uint256 userIndex;
+    }
 
     struct UserInfo{
-        uint256 amount; // How many  tokens the user has provided
-    }
+        mapping(address => uint256[]) lockToItems;
+        EnumerableSet.AddressSet lockedItemsWithUser;
+    }   
 
-    struct PoolInfo{
-        IERC20 token;
-        bool withdrawable;
-        uint256 endDate;
-    }
-    // Info of each user that stakes tokens. (poolId => (userAddress => userInfo))
-    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
+    mapping (address => UserInfo) users;
 
-    // Info of each pool.
-    PoolInfo[] public poolInfo;
-
-    mapping(address => uint256) tokenId;
-    function initERC20Vault() public{
-        _initOwned(msg.sender);
-    }
-
-
-    // Add a new token pool. Can only be called by the owner. 
-    function add(IERC20 _token, bool _withdrawable, uint256 _duration) public{
-        require(isOwner());
-        uint256 endDate = block.timestamp.add(_duration);
-
-        uint256 length = poolInfo.length;
-        for (uint256 pid = 0; pid < length; ++pid) {
-            require(poolInfo[pid].token != _token,"Error pool already added");
-        }
-        
-        poolInfo.push(PoolInfo({
-            token:_token,
-            withdrawable: _withdrawable,
-            endDate: endDate
-        }));
-        tokenId[address(_token)] = poolInfo.length - 1;
-    }
-
-    // Update the given pool's ability to withdraw tokens
-    function setPoolWithdrawable(uint256 _pid, bool _withdrawable) public {
-        require(isOwner());
-        poolInfo[_pid].withdrawable = _withdrawable;
-    }
+    uint256 public depositId;
+    uint256[] public allDepositIds;
+    mapping (uint256 => Item) public lockedItem;
     
-    //Have to do more checks
-    function updatePoolEndDate(uint256 _pid, uint256 _endDate) public {
-        require(isOwner());
-        PoolInfo storage pool = poolInfo[_pid];
-        pool.endDate = _endDate;
+    event onLock(address tokenAddress, address user, uint256 amount);
+    event onUnlock(address tokenAddress,uint256 amount);
+
+    function lockTokens(
+            address _tokenAddress, 
+            uint256 _amount, 
+            uint256 _unlockTime,
+            address payable _withdrawer) public returns (uint256 _id){
+        
+        require(_amount > 0, 'token amount is Zero');
+        require(_unlockTime < 10000000000, 'Enter an unix timestamp in seconds, not miliseconds');
+        _safeTransferFrom(_tokenAddress, msg.sender, _amount);
+
+        _id = ++depositId;
+
+        
+        lockedItem[_id].amount = _amount;
+        lockedItem[_id].unlockTime = _unlockTime;
+        lockedItem[_id].owner = _withdrawer;
+
+        allDepositIds.push(_id);
+        /* UserInfo storage user_token = users[_withdrawer];
+        user_token.lockToItems[_tokenAddress].push(item.nonce); */
+
+        UserInfo storage userItem = users[_withdrawer];
+        
+        userItem.lockedItemsWithUser.add(_tokenAddress);
+
+        userItem.lockToItems[_tokenAddress].push(_id);
+        uint256  userIndex = userItem.lockToItems[_tokenAddress].length - 1;
+        lockedItem[_id].userIndex = userIndex;
+        emit  onLock(_tokenAddress, msg.sender,lockedItem[_id].amount);
     }
 
-    // Deposit tokens to Vault.
-    // GP: Replace pid with token address
-    // GP: Have an index pointer from token address to pid
-    function deposit(address _token, uint256 _amount, address _withdrawAddress) public {
-        uint256 pid = tokenId[_token];
-        PoolInfo storage pool = poolInfo[pid];
-        UserInfo storage user = userInfo[pid][_withdrawAddress];
+    function withdrawTokens(
+                    address _tokenAddress, 
+                    uint256 _index, 
+                    uint256 _id, 
+                    uint256 _amount) external{
+                        
+        require(_amount > 0, 'token amount is Zero');
+        uint256 id = users[msg.sender].lockToItems[_tokenAddress][_index];
+        Item storage userItem = lockedItem[id];
+        require(id == _id && userItem.owner == msg.sender, 'LOCK MISMATCH');
+        require(userItem.unlockTime < block.timestamp, 'Not unlocked yet');
+        userItem.amount = userItem.amount.sub(_amount);
 
-        pool.token.transferFrom(address(msg.sender), address(this), _amount);
-        user.amount = user.amount.add(_amount);
-        emit Deposit(msg.sender, pid, _amount);
+        if(userItem.amount == 0){
+            uint256[] storage userItems = users[msg.sender].lockToItems[_tokenAddress];
+            userItems[_index] = userItems[userItems.length -1];
+            userItems.pop();
+        }
+
+        _safeTransfer(_tokenAddress, msg.sender, _amount);
+
+        emit onUnlock(_tokenAddress, _amount);
     }
 
-    function withdraw(uint256 _pid, uint256 _amount) public {
-        PoolInfo storage pool = poolInfo[_pid];
-        require(pool.withdrawable, "Withdrawing from pool is disabled");
-        require(now >= pool.endDate, "Timelock: Funds cannot be withdrawn yet");
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        require(user.amount >=_amount,"withdraw: unsufficient funds in the pool");
-        user.amount = user.amount.sub(_amount);
-        pool.token.transfer(address(msg.sender),_amount);
-        emit Withdraw(msg.sender, _pid, _amount);
+    function getItemAtUserIndex(uint256 _index,
+                                address _tokenAddress,
+                                 address _user)
+                                external view
+                                returns(uint256, uint256, address, uint256)
+    {   
+        uint256 id = users[_user].lockToItems[_tokenAddress][_index];
+        Item storage item =  lockedItem[id];
+        return (item.amount, item.unlockTime, item.owner, id);
+        
+    }
+
+    function getUserLockedItemAtIndex(address _user, uint256 _index) external view returns (address) {
+        UserInfo storage user = users[_user];
+        return user.lockedItemsWithUser.at(_index);
+    }
+
+    function getLockedItemAtId(uint256 _id) external view returns (uint256, uint256, address, uint256){
+        Item storage item =  lockedItem[_id];
+        return (item.amount, item.unlockTime, item.owner,item.userIndex);
+    }
+     //--------------------------------------------------------
+    // Helper Functions
+    //--------------------------------------------------------
+    /**
+     * @dev There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
+     * @dev Im trying to make it a habit to put external calls last (reentrancy)
+     * @dev You can put this in an internal function if you like.
+    */
+    function _safeTransfer(address _token, address _to, uint256 _amount) internal {
+        // solium-disable-next-line security/no-low-level-calls
+        (bool success, bytes memory data) = _token.call(
+            // 0xa9059cbb = bytes4(keccak256("transfer(address,uint256)"))
+            abi.encodeWithSelector(0xa9059cbb, _to, _amount)
+        );
+        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 Transfer failed 
     }
 
 
+    function _safeTransferFrom(address _token, address _from, uint256 _amount) internal {
+        // solium-disable-next-line security/no-low-level-calls
+        (bool success, bytes memory data) = _token.call(
+            // 0x23b872dd = bytes4(keccak256("transferFrom(address,address,uint256)"))
+            abi.encodeWithSelector(0x23b872dd, _from, address(this), _amount)
+        );
+        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 TransferFrom failed 
+    }
+
+    
+    
 }

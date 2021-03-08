@@ -18,6 +18,10 @@ interface IMISOFarmFactory:
         accessControls: address,
         templateId: uint256
     ) -> address: payable
+    def deployFarm(
+        templateId: uint256,
+        integratorFeeAccount: address
+    ) -> address: payable
 
 interface IMasterChef:
     def initFarm(
@@ -96,14 +100,15 @@ def createLiquidityFarm(
     if pair == ZERO_ADDRESS:
         pair = Factory(self.sushiswapFactory).createPair(rewardToken, self.weth)
     
+    farm: address = self.farmFactory.deployFarm(1, msg.sender)
 
-    farm: address = self.farmFactory.createFarm(
-            rewardToken,
-            rewardsPerBlock,
-            startBlock,
-            devAddr,
-            self,
-            1, value=msg.value)
+    IMasterChef(farm).initFarm(
+                rewardToken,
+                rewardsPerBlock,
+                startBlock,
+                devAddr,
+                self)
+    
 
     ISushiToken(rewardToken).transfer(farm,tokensToFarm)
     IMasterChef(farm).addToken(allocPoint, pair, False)
@@ -147,14 +152,14 @@ def createTokenFarm(
 
     # create access control
     # transfer ownership to msg.sender
+    farm: address = self.farmFactory.deployFarm(1, msg.sender)
 
-    farm: address = self.farmFactory.createFarm(
-            rewardToken,
-            rewardsPerBlock,
-            startBlock,
-            devAddr,
-            accessControl,
-            1)
+    IMasterChef(farm).initFarm(
+                rewardToken,
+                rewardsPerBlock,
+                startBlock,
+                devAddr,
+                self)
 
     ISushiToken(rewardToken).transfer(farm,tokensToFarm)
     # IMasterChef(farm).addToken(allocPoint, stakedToken, False)

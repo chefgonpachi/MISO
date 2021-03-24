@@ -13,9 +13,9 @@ pragma solidity 0.6.12;
 
 
 import "../../interfaces/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../../interfaces/IPointList.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
@@ -23,7 +23,7 @@ import "../Utils/Documents.sol";
 /// @notice Attribution to delta.financial
 
 
-contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
+contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -166,12 +166,12 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
     ///--------------------------------------------------------
 
     receive() external payable {
-        // revertBecauseUserDidNotProvideAgreement();
-        // GP: Allow token direct transfers for testnet
-        buyTokensEth(msg.sender, true);
+        revertBecauseUserDidNotProvideAgreement();
     }
 
-
+    /** 
+     * @dev Attribution to the awesome delta.financial contracts
+    */  
     function marketParticipationAgreement() public pure returns (string memory) {
         return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
@@ -193,7 +193,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
         address payable _beneficiary,
         bool readAndAgreedToMarketParticipationAgreement
     ) 
-        public payable nonReentrant   
+        public payable   nonReentrant    
     {
         require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -245,7 +245,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
         uint256 _tokenAmount,
         bool readAndAgreedToMarketParticipationAgreement
     ) 
-        public nonReentrant 
+        public   nonReentrant  
     {
         require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -299,7 +299,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
      * @param beneficiary Whose tokens will be withdrawn.
      */
     // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
-    function withdrawTokens(address payable beneficiary) public nonReentrant {    
+    function withdrawTokens(address payable beneficiary) public   nonReentrant  {    
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "Crowdsale: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.

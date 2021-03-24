@@ -12,17 +12,15 @@ pragma solidity 0.6.12;
 //
 //----------------------------------------------------------------------------------
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+
+import "../OpenZeppelin/utils/ReentrancyGuard.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../../interfaces/IPointList.sol";
-import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
+import "../../interfaces/IERC20.sol";
 
-/// @notice Attribution to dutchswap.com
-
-
-contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
+contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -196,11 +194,12 @@ contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
     ///--------------------------------------------------------
 
     receive() external payable {
-        // revertBecauseUserDidNotProvideAgreement();
-        // GP: Allow token direct transfers for testnet
-        commitEth(msg.sender, true);    
+        revertBecauseUserDidNotProvideAgreement();
     }
 
+    /** 
+     * @dev Attribution to the awesome delta.financial contracts
+    */  
     function marketParticipationAgreement() public pure returns (string memory) {
         return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
@@ -259,7 +258,7 @@ contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
         uint256 _amount,
         bool readAndAgreedToMarketParticipationAgreement
     )
-        public nonReentrant 
+        public   nonReentrant  
     {
         require(address(paymentCurrency) != ETH_ADDRESS, "DutchAuction: Payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -393,7 +392,7 @@ contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
      * @notice Auction finishes successfully above the reserve.
      * @dev Transfer contract funds to initialized wallet.
      */
-    function finalize() public nonReentrant 
+    function finalize() public   nonReentrant  
     {
         require(msg.sender == operator || finalizeTimeExpired(), "DutchAuction: sender must be an operator");
         MarketStatus storage status = marketStatus;
@@ -429,7 +428,7 @@ contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
      * @dev Withdraw tokens only after auction ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
-    function withdrawTokens(address payable beneficiary) public nonReentrant {
+    function withdrawTokens(address payable beneficiary) public   nonReentrant  {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "DutchAuction: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.

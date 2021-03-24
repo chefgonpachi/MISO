@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity 0.6.12;
 
-import "../GSN/Context.sol";
+import "./Context.sol";
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -13,7 +13,7 @@ import "../GSN/Context.sol";
  * the functions of your contract. Note that they will not be pausable by
  * simply including this module, only once the modifiers are put in place.
  */
-contract Pausable is Context {
+abstract contract Pausable is Context {
     /**
      * @dev Emitted when the pause is triggered by `account`.
      */
@@ -36,7 +36,7 @@ contract Pausable is Context {
     /**
      * @dev Returns true if the contract is paused, and false otherwise.
      */
-    function paused() public view returns (bool) {
+    function paused() public view virtual returns (bool) {
         return _paused;
     }
 
@@ -48,7 +48,7 @@ contract Pausable is Context {
      * - The contract must not be paused.
      */
     modifier whenNotPaused() {
-        require(!_paused, "Pausable: paused");
+        require(!paused(), "Pausable: paused");
         _;
     }
 
@@ -60,7 +60,7 @@ contract Pausable is Context {
      * - The contract must be paused.
      */
     modifier whenPaused() {
-        require(_paused, "Pausable: not paused");
+        require(paused(), "Pausable: not paused");
         _;
     }
 

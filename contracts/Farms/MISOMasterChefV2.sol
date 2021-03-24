@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 import "../Utils/BoringMath.sol";
 import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringOwnable.sol";
-import "../Utils/SignedSafeMath.sol";
+import "../OpenZeppelin/math/SignedSafeMath.sol";
 import "../../interfaces/IRewarder.sol";
 import "../../interfaces/IMasterChef.sol";
 

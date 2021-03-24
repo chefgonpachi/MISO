@@ -34,15 +34,16 @@ pragma solidity 0.6.12;
 //----------------------------------------------------------------------------------
 
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+
+import "../OpenZeppelin/utils/ReentrancyGuard.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../../interfaces/IPointList.sol";
 import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
 
 
-contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
+contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
 
     // MISOMarket template id.
@@ -217,11 +218,12 @@ contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
      * @dev Needs sufficient gas limit for additional state changes
      */
     receive() external payable {
-        // revertBecauseUserDidNotProvideAgreement();
-        // GP: Allow token direct transfers for testnet
-        commitEth(msg.sender, true);
+        revertBecauseUserDidNotProvideAgreement();
     }
 
+    /** 
+     * @dev Attribution to the awesome delta.financial contracts
+    */  
     function marketParticipationAgreement() public pure returns (string memory) {
         return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
@@ -275,7 +277,7 @@ contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
         uint256 _amount,
         bool readAndAgreedToMarketParticipationAgreement
     )
-        public nonReentrant 
+        public   nonReentrant  
     {
         require(paymentCurrency != ETH_ADDRESS, "HyperbolicAuction: payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -371,7 +373,7 @@ contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
      * @dev Transfer contract funds to initialized wallet.
      */
     function finalizeAuction()
-        public nonReentrant
+        public   nonReentrant 
     {
         require(msg.sender == operator || finalizeTimeExpired(), "HyperbolicAuction: sender must be an operator");
         MarketStatus storage status = marketStatus;
@@ -415,7 +417,7 @@ contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
 
     /// @notice Withdraw your tokens once the Auction has ended.
     function withdrawTokens(address payable beneficiary) 
-        public nonReentrant
+        public   nonReentrant 
     {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "HyperbolicAuction: not finalized");

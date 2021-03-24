@@ -31,7 +31,7 @@ def test_batch_auction_add_commitment_outside_hours(batch_auction):
     chain.sleep(AUCTION_TIME + 100)
     chain.mine()
     with reverts("BatchAuction: outside auction hours"):
-        tx = token_buyer.transfer(batch_auction, eth_to_transfer)
+        tx = batch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     
 def test_batch_auction_tokensClaimable(batch_auction):
     token_buyer =  accounts[2]
@@ -353,7 +353,7 @@ def fixed_token_cal(FixedToken):
 #     with reverts():
 #         dutch_auction.withdrawTokens({'from': accounts[0]})
     
-#     token_buyer.transfer(dutch_auction,eth_to_transfer)
+#     dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 #     assert dutch_auction.finalised({'from': accounts[0]}) == False
 
 #     chain.sleep(AUCTION_TIME+100)
@@ -375,7 +375,7 @@ def fixed_token_cal(FixedToken):
 #     token_buyer = accounts[2]
 #     eth_to_transfer = 0.01 * TENPOW18
 
-#     token_buyer.transfer(dutch_auction,eth_to_transfer)
+#     dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 #     chain.sleep(AUCTION_TIME+100)
 #     chain.mine()
 #     dutch_auction.withdrawTokens({'from': token_buyer})

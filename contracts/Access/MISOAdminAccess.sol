@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../OpenZeppelin/access/AccessControl.sol";
 
 /**
  * @notice Access Controls 

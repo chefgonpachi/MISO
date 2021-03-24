@@ -84,6 +84,7 @@ contract MISOFarmFactory is CloneFactory {
     {
         /// @dev Maybe missing require message?
         require(!initialised);
+        require(_misoDiv != address(0));
         initialised = true;
         misoDiv = _misoDiv;
         minimumFee = _minimumFee;
@@ -96,7 +97,7 @@ contract MISOFarmFactory is CloneFactory {
      * @notice Sets the minimum fee.
      * @param _amount Fee amount.
      */
-    function setMinimumFee(uint256 _amount) public {
+    function setMinimumFee(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory: Sender must be operator"
@@ -108,7 +109,7 @@ contract MISOFarmFactory is CloneFactory {
      * @notice Sets integrator fee percentage.
      * @param _amount Percentage amount.
      */
-    function setIntegratorFeePct(uint256 _amount) public {
+    function setIntegratorFeePct(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory: Sender must be operator"
@@ -125,11 +126,12 @@ contract MISOFarmFactory is CloneFactory {
      * @notice Sets dividend address.
      * @param _divaddr Dividend address.
      */
-    function setDividends(address payable _divaddr) public  {
+    function setDividends(address payable _divaddr) external  {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOFarmFactory: Sender must be operator"
         );
+        require(_divaddr != address(0));
         misoDiv = _divaddr;
     }
 
@@ -147,22 +149,22 @@ contract MISOFarmFactory is CloneFactory {
     {
         require(msg.value >= minimumFee, "MISOFarmFactory: Failed to transfer minimumFee");
         require(farmTemplates[_templateId] != address(0));
-        uint256 integratorFee;
+        uint256 integratorFee = 0;
         uint256 misoFee = msg.value;
         if (_integratorFeeAccount != address(0) && _integratorFeeAccount != misoDiv) {
             integratorFee = misoFee * integratorFeePct / 1000;
             misoFee = misoFee - integratorFee;
         }
+        farm = createClone(farmTemplates[_templateId]);
+        farmInfo[address(farm)] = Farm(true, _templateId, farms.length);
+        farms.push(address(farm));
+        emit FarmCreated(msg.sender, address(farm), farmTemplates[_templateId]);
         if (misoFee > 0) {
             misoDiv.transfer(misoFee);
         }
         if (integratorFee > 0) {
             _integratorFeeAccount.transfer(integratorFee);
         }
-        farm = createClone(farmTemplates[_templateId]);
-        farmInfo[address(farm)] = Farm(true, _templateId, farms.length);
-        farms.push(address(farm));
-        emit FarmCreated(msg.sender, address(farm), farmTemplates[_templateId]);
     }
 
     /**
@@ -223,7 +225,7 @@ contract MISOFarmFactory is CloneFactory {
      * @param _farmTemplate Farm template ID.
      * @return Address of the required template ID.
      */
-    function getFarmTemplate(uint256 _farmTemplate) public view returns (address) {
+    function getFarmTemplate(uint256 _farmTemplate) external view returns (address) {
         return farmTemplates[_farmTemplate];
     }
 
@@ -232,7 +234,7 @@ contract MISOFarmFactory is CloneFactory {
      * @param _farmTemplate Farm template address.
      * @return ID of the required template address.
      */
-    function getTemplateId(address _farmTemplate) public view returns (uint256) {
+    function getTemplateId(address _farmTemplate) external view returns (uint256) {
         return farmTemplateToId[_farmTemplate];
     }
 
@@ -240,7 +242,7 @@ contract MISOFarmFactory is CloneFactory {
      * @notice Get the total number of farms in the factory.
      * @return Farms count.
      */
-    function numberOfFarms() public view returns (uint256) {
+    function numberOfFarms() external view returns (uint256) {
         return farms.length;
     }
 }

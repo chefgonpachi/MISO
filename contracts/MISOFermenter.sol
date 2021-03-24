@@ -119,7 +119,7 @@ contract MISOFermenter is CloneFactory {
      * @param _templateId Escrow template ID.
      * @return Address of the required template ID.
      */
-    function getEscrowTemplate(uint256 _templateId) public view returns (address) {
+    function getEscrowTemplate(uint256 _templateId) external view returns (address) {
         return escrowTemplates[_templateId];
     }
 
@@ -128,7 +128,7 @@ contract MISOFermenter is CloneFactory {
      * @param _escrowTemplate Escrow template address.
      * @return templateId ID of the required template address.
      */
-    function getTemplateId(address _escrowTemplate) public view returns (uint256 templateId) {
+    function getTemplateId(address _escrowTemplate) external view returns (uint256 templateId) {
         return escrowTemplateToId[_escrowTemplate];
     }
 
@@ -136,7 +136,7 @@ contract MISOFermenter is CloneFactory {
      * @notice Get the total number of escrows in the factory.
      * @return Escrow count.
      */
-    function numberOfTokens() public view returns (uint256) {
+    function numberOfTokens() external view returns (uint256) {
         return escrows.length;
     }
 

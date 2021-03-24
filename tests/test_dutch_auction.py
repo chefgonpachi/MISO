@@ -33,7 +33,7 @@ def test_dutch_auction_commitEth(dutch_auction):
     token_buyer =  accounts[2]
     eth_to_transfer = 20 * TENPOW18
     tx= dutch_auction.commitEth(token_buyer, True, {"from": accounts[0], "value":eth_to_transfer})
-    # tx = token_buyer.transfer(dutch_auction, eth_to_transfer)
+    # tx = dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert 'AddedCommitment' in tx.events
         
 
@@ -44,7 +44,7 @@ def test_dutch_auction_tokensClaimable(dutch_auction):
     assert dutch_auction.tokensClaimable(accounts[2]) == 0
     token_buyer =  accounts[2]
     eth_to_transfer = 20 * TENPOW18
-    token_buyer.transfer(dutch_auction, eth_to_transfer)
+    dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     chain.sleep(AUCTION_TIME+100)
     chain.mine()
     assert dutch_auction.tokensClaimable(accounts[2]) == AUCTION_TOKENS
@@ -77,7 +77,6 @@ def test_dutch_auction_commitEth_with_abi_data(dutch_auction_init_with_abi, fixe
     eth_to_transfer = 20 * TENPOW18
 
     tx = dutch_auction_init_with_abi.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
-    # tx = token_buyer.transfer(dutch_auction_init_with_abi, eth_to_transfer)
     assert 'AddedCommitment' in tx.events
 
 def test_dutch_auction_fail_init_tests(dutch_auction_init_with_abi,fixed_token2):
@@ -130,9 +129,9 @@ def test_dutch_auction_twoPurchases(dutch_auction):
     token_buyer_b =  accounts[3]
 
     eth_to_transfer = 20 * TENPOW18
-    tx = token_buyer_a.transfer(dutch_auction, 20 * TENPOW18)
+    tx = dutch_auction.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer})
     assert 'AddedCommitment' in tx.events
-    tx = token_buyer_b.transfer(dutch_auction, 80 * TENPOW18)
+    tx = dutch_auction.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":80 * TENPOW18})
     assert 'AddedCommitment' in tx.events
     
 def test_dutch_auction_after_auction_hours(dutch_auction):
@@ -143,7 +142,7 @@ def test_dutch_auction_after_auction_hours(dutch_auction):
 
     eth_to_transfer = 20 * TENPOW18
     with reverts("DutchAuction: outside auction hours"):
-         token_buyer_a.transfer(dutch_auction, eth_to_transfer)
+        dutch_auction.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer})
     
 
 def test_dutch_auction_before_auction_hours(dutch_auction):
@@ -154,15 +153,14 @@ def test_dutch_auction_before_auction_hours(dutch_auction):
 
     eth_to_transfer = 20 * TENPOW18
     with reverts("DutchAuction: outside auction hours"):
-         token_buyer_a.transfer(dutch_auction, eth_to_transfer)
-
+        dutch_auction.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer})
 
 
 def test_dutch_auction_tokenPrice(dutch_auction):
     assert dutch_auction.tokenPrice() == 0
     token_buyer=  accounts[2]
     eth_to_transfer = 20 * TENPOW18
-    tx = token_buyer.transfer(dutch_auction, eth_to_transfer)
+    tx = dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert 'AddedCommitment' in tx.events
     assert dutch_auction.tokenPrice() == eth_to_transfer * TENPOW18 / AUCTION_TOKENS
 
@@ -181,7 +179,7 @@ def test_dutch_auction_claim(dutch_auction):
     with reverts("DutchAuction: auction has not finished yet"):
         dutch_auction.withdrawTokens({'from': accounts[0]})
     
-    token_buyer.transfer(dutch_auction,eth_to_transfer)
+    dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert dutch_auction.finalized({'from': accounts[0]}) == False
     
 
@@ -207,7 +205,7 @@ def test_dutch_auction_auction_not_successful(dutch_auction):
     token_buyer = accounts[2]
     eth_to_transfer = 10 * TENPOW18
     
-    token_buyer.transfer(dutch_auction,eth_to_transfer)
+    dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert dutch_auction.finalized({'from': accounts[0]}) == False
     assert dutch_auction.auctionSuccessful({'from': accounts[0]}) == False
     chain.sleep(100)
@@ -218,7 +216,7 @@ def test_dutch_auction_claim_not_enough(dutch_auction):
     token_buyer = accounts[2]
     eth_to_transfer = 0.01 * TENPOW18
 
-    token_buyer.transfer(dutch_auction,eth_to_transfer)
+    dutch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     chain.sleep(AUCTION_TIME+100)
     chain.mine()
     dutch_auction.finalize({"from": accounts[0]})
@@ -246,10 +244,9 @@ def test_dutch_auction_commit_eth(dutch_auction_cal):
     token_buyer_a=  accounts[2]
     token_buyer_b =  accounts[3]
 
-    tx = token_buyer_a.transfer(dutch_auction_cal, 20 * TENPOW18)
+    tx = dutch_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    
-    tx = token_buyer_b.transfer(dutch_auction_cal, 90 * TENPOW18)
+    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":90 * TENPOW18})
     assert 'AddedCommitment' in tx.events
     #### Initial balance of token_buyer_b = 100. Then transfer 90 but
     #### only 80 can be transfered as max is 100.
@@ -257,7 +254,7 @@ def test_dutch_auction_commit_eth(dutch_auction_cal):
     assert round(token_buyer_b.balance()/TENPOW18) == 20
 
     ####### commiting eth beyond max ###########
-    tx = token_buyer_b.transfer(dutch_auction_cal, 20 * TENPOW18)
+    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":20 * TENPOW18})
     assert round(token_buyer_b.balance()/TENPOW18) == 20
 
 
@@ -266,10 +263,9 @@ def test_dutch_auction_calculate_commitment(dutch_auction_cal):
     assert dutch_auction_cal.tokensClaimable(accounts[2]) == 0
     token_buyer_a=  accounts[2]
     token_buyer_b =  accounts[3]
-    
-    tx = token_buyer_a.transfer(dutch_auction_cal, 20 * TENPOW18)
+    tx = dutch_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    tx = token_buyer_b.transfer(dutch_auction_cal, 70 * TENPOW18)
+    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":70 * TENPOW18})
     assert 'AddedCommitment' in tx.events
     commitment_not_max = dutch_auction_cal.calculateCommitment(5*TENPOW18, {"from":accounts[4]})
     assert round(commitment_not_max/TENPOW18) == 5
@@ -305,7 +301,7 @@ def test_dutch_auction_commit_tokens(dutch_auction_pay_by_token,fixed_token_paym
     token_buyer = accounts[5]
     with reverts("DutchAuction: payment currency is not ETH address"):
         eth_to_transfer = 20 * TENPOW18
-        tx = token_buyer.transfer(dutch_auction_pay_by_token, eth_to_transfer)
+        tx = dutch_auction_pay_by_token.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
 
 
@@ -394,8 +390,8 @@ def dutch_auction_cal(DutchAuction, fixed_token_cal):
 
     eth_to_transfer = 20 * TENPOW18
     with reverts("DutchAuction: outside auction hours"):
-         token_buyer_a.transfer(dutch_auction_cal, eth_to_transfer)
-    
+        dutch_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer})
+
     chain.sleep(10)
     return dutch_auction_cal 
 

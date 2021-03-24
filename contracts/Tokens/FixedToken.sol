@@ -12,6 +12,7 @@ contract FixedToken is ERC20, IMisoToken {
         _mint(msg.sender, _initialSupply);
     }
 
+    // TODO: remove owner
    function initToken(
         bytes calldata _data
     ) public override {

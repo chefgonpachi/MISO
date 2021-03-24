@@ -19,7 +19,7 @@ def test_hyperbolic_auction_commit_Eth(hyperbolic_auction):
     token_buyer = accounts[2]
     eth_to_transfer = 20 * TENPOW18
 
-    tx = token_buyer.transfer(hyperbolic_auction, eth_to_transfer)
+    tx = hyperbolic_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert 'AddedCommitment' in tx.events
     assert hyperbolic_auction.tokenPrice() == eth_to_transfer / AUCTION_TOKENS * TENPOW18
 
@@ -28,21 +28,22 @@ def test_hyperbolic_auction_commit_Eth(hyperbolic_auction):
 def test_hyperbolic_auction_tokens_claimable(hyperbolic_auction):
     token_buyer =  accounts[2]
     eth_to_transfer = 20 * TENPOW18
-    token_buyer.transfer(hyperbolic_auction, eth_to_transfer)
+    hyperbolic_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     chain.sleep(AUCTION_TIME+100)
     chain.mine()
     assert hyperbolic_auction.tokensClaimable(accounts[2]) == AUCTION_TOKENS
 
 def test_hyperbolic_auction_two_purchases(hyperbolic_auction):
     assert hyperbolic_auction.tokensClaimable(accounts[2]) == 0
-    token_buyer_a=  accounts[2]
+    token_buyer_a =  accounts[2]
     token_buyer_b =  accounts[3]
 
     eth_to_transfer_a = 20 * TENPOW18
     eth_to_transfer_b = 80 * TENPOW18
-    tx = token_buyer_a.transfer(hyperbolic_auction, eth_to_transfer_a)
+    
+    tx = hyperbolic_auction.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer_a})
     assert 'AddedCommitment' in tx.events
-    tx = token_buyer_b.transfer(hyperbolic_auction, eth_to_transfer_b)
+    tx = hyperbolic_auction.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":eth_to_transfer_a})
     assert 'AddedCommitment' in tx.events
 
 def test_hyperbolic_auction_with_abi_data(HyperbolicAuction,fixed_token2):
@@ -75,7 +76,7 @@ def test_hyperbolic_auction_with_abi_data(HyperbolicAuction,fixed_token2):
     chain.sleep(12)
     token_buyer =  accounts[2]
     eth_to_transfer = 20 * TENPOW18
-    tx = token_buyer.transfer(hyperbolic_auction_init_with_abi, eth_to_transfer)
+    tx = hyperbolic_auction_init_with_abi.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert 'AddedCommitment' in tx.events
     return hyperbolic_auction_init_with_abi
 
@@ -86,7 +87,7 @@ def test_hyperbolic_auction_withdraw_tokens(hyperbolic_auction):
     with reverts("HyperbolicAuction: auction has not finished yet"):
         hyperbolic_auction.withdrawTokens({'from':accounts[0]})
 
-    token_buyer.transfer(hyperbolic_auction, eth_to_transfer)
+    hyperbolic_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert hyperbolic_auction.finalized({'from': accounts[0]}) == False
 
     chain.sleep(AUCTION_TIME+1)
@@ -117,7 +118,7 @@ def test_hyperbolic_auction_auction_not_successful(hyperbolic_auction):
     token_buyer = accounts[2]
     eth_to_transfer = 10 * TENPOW18
 
-    token_buyer.transfer(hyperbolic_auction,eth_to_transfer)
+    hyperbolic_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
     assert hyperbolic_auction.finalized({'from': accounts[0]}) == False
     assert hyperbolic_auction.auctionSuccessful({'from': accounts[0]}) == False
@@ -128,10 +129,9 @@ def test_hyperbolic_auction_commit_Eth_twice(hyperbolic_auction_cal):
     token_buyer_b =  accounts[5]
     chain.sleep(1)
     chain.mine()
-    
-    tx = token_buyer_a.transfer(hyperbolic_auction_cal, 20 * TENPOW18)
+    tx = hyperbolic_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    tx = token_buyer_b.transfer(hyperbolic_auction_cal, 90 * TENPOW18)
+    tx = hyperbolic_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":90 * TENPOW18})
     assert 'AddedCommitment' in tx.events
     
     #### Initial balance of token_buyer_b = 100. Then transfer 90 but
@@ -141,7 +141,7 @@ def test_hyperbolic_auction_commit_Eth_twice(hyperbolic_auction_cal):
     assert round(token_buyer_b.balance()/TENPOW18) == 10
 
     ####### commiting eth beyond max ###########
-    tx = token_buyer_b.transfer(hyperbolic_auction_cal, 10 * TENPOW18)
+    tx = hyperbolic_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":10 * TENPOW18})
  
 
 
@@ -169,8 +169,7 @@ def test_hyperbolic_auction_commit_tokens(hyperbolic_auction_pay_by_token, fixed
     token_buyer = accounts[5]
     with reverts("HyperbolicAuction: payment currency is not ETH address"):
         eth_to_transfer = 20 * TENPOW18
-        tx = token_buyer.transfer(hyperbolic_auction_pay_by_token, eth_to_transfer)
-
+        tx = hyperbolic_auction_pay_by_token.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
 
 ###########################

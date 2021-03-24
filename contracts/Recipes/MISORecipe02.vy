@@ -127,7 +127,7 @@ def prepareMiso(
     accessControl: address,
     tokensToMint: uint256,
     tokensToMarket: uint256,
-    paymentCurrency: address,
+    paymentCurrency: address, # TODO: hardcode payment currency to ETH?
 
     startTime: uint256, 
     endTime: uint256,

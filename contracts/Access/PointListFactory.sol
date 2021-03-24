@@ -2,7 +2,7 @@ pragma solidity 0.6.12;
 
 
 import "../Utils/Owned.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "../Utils/CloneFactory.sol";
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IOwned.sol";

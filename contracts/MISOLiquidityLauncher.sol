@@ -66,6 +66,8 @@ contract MISOLiquidityLauncher is CloneFactory {
         require(!initialised);
         initialised = true;
         accessControls = MISOAccessControls(_accessControls);
+        require(_WETH != address(0), "MISOLiquidityLauncher.initMISOLiquidityLauncher: WETH cannot be set to zero");
+ 
         WETH = _WETH;
         emit MisoInitLiquidityLauncher(msg.sender);
     }
@@ -124,11 +126,11 @@ contract MISOLiquidityLauncher is CloneFactory {
      * @param _templateId Launcher template ID.
      * @return Address of the required template ID.
      */
-    function getLiquidityLauncherTemplate(uint256 _templateId) public view returns (address) {
+    function getLiquidityLauncherTemplate(uint256 _templateId) external view returns (address) {
         return launcherTemplates[_templateId];
     }
 
-    function getTemplateId(address _launcherTemplate) public view returns (uint256) {
+    function getTemplateId(address _launcherTemplate) external view returns (uint256) {
         return liquidityTemplateToId[_launcherTemplate];
     }
 
@@ -136,7 +138,7 @@ contract MISOLiquidityLauncher is CloneFactory {
      * @notice Get the total number of launchers in the contract.
      * @return Farms count.
      */
-    function numberOfLiquidityLauncherContracts() public view returns (uint256) {
+    function numberOfLiquidityLauncherContracts() external view returns (uint256) {
         return launchers.length;
     }
 }

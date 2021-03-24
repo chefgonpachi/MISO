@@ -242,7 +242,7 @@ def finalize_and_launch_lp(crowdsale_3, pool_liquidity, mintable_token, buy_toke
 def test_crowdsale_buy_tokens_with_receive(crowdsale):
     token_buyer = accounts[3]
     eth_to_transfer = 5 * TENPOW18
-    tx = token_buyer.transfer(crowdsale, eth_to_transfer)
+    tx = crowdsale.buyTokensEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
     assert 'TokensPurchased' in tx.events
     assert crowdsale.auctionSuccessful() == False
 

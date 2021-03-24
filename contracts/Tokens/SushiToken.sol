@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import "./ERC20.sol";
 import "../../interfaces/IMisoToken.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../OpenZeppelin/access/AccessControl.sol";
 
 
 // MISO Edits

@@ -54,7 +54,7 @@ contract MISOAccessFactory is CloneFactory {
     }
 
     /// @dev Get the total number of children in the factory
-    function numberOfChildren() public view returns (uint256) {
+    function numberOfChildren() external view returns (uint256) {
         return children.length;
     }
 
@@ -92,7 +92,7 @@ contract MISOAccessFactory is CloneFactory {
         accessControlTemplate = _template;
     }
 
-    function setDev(address _devaddr) public {
+    function setDev(address _devaddr) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOAccessFactory.setMinimumFee: Sender must be admin"
@@ -101,7 +101,7 @@ contract MISOAccessFactory is CloneFactory {
         devaddr = _devaddr;
     }
 
-    function setMinimumFee(uint256 _minimumFee) public {
+    function setMinimumFee(uint256 _minimumFee) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOAccessFactory.setMinimumFee: Sender must be admin"

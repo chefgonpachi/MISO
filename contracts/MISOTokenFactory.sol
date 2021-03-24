@@ -90,7 +90,7 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @notice Sets the minimum fee.
      * @param _amount Fee amount.
      */
-    function setMinimumFee(uint256 _amount) public {
+    function setMinimumFee(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOTokenFactory: Sender must be operator"
@@ -102,7 +102,7 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @notice Sets integrator fee percentage.
      * @param _amount Percentage amount.
      */
-    function setIntegratorFeePct(uint256 _amount) public {
+    function setIntegratorFeePct(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOTokenFactory: Sender must be operator"
@@ -119,11 +119,12 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @notice Sets dividend address.
      * @param _divaddr Dividend address.
      */
-    function setDividends(address payable _divaddr) public  {
+    function setDividends(address payable _divaddr) external  {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOTokenFactory: Sender must be operator"
         );
+        require(_divaddr != address(0));
         misoDiv = _divaddr;
     }
 
@@ -142,23 +143,23 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     {
         require(msg.value >= minimumFee, "MISOTokenFactory: Failed to transfer minimumFee");
         require(tokenTemplates[_templateId] != address(0));
-        uint256 integratorFee;
+        uint256 integratorFee = 0;
         uint256 misoFee = msg.value;
         if (_integratorFeeAccount != address(0) && _integratorFeeAccount != misoDiv) {
             integratorFee = misoFee * integratorFeePct / 1000;
             misoFee = misoFee - integratorFee;
-        }
-        if (misoFee > 0) {
-            misoDiv.transfer(misoFee);
-        }
-        if (integratorFee > 0) {
-            _integratorFeeAccount.transfer(integratorFee);
         }
         token = createClone(tokenTemplates[_templateId]);
         /// @dev GP: Triple check the token index is correct.
         tokenInfo[address(token)] = Token(true, _templateId, tokens.length);
         tokens.push(address(token));
         emit TokenCreated(msg.sender, address(token), tokenTemplates[_templateId]);
+        if (misoFee > 0) {
+            misoDiv.transfer(misoFee);
+        }
+        if (integratorFee > 0) {
+            _integratorFeeAccount.transfer(integratorFee);
+        }
     }
 
     /**
@@ -176,14 +177,13 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     )
         external payable returns (address token)
     {
+        emit TokenInitialized(address(token), _templateId, _data);
         token = deployToken(_templateId, _integratorFeeAccount);
         IMisoToken(token).initToken(_data);
         uint256 initialTokens = IERC20(token).balanceOf(address(this));
         if (initialTokens > 0 ) {
             _safeTransfer(token, msg.sender, initialTokens);
         }
-
-        emit TokenInitialized(address(token), _templateId, _data);
     }
 
     /**
@@ -237,7 +237,7 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @param _templateId Token template ID.
      * @return Address of the required template ID.
      */
-    function getTokenTemplate(uint256 _templateId) public view returns (address ) {
+    function getTokenTemplate(uint256 _templateId) external view returns (address ) {
         return tokenTemplates[_templateId];
     }
 
@@ -246,7 +246,7 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @param _tokenTemplate Token template address.
      * @return ID of the required template address.
      */
-    function getTemplateId(address _tokenTemplate) public view returns (uint256) {
+    function getTemplateId(address _tokenTemplate) external view returns (uint256) {
         return tokenTemplateToId[_tokenTemplate];
     }
 }

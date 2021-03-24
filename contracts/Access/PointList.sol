@@ -6,7 +6,7 @@ pragma solidity 0.6.12;
 // This amount can be added or removed by an operator
 // There is a total points preserved
 // Can update an array of points
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "./MISOAccessControls.sol";
 import "../../interfaces/IPointList.sol";
 

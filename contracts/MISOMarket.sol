@@ -103,7 +103,7 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @notice Sets the minimum fee.
      * @param _amount Fee amount.
      */
-    function setMinimumFee(uint256 _amount) public {
+    function setMinimumFee(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOMarket: Sender must be operator"
@@ -115,7 +115,7 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @notice Sets integrator fee percentage.
      * @param _amount Percentage amount.
      */
-    function setIntegratorFeePct(uint256 _amount) public {
+    function setIntegratorFeePct(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "MISOMarket: Sender must be operator"
@@ -129,8 +129,9 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @notice Sets dividend address.
      * @param _divaddr Dividend address.
      */
-    function setDividends(address payable _divaddr) public {
+    function setDividends(address payable _divaddr) external {
         require(accessControls.hasAdminRole(msg.sender), "MISOFarmFactory.setDev: Sender must be operator");
+        require(_divaddr != address(0));
         misoDiv = _divaddr;
     }
 
@@ -151,22 +152,22 @@ contract MISOMarket is CloneFactory, SafeTransfer {
         address auctionTemplate = auctionTemplates[_templateId];
         require(msg.value >= uint256(_marketFees.minimumFee), "MISOMarket: Failed to transfer minimumFee");
         require(auctionTemplate != address(0), "MISOMarket: Auction template doesn't exist");
-        uint256 integratorFee;
+        uint256 integratorFee = 0;
         uint256 misoFee = msg.value;
         if (_integratorFeeAccount != address(0) && _integratorFeeAccount != misoDiv) {
             integratorFee = misoFee * uint256(_marketFees.integratorFeePct) / 1000;
             misoFee = misoFee - integratorFee;
         }
+        newMarket = createClone(auctionTemplate);
+        auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
+        auctions.push(address(newMarket));
+        emit MarketCreated(msg.sender, address(newMarket), auctionTemplate);
         if (misoFee > 0) {
             misoDiv.transfer(misoFee);
         }
         if (integratorFee > 0) {
             _integratorFeeAccount.transfer(integratorFee);
         }
-        newMarket = createClone(auctionTemplate);
-        auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
-        auctions.push(address(newMarket));
-        emit MarketCreated(msg.sender, address(newMarket), auctionTemplate);
     }
 
     /**
@@ -188,20 +189,20 @@ contract MISOMarket is CloneFactory, SafeTransfer {
     )
         external payable returns (address newMarket)
     {
+        emit MarketInitialized(address(newMarket), _templateId, _data);
         newMarket = deployMarket(_templateId, _integratorFeeAccount);
         if (_tokenSupply > 0) {
             _safeTransferFrom(_token, msg.sender, _tokenSupply);
             require(IERC20(_token).approve(newMarket, _tokenSupply), "1");
         }
         IMisoMarket(newMarket).initMarket(_data);
+
         if (_tokenSupply > 0) {
             uint256 remainingBalance = IERC20(_token).balanceOf(address(this));
             if (remainingBalance > 0) {
                 _safeTransfer(_token, msg.sender, remainingBalance);
             }
         }
-
-        emit MarketInitialized(address(newMarket), _templateId, _data);
         return newMarket;
     }
 
@@ -255,7 +256,7 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @param _templateId Auction template ID.
      * @return Address of the required template ID.
      */
-    function getAuctionTemplate(uint256 _templateId) public view returns (address) {
+    function getAuctionTemplate(uint256 _templateId) external view returns (address) {
         return auctionTemplates[_templateId];
     }
 
@@ -264,7 +265,7 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @param _auctionTemplate Auction template address.
      * @return ID of the required template address.
      */
-    function getTemplateId(address _auctionTemplate) public view returns (uint256) {
+    function getTemplateId(address _auctionTemplate) external view returns (uint256) {
         return auctionTemplateToId[_auctionTemplate];
     }
 
@@ -272,11 +273,11 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @notice Get the total number of auctions in the factory.
      * @return Auction count.
      */
-    function numberOfAuctions() public view returns (uint) {
+    function numberOfAuctions() external view returns (uint) {
         return auctions.length;
     }
 
-    function minimumFee() public view returns(uint128) {
+    function minimumFee() external view returns(uint128) {
         return marketFees.minimumFee;
     }
 

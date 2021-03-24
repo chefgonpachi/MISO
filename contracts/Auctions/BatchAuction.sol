@@ -12,8 +12,8 @@ pragma solidity 0.6.12;
 //----------------------------------------------------------------------------------
 
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "../OpenZeppelin/utils/ReentrancyGuard.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
@@ -22,7 +22,7 @@ import "../../interfaces/IERC20.sol";
 /// @notice Attribution to delta.financial
 
 
-contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
+contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -127,11 +127,12 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
     ///--------------------------------------------------------
 
     receive() external payable {
-        // revertBecauseUserDidNotProvideAgreement();
-        // GP: Allow token direct transfers for testnet
-        commitEth(msg.sender, true);
+        revertBecauseUserDidNotProvideAgreement();
     }
-
+    
+    /** 
+     * @dev Attribution to the awesome delta.financial contracts
+    */  
     function marketParticipationAgreement() public pure returns (string memory) {
         return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I have reviewed the code of this smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
@@ -170,7 +171,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
      * @param _from User ERC20 address.
      * @param _amount Amount of approved ERC20 tokens.
      */
-    function commitTokensFrom(address _from, uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public nonReentrant {
+    function commitTokensFrom(address _from, uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public   nonReentrant  {
         /// @dev Isn't "paymentCurrency == ETH_ADDRESS" enough?
         require(paymentCurrency != ETH_ADDRESS, "BatchAuction: Payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -226,7 +227,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
 
     /// @notice Auction finishes successfully above the reserve
     /// @dev Transfer contract funds to initialized wallet.
-    function finalize() public  nonReentrant
+    function finalize() public    nonReentrant 
     {
         require(msg.sender == operator || finalizeTimeExpired(),  "BatchAuction: Sender must be operator");
         require(!marketStatus.finalized, "BatchAuction: Auction has already finalized");
@@ -251,7 +252,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
     }
 
     /// @notice Withdraw your tokens once the Auction has ended.
-    function withdrawTokens(address payable beneficiary) public nonReentrant {
+    function withdrawTokens(address payable beneficiary) public   nonReentrant  {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "BatchAuction: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.

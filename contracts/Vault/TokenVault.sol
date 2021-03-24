@@ -4,8 +4,8 @@ import "../../interfaces/IERC20.sol";
 import "../Utils/SafeMathPlus.sol";
 import "../Utils/SafeTransfer.sol";
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
+import "../OpenZeppelin/utils/EnumerableSet.sol";
 
 contract TokenVault is SafeTransfer {
     using SafeMath for uint256;

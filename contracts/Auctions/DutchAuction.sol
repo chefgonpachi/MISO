@@ -1,25 +1,28 @@
 pragma solidity 0.6.12;
 
 
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
 
-contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
+/// @notice Attribution to dutchswap.com
+
+
+contract DutchAuction is SafeTransfer, Documents , ReentrancyGuard {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -47,7 +50,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         uint128 commitmentsTotal;
         bool initialized; 
         bool finalized;
-        bool hasPointList;
+        bool usePointList;
     }
 
     MarketStatus public marketStatus;
@@ -112,9 +115,8 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         require(_paymentCurrency != address(0), "DutchAuction: payment currency is the zero address");
         require(_operator != address(0), "DutchAuction: operator is the zero address");
         require(_wallet != address(0), "DutchAuction: wallet is the zero address");
-        
+        require(IERC20(_token).decimals() == 18, "DutchAuction: Token does not have 18 decimals");
 
-        // GP: consider checking tokens for different decimals
 
         marketInfo.startTime = uint64(_startTime);
         marketInfo.endTime = uint64(_endTime);
@@ -127,12 +129,8 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         paymentCurrency = _paymentCurrency;
         wallet = _wallet;
         operator = _operator;
-        
-        if (_pointList != address(0)) {
-            pointList = _pointList;
-            marketStatus.hasPointList = true;
-        }
 
+        _setList(_pointList);
         _safeTransferFrom(_token, _funder, _totalTokens);
         marketStatus.initialized = true;
     }
@@ -261,7 +259,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         uint256 _amount,
         bool readAndAgreedToMarketParticipationAgreement
     )
-        public /* nonReentrant */ 
+        public nonReentrant 
     {
         require(address(paymentCurrency) != ETH_ADDRESS, "DutchAuction: Payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -377,7 +375,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         require(!status.finalized, "DutchAuction: auction already finalized");
         
         uint256 newCommitment = commitments[_addr].add(_commitment);
-        if (status.hasPointList) {
+        if (status.usePointList) {
             require(IPointList(pointList).hasPoints(_addr, newCommitment));
         }
         
@@ -395,7 +393,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
      * @notice Auction finishes successfully above the reserve.
      * @dev Transfer contract funds to initialized wallet.
      */
-    function finalize() public /* nonReentrant */ 
+    function finalize() public nonReentrant 
     {
         require(msg.sender == operator || finalizeTimeExpired(), "DutchAuction: sender must be an operator");
         MarketStatus storage status = marketStatus;
@@ -431,7 +429,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
      * @dev Withdraw tokens only after auction ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
-    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
+    function withdrawTokens(address payable beneficiary) public nonReentrant {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "DutchAuction: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.
@@ -465,6 +463,27 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
     }
 
 
+    //--------------------------------------------------------
+    // Point Lists
+    //--------------------------------------------------------
+
+
+    function setList(address _list) external {
+        require(msg.sender == operator);
+        _setList(_list);
+    }
+
+    function enableList(bool _status) external {
+        require(msg.sender == operator);
+        marketStatus.usePointList = _status;
+    }
+
+    function _setList(address _pointList) private {
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.usePointList = true;
+        }
+    }
 
    //--------------------------------------------------------
     // Market Launchers
@@ -536,7 +555,7 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         external 
         pure
         returns (bytes memory _data)
-        {
+    {
             return abi.encode(
                 _funder,
                 _token,
@@ -550,6 +569,15 @@ contract DutchAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
                 _pointList,
                 _wallet
             );
-        }
+    }
         
+    function getBaseInformation() external view returns(
+        address, 
+        uint64,
+        uint64,
+        bool 
+    ) {
+        return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
+
 }

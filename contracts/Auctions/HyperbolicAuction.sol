@@ -22,27 +22,27 @@ pragma solidity 0.6.12;
 //
 // ------------------------------------------------------------------------
 // SPDX-License-Identifier: GPL-3.0-or-later                        
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 
-// GP: Restory reentracy guard once code coverage is tested
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
 
-contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
+
+contract HyperbolicAuction is SafeTransfer, Documents , ReentrancyGuard {
     using SafeMath for uint256;
 
     // MISOMarket template id.
@@ -127,6 +127,8 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         address payable _wallet
     ) public {
         require(!marketStatus.initialized, "HyperbolicAuction: auction already initialized");
+        require(_startTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_endTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "HyperbolicAuction: start time is before current time");
         require(_totalTokens > 0,"HyperbolicAuction: total tokens must be greater than zero");
         require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start price");
@@ -134,9 +136,7 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         require(_wallet != address(0), "HyperbolicAuction: wallet is the zero address");
         require(_operator != address(0), "HyperbolicAuction: operator is the zero address");
         require(_token != address(0), "HyperbolicAuction: token is the zero address");
-
-   
-        // GP: consider checking tokens for different decimals
+        require(IERC20(_token).decimals() == 18, "HyperbolicAuction: Token does not have 18 decimals");
         
         marketInfo.startTime = uint64(_startTime);
         marketInfo.endTime = uint64(_endTime);
@@ -149,10 +149,7 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         wallet = _wallet;
         operator = _operator;
         
-        if (_pointList != address(0)) {
-            pointList = _pointList;
-            marketStatus.hasPointList = true;
-        }
+        _setList(_pointList);
 
          // factor = exponent which can later be used to alter the curve
         uint256 _duration = _endTime - _startTime;
@@ -278,7 +275,7 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         uint256 _amount,
         bool readAndAgreedToMarketParticipationAgreement
     )
-        public /* nonReentrant */ 
+        public nonReentrant 
     {
         require(paymentCurrency != ETH_ADDRESS, "HyperbolicAuction: payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -374,7 +371,7 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
      * @dev Transfer contract funds to initialized wallet.
      */
     function finalizeAuction()
-        public /* nonReentrant */
+        public nonReentrant
     {
         require(msg.sender == operator || finalizeTimeExpired(), "HyperbolicAuction: sender must be an operator");
         MarketStatus storage status = marketStatus;
@@ -418,7 +415,7 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
 
     /// @notice Withdraw your tokens once the Auction has ended.
     function withdrawTokens(address payable beneficiary) 
-        public /* nonReentrant */
+        public nonReentrant
     {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "HyperbolicAuction: not finalized");
@@ -452,6 +449,27 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
         _removeDocument(_name);
     }
 
+    //--------------------------------------------------------
+    // Point Lists
+    //--------------------------------------------------------
+
+
+    function setList(address _list) external {
+        require(msg.sender == operator);
+        _setList(_list);
+    }
+
+    function enableList(bool _status) external {
+        require(msg.sender == operator);
+        marketStatus.hasPointList = _status;
+    }
+
+    function _setList(address _pointList) private {
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.hasPointList = true;
+        }
+    }
 
     ///--------------------------------------------------------
     /// Market Launchers
@@ -531,4 +549,14 @@ contract HyperbolicAuction is SafeTransfer, Documents /*, ReentrancyGuard */ {
                 _wallet
             );
         }
+
+    function getBaseInformation() external view returns(
+        address , 
+        uint64 ,
+        uint64 ,
+        bool 
+    ) {
+        return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
+
 }

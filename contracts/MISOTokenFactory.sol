@@ -1,17 +1,15 @@
 pragma solidity 0.6.12;
 
-
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 
 import "./Utils/CloneFactory.sol";
@@ -82,7 +80,6 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      */
     /// @dev GP: Add fee inits.
     function initMISOTokenFactory(address _accessControls) external  {
-        /// @dev Maybe missing require message?
         require(!initialised);
         initialised = true;
         accessControls = MISOAccessControls(_accessControls);
@@ -224,6 +221,18 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     }
 
     /**
+     * @notice Get the total number of tokens in the factory.
+     * @return Token count.
+     */
+    function numberOfTokens() external view returns (uint256) {
+        return tokens.length;
+    }
+
+    function getTokens() external view returns (address[] memory) {
+        return tokens;
+    }
+
+    /**
      * @notice Get the address based on template ID.
      * @param _templateId Token template ID.
      * @return Address of the required template ID.
@@ -239,13 +248,5 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      */
     function getTemplateId(address _tokenTemplate) public view returns (uint256) {
         return tokenTemplateToId[_tokenTemplate];
-    }
-
-    /**
-     * @notice Get the total number of tokens in the factory.
-     * @return Token count.
-     */
-    function numberOfTokens() public view returns (uint256) {
-        return tokens.length;
     }
 }

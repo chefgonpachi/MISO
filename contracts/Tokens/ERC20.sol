@@ -75,7 +75,7 @@ contract ERC20 is IERC20, Context {
     /**
      * @dev Returns the name of the token.
      */
-    function name() public  view returns (string memory) {
+    function name() public view override returns (string memory) {
         return _name;
     }
 
@@ -83,7 +83,7 @@ contract ERC20 is IERC20, Context {
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() public  view returns (string memory) {
+    function symbol() public view override returns (string memory) {
         return _symbol;
     }
 
@@ -100,7 +100,7 @@ contract ERC20 is IERC20, Context {
      * no way affects any of the arithmetic of the contract, including
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
-    function decimals() public  view returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 

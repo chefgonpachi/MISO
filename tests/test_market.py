@@ -188,7 +188,7 @@ def test_create_crowdsale_data(Crowdsale,auction_factory, fixed_token_cal, crowd
     token_buyer =  accounts[1]
     eth_to_transfer = 5 * TENPOW18
     
-    tx = new_crowdsale.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": token_buyer})
+    tx = new_crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
     assert 'TokensPurchased' in tx.events
 
 def test_market_integrator_fee_accounts(auction_factory,fixed_token_cal, crowdsale_template):

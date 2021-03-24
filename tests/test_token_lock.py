@@ -63,7 +63,7 @@ def test_wihdraw(token_locks_active,fixed_token2,token_lock):
     with reverts("Not unlocked yet"):
         token_lock.withdrawTokens(fixed_token2,userIndex,lock_id,amount, {"from":accounts[1]})
 
-    chain.sleep(10)
+    chain.sleep(100)
     chain.mine()
     lock_id = 1
     amount,unlockTime, owner, userIndex = token_lock.getLockedItemAtId(lock_id)

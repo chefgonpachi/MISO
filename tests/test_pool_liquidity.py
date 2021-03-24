@@ -46,11 +46,10 @@ def _finalize_market_and_launch_lp(pool_liquidity, operator):
     pool_liquidity.finalizeMarketAndLaunchLiquidityPool({"from": operator})
 
 
-# TODO - test failed, fix it
-# def test_launchPoolWithoutAnyDeposits(pool_liquidity):
-#     chain.sleep(POOL_LAUNCH_DEADLINE)
-#     ret_value = pool_liquidity.launchLiquidityPool({"from": accounts[0]}).return_value
-#     assert ret_value == 0
+def test_launchPoolWithoutAnyDeposits(pool_liquidity):
+    chain.sleep(POOL_LAUNCH_DEADLINE+1)
+    ret_value = pool_liquidity.launchLiquidityPool({"from": accounts[0]}).return_value
+    assert ret_value == 0
 
 def test_launchLiquidityPoolFromNotOperator(pool_liquidity, deposit_eth, deposit_tokens):
     with reverts():
@@ -59,20 +58,20 @@ def test_launchLiquidityPoolFromNotOperator(pool_liquidity, deposit_eth, deposit
 def test_depositEthAfterContractExpired(pool_liquidity, weth_token):
     deposit_eth = ETH_TO_DEPOSIT
     chain.sleep(POOL_LAUNCH_DEADLINE + POOL_LAUNCH_WINDOW)
-    with reverts("MISOLaucher: Contract has expired"):
+    with reverts("PoolLiquidity: Contract has expired"):
         pool_liquidity.depositETH({"from": accounts[0], "value": deposit_eth})
 
 def test_depositTokensAfterContractExpired(pool_liquidity, mintable_token):
     deposit_eth = ETH_TO_DEPOSIT
     chain.sleep(POOL_LAUNCH_DEADLINE + POOL_LAUNCH_WINDOW)
-    with reverts("MISOLaucher: Contract has expired"):
+    with reverts("PoolLiquidity: Contract has expired"):
         pool_liquidity.depositETH({"from": accounts[0], "value": deposit_eth})
 
     mintable_token.mint(accounts[0], TOKENS_TO_MINT, {'from': accounts[0]})
 
     deposit_amount = TOKENS_TO_MINT
     mintable_token.approve(pool_liquidity, deposit_amount, {"from": accounts[0]})
-    with reverts("MISOLaucher: Contract has expired"):    
+    with reverts("PoolLiquidity: Contract has expired"):    
         pool_liquidity.depositTokens(deposit_amount, {"from": accounts[0]})
 
 def test_initPoolLiquidityAgain(pool_liquidity,public_access_controls, mintable_token, weth_token, uniswap_factory):
@@ -87,7 +86,7 @@ def test_initPoolLiquidityIncorrectLocktime(pool_liquidity,public_access_control
     deadline = chain.time() + POOL_LAUNCH_DEADLINE
     launch_window = POOL_LAUNCH_WINDOW
     locktime = 100000000000
-    with reverts("MISOLaucher: Enter an unix timestamp in seconds, not miliseconds"):
+    with reverts("PoolLiquidity: Enter an unix timestamp in seconds, not miliseconds"):
         pool_liquidity.initPoolLiquidity(public_access_controls, mintable_token, weth_token, uniswap_factory, accounts[0], accounts[0], deadline, launch_window, locktime)
 
 # def test_zapEth(pool_liquidity, weth_token, UniswapV2Pair, mintable_token, launchLiquidityPool):
@@ -114,7 +113,7 @@ def test_initPoolLiquidityIncorrectLocktime(pool_liquidity,public_access_control
 #         pool_liquidity.zapEth({"from": accounts[0], "value": 1*TENPOW18})
 
 def test_withdrawDepositsWithoutExpiration(pool_liquidity, deposit_eth, deposit_tokens):
-    with reverts("MISOLaucher: Timer has not yet expired"):
+    with reverts("PoolLiquidity: Timer has not yet expired"):
         pool_liquidity.withdrawDeposits({"from": accounts[0]})
 
 def test_withdrawLPTokens(pool_liquidity, UniswapV2Pair, launch_liquidity_pool):
@@ -131,30 +130,29 @@ def test_withdrawLPTokens(pool_liquidity, UniswapV2Pair, launch_liquidity_pool):
     assert walletLPBalanceBeforeW + withdrawnLiquidity == tokenPair.balanceOf(wallet)
 
 def test_withdrawLPTokensWithLiquidityLocked(pool_liquidity, launch_liquidity_pool):
-    with reverts("MISOLaucher: Liquidity is locked"):
+    with reverts("PoolLiquidity: Liquidity is locked"):
         pool_liquidity.withdrawLPTokens({"from": accounts[0]})
 
 def test_withdrawLPTokensWithoutLiquidity(pool_liquidity):
     chain.sleep(pool_liquidity.locktime())
 
-    with reverts("MISOLaucher: Liquidity must be greater than 0"):
+    with reverts("PoolLiquidity: Liquidity must be greater than 0"):
         pool_liquidity.withdrawLPTokens({"from": accounts[0]})
 
 def test_withdrawLPTokensWrongOperator(pool_liquidity):
-    with reverts("MISOLaucher: Sender must be operator"):
+    with reverts("PoolLiquidity: Sender must be operator"):
         pool_liquidity.withdrawLPTokens({"from": accounts[5]})
 
-# TODO - uncomment
-# def test_launchLiquidityPoolAfterContractExpires(pool_liquidity, deposit_eth, deposit_tokens):
-#     chain.sleep(POOL_LAUNCH_WINDOW)
-#     with reverts():
-#         pool_liquidity.launchLiquidityPool({"from": accounts[0]})
+def test_launchLiquidityPoolAfterContractExpires(pool_liquidity, deposit_eth, deposit_tokens):
+    chain.sleep(POOL_LAUNCH_WINDOW)
+    with reverts():
+        pool_liquidity.launchLiquidityPool({"from": accounts[0]})
 
 
 def test_withdrawDepositsWithLiquidity(pool_liquidity, launch_liquidity_pool):
     chain.sleep(POOL_LAUNCH_WINDOW)
 
-    with reverts("MISOLaucher: Liquidity is locked"):
+    with reverts("PoolLiquidity: Liquidity is locked"):
         pool_liquidity.withdrawDeposits({"from": accounts[0]})
 
 def test_withdrawDeposits(pool_liquidity, weth_token, mintable_token, deposit_eth, deposit_tokens):
@@ -167,5 +165,5 @@ def test_withdrawDeposits(pool_liquidity, weth_token, mintable_token, deposit_et
 
 def test_withdrawDepositsWrongOperator(pool_liquidity):
     
-    with reverts("MISOLaucher: Sender must be operator"):
+    with reverts("PoolLiquidity: Sender must be operator"):
         pool_liquidity.withdrawDeposits({"from": accounts[5]})

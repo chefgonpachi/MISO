@@ -1,16 +1,15 @@
 pragma solidity 0.6.12;
 
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -18,12 +17,12 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IERC20.sol";
 
 /// @notice Attribution to delta.financial
-/// @notice Attribution to dutchswap.com
 
 
-contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
+contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -32,6 +31,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
     /// @dev The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    /// @notice Main market variables.
     struct MarketInfo {
         uint64 startTime;
         uint64 endTime; 
@@ -39,14 +39,17 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
     }
     MarketInfo public marketInfo;
 
-    bool private initialized;
-    bool public finalized;
-    bool public hasPointList;
+    /// @notice Market dynamic variables.
+    struct MarketStatus {
+        uint256 commitmentsTotal;
+        uint256 minimumCommitmentAmount;
+        bool initialized; 
+        bool finalized;
+        bool hasPointList;
+    }
 
-    uint256 public commitmentsTotal;
-    /// @notice Minimum amount user can commit in auction.
-    uint256 public minimumCommitmentAmount;
-    /// @notice The token being sold.
+    MarketStatus public marketStatus;
+
     address public auctionToken;
     /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address.
     address public paymentCurrency;
@@ -90,7 +93,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
         address _pointList,
         address payable _wallet
     ) public {
-        require(!initialized, "BatchAuction: auction already initialized");
+        require(!marketStatus.initialized, "BatchAuction: auction already initialized");
         require(_startTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
         require(_endTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
@@ -99,10 +102,11 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
         require(_paymentCurrency != address(0), "BatchAuction: payment currency is the zero address");
         require(_operator != address(0), "BatchAuction: operator is the zero address");
         require(_wallet != address(0), "BatchAuction: wallet is the zero address");
+        require(IERC20(_token).decimals() == 18, "BatchAuction: Token does not have 18 decimals");
 
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
-        minimumCommitmentAmount = _minimumCommitmentAmount;
+        marketStatus.minimumCommitmentAmount = _minimumCommitmentAmount;
         
         marketInfo.startTime = uint64(_startTime);
         marketInfo.endTime = uint64(_endTime);
@@ -111,14 +115,10 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
         operator = _operator;
         wallet = _wallet;
 
-        if (_pointList != address(0)) {
-            pointList = _pointList;
-            hasPointList = true;
-        }
-
-        // There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
+        _setList(_pointList);
         _safeTransferFrom(auctionToken, _funder, _totalTokens);
-        initialized = true;
+
+        marketStatus.initialized = true;
     }
 
 
@@ -133,7 +133,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
     }
 
     function marketParticipationAgreement() public pure returns (string memory) {
-        return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
+        return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I have reviewed the code of this smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
     /** 
      * @dev Not using modifiers is a purposeful choice for code readability.
@@ -170,7 +170,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
      * @param _from User ERC20 address.
      * @param _amount Amount of approved ERC20 tokens.
      */
-    function commitTokensFrom(address _from, uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public /* nonReentrant */ {
+    function commitTokensFrom(address _from, uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public nonReentrant {
         /// @dev Isn't "paymentCurrency == ETH_ADDRESS" enough?
         require(paymentCurrency != ETH_ADDRESS, "BatchAuction: Payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -193,11 +193,11 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
         require(block.timestamp >= marketInfo.startTime && block.timestamp <= marketInfo.endTime, "BatchAuction: outside auction hours"); 
 
         uint256 newCommitment = commitments[_addr].add(_commitment);
-        if (hasPointList) {
+        if (marketStatus.hasPointList) {
             require(IPointList(pointList).hasPoints(_addr, newCommitment));
         }
         commitments[_addr] = newCommitment;
-        commitmentsTotal = commitmentsTotal.add(_commitment);
+        marketStatus.commitmentsTotal = marketStatus.commitmentsTotal.add(_commitment);
         emit AddedCommitment(_addr, _commitment);
     }
 
@@ -206,8 +206,8 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
      * @param amount Amount of tokens to commit.
      * @return Auction token amount.
      */
-    function _getTokenAmount(uint256 amount) internal view returns (uint256) {
-        if (commitmentsTotal == 0) return 0;
+    function _getTokenAmount(uint256 amount) internal view returns (uint256) { 
+        if (marketStatus.commitmentsTotal == 0) return 0;
         return amount.mul(1e18).div(tokenPrice());
     }
 
@@ -216,7 +216,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
      * @return Token price.
      */
     function tokenPrice() public view returns (uint256) {
-        return commitmentsTotal.mul(1e18).div(uint256(marketInfo.totalTokens));
+        return marketStatus.commitmentsTotal.mul(1e18).div(uint256(marketInfo.totalTokens));
     }
 
 
@@ -226,22 +226,22 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
 
     /// @notice Auction finishes successfully above the reserve
     /// @dev Transfer contract funds to initialized wallet.
-    function finalize() public  /* nonReentrant */
+    function finalize() public  nonReentrant
     {
         require(msg.sender == operator || finalizeTimeExpired(),  "BatchAuction: Sender must be operator");
-        require(!finalized, "BatchAuction: Auction has already finalized");
+        require(!marketStatus.finalized, "BatchAuction: Auction has already finalized");
         require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, commitmentsTotal);
+            _tokenPayment(paymentCurrency, wallet, marketStatus.commitmentsTotal);
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
             _tokenPayment(auctionToken, wallet, marketInfo.totalTokens);
         }
-        finalized = true;
+        marketStatus.finalized = true;
         emit AuctionFinalized();
     }
 
@@ -251,13 +251,12 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
     }
 
     /// @notice Withdraw your tokens once the Auction has ended.
-    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {
+    function withdrawTokens(address payable beneficiary) public nonReentrant {
         if (auctionSuccessful()) {
-            require(finalized, "BatchAuction: not finalized");
+            require(marketStatus.finalized, "BatchAuction: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "BatchAuction: No tokens to claim");
-            claimed[beneficiary] = tokensToClaim;
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
 
             _tokenPayment(auctionToken, beneficiary, tokensToClaim);
@@ -266,6 +265,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
             /// @dev Return committed funds back to user.
             require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
+            require(fundsCommitted > 0, "BatchAuction: No funds committed");
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
             _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
@@ -288,7 +288,7 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
      * @return True if tokens sold greater than or equals to the minimum commitment amount.
      */
     function auctionSuccessful() public view returns (bool) {
-        return commitmentsTotal >= minimumCommitmentAmount && commitmentsTotal > 0;
+        return marketStatus.commitmentsTotal >= marketStatus.minimumCommitmentAmount && marketStatus.commitmentsTotal > 0;
     }
 
     /**
@@ -320,6 +320,26 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
         _removeDocument(_name);
     }
 
+    //--------------------------------------------------------
+    // Point Lists
+    //--------------------------------------------------------
+
+    function setList(address _list) external {
+        require(msg.sender == operator);
+        _setList(_list);
+    }
+
+    function enableList(bool _status) external {
+        require(msg.sender == operator);
+        marketStatus.hasPointList = _status;
+    }
+
+    function _setList(address _pointList) private {
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.hasPointList = true;
+        }
+    }
 
     //--------------------------------------------------------
     // Market Launchers
@@ -385,6 +405,13 @@ contract BatchAuction is SafeTransfer, Documents/*, ReentrancyGuard */ {
             );
     }
 
-
+    function getBaseInformation() external view returns(
+        address token, 
+        uint64 startTime,
+        uint64 endTime,
+        bool finalized
+    ) {
+        return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
 
 }

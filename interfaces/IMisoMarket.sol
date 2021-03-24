@@ -6,4 +6,7 @@ interface IMisoMarket {
         bytes calldata data
     ) external;
 
+    function getMarkets() external view returns(address[] memory);
+
+    function getMarketTemplateId(address _auction) external view returns(uint64);
 }

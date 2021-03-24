@@ -20,7 +20,8 @@ def test_batch_auction_commitEth(batch_auction):
     tx= batch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
     assert 'AddedCommitment' in tx.events
-    assert batch_auction.commitmentsTotal() == eth_to_transfer
+    minimum_commitments_total = batch_auction.marketStatus()[0]
+    assert minimum_commitments_total == eth_to_transfer
     assert batch_auction.tokenPrice() == eth_to_transfer / AUCTION_TOKENS * TENPOW18
 
 
@@ -134,7 +135,9 @@ def test_finalize_abi_batch_auction(init_market_abi,batch_auction_init,batch_auc
     # token_buyer.transfer(batch_auction_init, eth_to_transfer)
     tx= batch_auction_init.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
-    assert batch_auction_init.finalized({"from": accounts[0]}) == False
+    finalized = batch_auction_init.marketStatus()[3]
+
+    assert finalized == False
 
     assert batch_auction_init.auctionSuccessful({"from":accounts[0]}) == True
 
@@ -173,8 +176,9 @@ def test_finalize_batch_auction_successful(batch_auction,batch_auction_token):
 
     batch_auction.commitEth(token_buyer, True, {"from":token_buyer, "value": eth_to_transfer})
 
-    assert batch_auction.finalized({"from": accounts[0]}) == False
-
+    finalized = batch_auction.marketStatus()[3]
+    
+    assert finalized == False
     assert batch_auction.auctionSuccessful({"from":accounts[0]}) == True
 
     chain.sleep(AUCTION_TIME+100)
@@ -205,8 +209,10 @@ def test_finalize_batch_auction_unsuccessful(batch_auction,batch_auction_token):
     batch_auction.commitEth(token_buyer, True, {"from":token_buyer, "value": eth_to_transfer})
 
     wallet = accounts[1]
-    assert batch_auction.finalized({"from": accounts[0]}) == False
+    
+    finalized = batch_auction.marketStatus()[3]
 
+    assert finalized == False
     assert batch_auction.auctionSuccessful({"from":accounts[0]}) == False
 
     chain.sleep(AUCTION_TIME+100)
@@ -225,7 +231,7 @@ def test_finalize_batch_auction_unsuccessful(batch_auction,batch_auction_token):
 #### fixed_token_cal -> token to auction
 #### fixed_token_payment_currency -> token to pay by
 
-def test_batch_auction_commit_tokens(batch_auction_pay_by_token,fixed_token_payment_currency): 
+def test_batch_auction_commit_tokens(batch_auction_pay_by_token, fixed_token_payment_currency): 
     account_payer = accounts[6] 
     fixed_token_payment_currency.approve(accounts[5], 50*TENPOW18, {"from": accounts[5]})
 
@@ -233,10 +239,10 @@ def test_batch_auction_commit_tokens(batch_auction_pay_by_token,fixed_token_paym
     
     assert fixed_token_payment_currency.balanceOf(account_payer) == 20 * TENPOW18
     
-    fixed_token_ime.approve(batch_auction_pay_by_token, 20 * TENPOW18,{"from":account_payer})
+    fixed_token_payment_currency.approve(batch_auction_pay_by_token, 20 * TENPOW18,{"from":account_payer})
     batch_auction_pay_by_token.commitTokens(5 * TENPOW18, True, {"from":account_payer})
 
-    assert fixed_token_ime.balanceOf(batch_auction_pay_by_token) ==  5 * TENPOW18   
+    assert fixed_token_payment_currency.balanceOf(batch_auction_pay_by_token) ==  5 * TENPOW18   
     with reverts("BatchAuction: Value must be higher than 0"):
         batch_auction_pay_by_token.commitTokens(0 * TENPOW18, True, {"from":account_payer})
 
@@ -324,6 +330,8 @@ def fixed_token_payment_currency(FixedToken):
     fixed_token_payment_currency.initToken(name, symbol, owner,150*TENPOW18, {'from': owner})
 
     return fixed_token_payment_currency 
+
+
 
 ################# Helper  Test Function #############################
 @pytest.fixture(scope='function', autouse=True)
@@ -462,7 +470,7 @@ def fixed_token_cal(FixedToken):
     
 #     assert fixed_token_payment_currency.balanceOf(account_payer) == 20 * TENPOW18
     
-#     fixed_token_ime.approve(dutch_auction_pay_by_token, 20 * TENPOW18,{"from":account_payer})
+#     fixed_token_payment_currency.approve(dutch_auction_pay_by_token, 20 * TENPOW18,{"from":account_payer})
 #     dutch_auction_pay_by_token.commitTokens(5 * TENPOW18, True, {"from":account_payer})
 
 #     assert fixed_token_payment_currency.balanceOf(dutch_auction_pay_by_token) ==  5 * TENPOW18   

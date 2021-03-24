@@ -15,6 +15,12 @@ def isolation(fn_isolation):
 
 
 @pytest.fixture(scope='function')
+def dutch_auction_helper(DutchAuction):
+    dutch_auction_helper = DutchAuction.deploy({"from": accounts[0]})
+    return dutch_auction_helper
+
+
+@pytest.fixture(scope='function')
 def dutch_auction_init_with_abi(DutchAuction):
     dutch_auction_init_with_abi = DutchAuction.deploy({"from": accounts[0]})
     return dutch_auction_init_with_abi
@@ -43,7 +49,7 @@ def test_dutch_auction_tokensClaimable(dutch_auction):
     chain.mine()
     assert dutch_auction.tokensClaimable(accounts[2]) == AUCTION_TOKENS
 
-def test_dutch_auction_commitEth_with_abi_data(dutch_auction_init_with_abi,fixed_token2):
+def test_dutch_auction_commitEth_with_abi_data(dutch_auction_init_with_abi, fixed_token2, dutch_auction_helper):
 
     assert fixed_token2.balanceOf(accounts[0]) == AUCTION_TOKENS
     
@@ -70,9 +76,8 @@ def test_dutch_auction_commitEth_with_abi_data(dutch_auction_init_with_abi,fixed
     token_buyer =  accounts[2]
     eth_to_transfer = 20 * TENPOW18
 
-    tx= dutch_auction_helper.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
-
-    tx = token_buyer.transfer(dutch_auction_helper, eth_to_transfer)
+    tx = dutch_auction_init_with_abi.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
+    # tx = token_buyer.transfer(dutch_auction_init_with_abi, eth_to_transfer)
     assert 'AddedCommitment' in tx.events
 
 def test_dutch_auction_fail_init_tests(dutch_auction_init_with_abi,fixed_token2):

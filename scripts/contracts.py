@@ -98,6 +98,26 @@ def deploy_mintable_token(miso_token_factory,mintable_token_template):
         mintable_token = MintableToken.at(mintable_token_address)
     return mintable_token
 
+
+def deploy_pointlist_template():
+    pointlist_template_address = CONTRACTS[network.show_active()]["pointlist_template"]
+    if pointlist_template_address == '':
+        pointlist_template = PointList.deploy({"from":accounts[0]}, publish_source=publish()) 
+    else:
+        pointlist_template = PointList.at(pointlist_template_address)
+    return pointlist_template
+
+def deploy_pointlist_factory(pointlist_template, access_control, pointlist_fee):
+    pointlist_factory_address = CONTRACTS[network.show_active()]["pointlist_factory"]
+    if pointlist_factory_address == '':
+        pointlist_factory = PointListFactory.deploy({"from":accounts[0]}, publish_source=publish())
+        tx = pointlist_factory.initPointListFactory(access_control, pointlist_template, pointlist_fee,  {"from":accounts[0]})
+        assert 'MisoInitPointListFactory' in tx.events
+    else:
+        pointlist_factory = PointListFactory.at(pointlist_factory_address)
+    return pointlist_factory
+
+
 def deploy_dutch_auction_template():
     dutch_auction_template_address = CONTRACTS[network.show_active()]["dutch_auction_template"]
     if dutch_auction_template_address == '':
@@ -115,12 +135,29 @@ def deploy_crowdsale_template():
     return crowdsale_template
 
 
+def deploy_batch_auction_template():
+    batch_auction_template_address = CONTRACTS[network.show_active()]["batch_auction_template"]
+    if batch_auction_template_address == '':
+        batch_auction_template = BatchAuction.deploy({"from":accounts[0]}, publish_source=publish())
+    else:
+        batch_auction_template = BatchAuction.at(batch_auction_template_address)
+    return batch_auction_template
+
+def deploy_hyperbolic_auction_template():
+    hyperbolic_auction_template_address = CONTRACTS[network.show_active()]["hyperbolic_auction_template"]
+    if hyperbolic_auction_template_address == '':
+        hyperbolic_auction_template = HyperbolicAuction.deploy({"from":accounts[0]}, publish_source=publish())
+    else:
+        hyperbolic_auction_template = HyperbolicAuction.at(hyperbolic_auction_template_address)
+    return hyperbolic_auction_template
+
+
 def deploy_miso_market(access_control, templates):
     miso_market_address = CONTRACTS[network.show_active()]["miso_market"]
     if miso_market_address == '':
-        if network.show_active() == "development": publish = False 
-        else: publish = True
-        miso_market = MISOMarket.deploy({"from":accounts[0]}, publish_source=publish)
+        # if network.show_active() == "development": publish = False 
+        # else: publish = True
+        miso_market = MISOMarket.deploy({"from":accounts[0]}, publish_source=publish())
         wait_deploy(miso_market)
         miso_market.initMISOMarket(access_control, templates, {"from":accounts[0]})
 
@@ -177,6 +214,17 @@ def deploy_farm_factory(access_control ):
         farm_factory = MISOFarmFactory.at(farm_factory_address)
     return farm_factory
 
+
+
+def deploy_miso_helper(access_control, token_factory, market, launcher, farm_factory):
+    miso_helper_address = CONTRACTS[network.show_active()]["miso_helper"]
+    if miso_helper_address == '':
+        miso_helper = MISOHelper.deploy(access_control, token_factory, market, launcher, farm_factory, {"from":accounts[0]}, publish_source=publish()) 
+    else:
+        miso_helper = MISOHelper.at(miso_helper_address)
+    return miso_helper
+
+
 def deploy_dutch_auction(miso_market,
                         dutch_auction_template,
                         token_address,
@@ -205,3 +253,13 @@ def deploy_dutch_auction(miso_market,
         dutch_auction = DutchAuction.at(dutch_auction_address)
     return dutch_auction
 
+# def deploy_miso_helper(access_control, miso_market, miso_token_factory, miso_launcher, farm_factory):
+#     miso_helper_address = CONTRACTS[network.show_active()]["miso_helper"]
+
+#     if miso_helper_address == '':
+#         miso_helper = MISOHelper.deploy({"from": accounts[0]}, publish_source=publish())
+#         miso_helper.setContracts(access_control, miso_token_factory, miso_market, miso_launcher, farm_factory, {"from": accounts[0]})
+#     else:
+#         miso_helper = MISOHelper.at(miso_helper_address)
+
+#     return miso_helper

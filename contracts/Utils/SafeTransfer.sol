@@ -4,7 +4,7 @@ contract SafeTransfer {
 
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-  //--------------------------------------------------------
+    //--------------------------------------------------------
     // Helper Functions
     //--------------------------------------------------------
 
@@ -38,7 +38,7 @@ contract SafeTransfer {
         address token,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         // solium-disable-next-line security/no-low-level-calls
         (bool success, bytes memory data) =
             token.call(
@@ -52,7 +52,7 @@ contract SafeTransfer {
         address token,
         address from,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         // solium-disable-next-line security/no-low-level-calls
         (bool success, bytes memory data) =
             token.call(

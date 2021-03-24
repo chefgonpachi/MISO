@@ -113,7 +113,7 @@ def _buy_tokens(_crowdsale):
     token_buyer =  accounts[1]
     eth_to_transfer = 5 * TENPOW18
     totalAmountRaised += eth_to_transfer
-    tx = _crowdsale.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": token_buyer})
+    tx = _crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
     assert 'TokensPurchased' in tx.events
     assert _crowdsale.marketStatus()[0] == totalAmountRaised
     assert _crowdsale.auctionSuccessful() == False
@@ -121,7 +121,7 @@ def _buy_tokens(_crowdsale):
     token_buyer =  accounts[2]
     eth_to_transfer = 5 * TENPOW18
     totalAmountRaised += eth_to_transfer
-    tx = _crowdsale.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": token_buyer})
+    tx = _crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
     assert 'TokensPurchased' in tx.events
     assert _crowdsale.marketStatus()[0] == totalAmountRaised
     assert _crowdsale.auctionSuccessful() == True
@@ -143,7 +143,7 @@ def _buy_token_helper(crowdsale, token_buyer, amount):
     eth_to_transfer = amount
     commitments_before = crowdsale.commitments(token_buyer) 
     tokens_claimable_before = crowdsale.tokensClaimable(token_buyer) 
-    tx = crowdsale.buyTokensEth(token_buyer, {'from': token_buyer, 'value': eth_to_transfer})
+    tx = crowdsale.buyTokensEth(token_buyer, True, {'from': token_buyer, 'value': eth_to_transfer})
     assert 'TokensPurchased' in tx.events  
     commitments_after = crowdsale.commitments(token_buyer)
     # print("crowdsale.commitments(token_buyer):", crowdsale.commitments(token_buyer))
@@ -268,7 +268,7 @@ def test_init_market_from_data(crowdsale_init_helper, mintable_token, fixed_toke
     eth_to_transfer = 5 * TENPOW18
     totalAmountRaised += eth_to_transfer
     chain.sleep(10)
-    tx = crowdsale_init_helper.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": token_buyer})
+    tx = crowdsale_init_helper.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
     
     
     assert crowdsale_init_helper.operator() == operator
@@ -413,7 +413,7 @@ def test_crowdsale_buy_token_with_zero_address(crowdsale):
     token_buyer =  ZERO_ADDRESS
     eth_to_transfer = 5 * TENPOW18
     with reverts():
-        crowdsale.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": accounts[0]})
+        crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": accounts[0]})
 
 ############## Buy Tokens Test #############################
 def test_crowdsale_buy_token_multiple_times_goal_not_reached(crowdsale):
@@ -442,7 +442,7 @@ def test_crowdsale_buy_token_after_end_time(crowdsale):
     chain.sleep(CROWDSALE_TIME)
     eth_to_transfer = 2 * TENPOW18
     with reverts():
-        crowdsale.buyTokensEth(beneficiary, {"value": eth_to_transfer, "from": token_buyer})
+        crowdsale.buyTokensEth(beneficiary, True, {"value": eth_to_transfer, "from": token_buyer})
 
 ############## Buy Tokens Test #############################
 def test_crowdsale_buy_token_greater_than_total_tokens(crowdsale, buy_tokens):
@@ -450,7 +450,7 @@ def test_crowdsale_buy_token_greater_than_total_tokens(crowdsale, buy_tokens):
     token_buyer = accounts[3]
     eth_to_transfer = 1 * TENPOW18
     with reverts():
-        crowdsale.buyTokensEth(beneficiary, {"value": eth_to_transfer, "from": token_buyer})
+        crowdsale.buyTokensEth(beneficiary, True, {"value": eth_to_transfer, "from": token_buyer})
 
 ############## Buy Tokens Test #############################
 def test_crowdsale_buy_token_with_zero_value(crowdsale, buy_tokens):
@@ -458,7 +458,7 @@ def test_crowdsale_buy_token_with_zero_value(crowdsale, buy_tokens):
     token_buyer = accounts[3]
     eth_to_transfer = 0
     with reverts():
-        crowdsale.buyTokensEth(beneficiary, {"value": eth_to_transfer, "from": token_buyer})
+        crowdsale.buyTokensEth(beneficiary, True, {"value": eth_to_transfer, "from": token_buyer})
 
 ################ Withdraw Token Test##########################
 def test_crowdsale_withdraw_tokens_goal_reached(crowdsale, buy_tokens, mintable_token, finalize):
@@ -512,7 +512,7 @@ def test_crowdsale_buyTokensExtra(crowdsale):
     eth_to_transfer = goal + 1
 
     with reverts():
-        crowdsale.buyTokensEth(token_buyer, {"value": eth_to_transfer})
+        crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer})
 
 def test_crowdsale_commitments(crowdsale, mintable_token, buy_tokens):
     assert crowdsale.commitments(accounts[1]) == 5 * TENPOW18
@@ -533,7 +533,7 @@ def test_crowdsale_2_buy_with_tokens(crowdsale_2, fixed_token2):
     token_buyer =  accounts[1]
     fixed_token2.approve(crowdsale_2, token_to_transfer, {"from": accounts[1]})
     totalAmountRaised += token_to_transfer
-    tx = crowdsale_2.buyTokens(token_buyer, token_to_transfer, {"from": token_buyer})
+    tx = crowdsale_2.buyTokens(token_buyer, token_to_transfer, True, {"from": token_buyer})
     assert 'TokensPurchased' in tx.events
     assert crowdsale_2.marketStatus()[0] == totalAmountRaised
     assert crowdsale_2.auctionSuccessful() == False
@@ -543,7 +543,7 @@ def test_crowdsale_2_buy_with_tokens(crowdsale_2, fixed_token2):
     fixed_token2.transfer(token_buyer, token_to_transfer, {"from": accounts[0]})
     fixed_token2.approve(crowdsale_2, token_to_transfer, {"from": token_buyer})
     totalAmountRaised += token_to_transfer
-    tx = crowdsale_2.buyTokens(token_buyer, token_to_transfer, {"from": token_buyer})
+    tx = crowdsale_2.buyTokens(token_buyer, token_to_transfer, True, {"from": token_buyer})
     
     assert 'TokensPurchased' in tx.events
     assert crowdsale_2.marketStatus()[0] == totalAmountRaised
@@ -559,7 +559,7 @@ def test_crowdsale_2_buy_with_tokens(crowdsale_2, fixed_token2):
     fixed_token2.approve(crowdsale_2, token_to_transfer, {"from": token_buyer})
     
     with reverts("Crowdsale: amount of tokens exceeded"):
-        crowdsale_2.buyTokens(token_buyer, token_to_transfer, {"from": token_buyer})
+        crowdsale_2.buyTokens(token_buyer, token_to_transfer, True, {"from": token_buyer})
    
     ##################################################
     
@@ -569,7 +569,7 @@ def test_crowdsale_2_buy_with_tokens(crowdsale_2, fixed_token2):
     fixed_token2.approve(crowdsale_2, token_to_transfer, {"from": token_buyer})
     
     totalAmountRaised += token_to_transfer
-    crowdsale_2.buyTokens(token_buyer, token_to_transfer, {"from": token_buyer})
+    crowdsale_2.buyTokens(token_buyer, token_to_transfer, True, {"from": token_buyer})
 
     assert 'TokensPurchased' in tx.events
     assert crowdsale_2.marketStatus()[0] == totalAmountRaised
@@ -592,7 +592,7 @@ def test_buy_tokens_with_token_for_currency_ETH(crowdsale, fixed_token2):
     token_buyer =  accounts[1]
     fixed_token2.approve(crowdsale, token_to_transfer, {"from": accounts[1]})
     with reverts():
-        crowdsale.buyTokens(token_buyer, token_to_transfer, {"from": token_buyer})
+        crowdsale.buyTokens(token_buyer, token_to_transfer, True, {"from": token_buyer})
 
 
 ############## Buy Tokens Test #############################
@@ -600,4 +600,4 @@ def test_crowdsale_2_buy_tokens_with_ETH_for_currency_token(crowdsale_2, fixed_t
     token_buyer =  accounts[1]
     eth_to_transfer = 5 * TENPOW18
     with reverts():
-            crowdsale_2.buyTokensEth(token_buyer, {"value": eth_to_transfer, "from": token_buyer})
+            crowdsale_2.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})

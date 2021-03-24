@@ -28,8 +28,15 @@ def main():
     # Setup MISO Market  
     crowdsale_template = deploy_crowdsale_template()
     dutch_auction_template = deploy_dutch_auction_template()
-    miso_market = deploy_miso_market(access_control, [dutch_auction_template , crowdsale_template ])
+    batch_auction_template = deploy_batch_auction_template()
+    hyperbolic_auction_template = deploy_hyperbolic_auction_template()
+
+    miso_market = deploy_miso_market(access_control, [dutch_auction_template , crowdsale_template, batch_auction_template, hyperbolic_auction_template ])
     uniswap_factory = deploy_uniswap_factory()
+
+    # Setup PointList
+    pointlist_template = deploy_pointlist_template()
+    pointlist_factory = deploy_pointlist_factory(access_control, pointlist_template, 0)
 
     # MISOLiquidityLauncher
     weth_token = deploy_weth_token()
@@ -44,3 +51,5 @@ def main():
     farm_factory = deploy_farm_factory(access_control)
     if farm_factory.farmTemplateId() == 0:
         farm_factory.addFarmTemplate(masterchef_template, {"from": accounts[0]} )
+
+    miso_helper = deploy_miso_helper(access_control, miso_token_factory, miso_market, miso_launcher, farm_factory)    

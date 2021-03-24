@@ -209,7 +209,7 @@ def prepareMiso(
     lpToken: address = IPoolLiquidity(poolLiquidity).getLPTokenAddress()
     IMasterChef(farm).addToken(allocPoint, lpToken, False)
     IAdminAccess(farm).addAdminRole(msg.sender)
-    IAdminAccess(farm).hasAdminRole(msg.sender)
+    assert IAdminAccess(farm).hasAdminRole(msg.sender)
     IAdminAccess(farm).removeAdminRole(self)
 
     tokensRemaining: uint256 = ISushiToken(token).balanceOf(self)

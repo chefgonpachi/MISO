@@ -1,17 +1,15 @@
 pragma solidity 0.6.12;
 
-
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 
 import "../../interfaces/IERC20.sol";
@@ -19,12 +17,13 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../Utils/SafeTransfer.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IERC20.sol";
 import "../Utils/Documents.sol";
 
 /// @notice Attribution to delta.financial
 
 
-contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
+contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard {
     using SafeMath for uint256;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -139,6 +138,7 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
         require(_operator != address(0), "Crowdsale: operator is the zero address");
         require(_totalTokens > 0, "Crowdsale: total tokens is 0");
         require(_goal > 0, "Crowdsale: goal is 0");
+        require(IERC20(_token).decimals() == 18, "Crowdsale: Token does not have 18 decimals");
 
         marketPrice.rate = uint128(_rate);
         marketPrice.goal = uint128(_goal);
@@ -152,11 +152,8 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
         wallet = _wallet;
         operator = _operator;
 
-        if (_pointList != address(0)) {
-            pointList = _pointList;
-            marketStatus.hasPointList = true;
-        }
-
+        _setList(_pointList);
+        
         require(_getTokenAmount(_goal) <= _totalTokens, "Crowdsale: goal should be equal to or lower than total tokens or equal");
 
         _safeTransferFrom(_token, _funder, _totalTokens);
@@ -196,7 +193,7 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
         address payable _beneficiary,
         bool readAndAgreedToMarketParticipationAgreement
     ) 
-        public payable /* nonReentrant */   
+        public payable nonReentrant   
     {
         require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -248,7 +245,7 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
         uint256 _tokenAmount,
         bool readAndAgreedToMarketParticipationAgreement
     ) 
-        public /* nonReentrant */ 
+        public nonReentrant 
     {
         require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
@@ -302,7 +299,7 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
      * @param beneficiary Whose tokens will be withdrawn.
      */
     // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
-    function withdrawTokens(address payable beneficiary) public /* nonReentrant */ {    
+    function withdrawTokens(address payable beneficiary) public nonReentrant {    
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "Crowdsale: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.
@@ -447,9 +444,28 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
         _removeDocument(_name);
     }
 
+    //--------------------------------------------------------
+    // Point Lists
+    //--------------------------------------------------------
 
+    function setList(address _list) external {
+        require(msg.sender == operator);
+        _setList(_list);
+    }
 
-   //--------------------------------------------------------
+    function enableList(bool _status) external {
+        require(msg.sender == operator);
+        marketStatus.hasPointList = _status;
+    }
+
+    function _setList(address _pointList) private {
+        if (_pointList != address(0)) {
+            pointList = _pointList;
+            marketStatus.hasPointList = true;
+        }
+    }
+
+    //--------------------------------------------------------
     // Market Launchers
     //--------------------------------------------------------
 
@@ -532,5 +548,14 @@ contract Crowdsale is SafeTransfer, Documents /*, ReentrancyGuard */ {
             _pointList,
             _wallet
             );
+    }
+    
+    function getBaseInformation() external view returns(
+        address, 
+        uint64,
+        uint64,
+        bool 
+    ) {
+        return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
     }
 }

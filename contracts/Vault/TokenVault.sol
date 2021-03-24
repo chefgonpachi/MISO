@@ -107,34 +107,6 @@ contract TokenVault is SafeTransfer {
     function getLockedItemAtId(uint256 _id) external view returns (uint256, uint256, address, uint256){
         Item storage item =  lockedItem[_id];
         return (item.amount, item.unlockTime, item.owner,item.userIndex);
-    }
-     //--------------------------------------------------------
-    // Helper Functions
-    //--------------------------------------------------------
-    /**
-     * @dev There are many non-compliant ERC20 tokens... this can handle most, adapted from UniSwap V2
-     * @dev Im trying to make it a habit to put external calls last (reentrancy)
-     * @dev You can put this in an internal function if you like.
-    */
-    function _safeTransfer(address _token, address _to, uint256 _amount) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) = _token.call(
-            // 0xa9059cbb = bytes4(keccak256("transfer(address,uint256)"))
-            abi.encodeWithSelector(0xa9059cbb, _to, _amount)
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 Transfer failed 
-    }
-
-
-    function _safeTransferFrom(address _token, address _from, uint256 _amount) internal {
-        // solium-disable-next-line security/no-low-level-calls
-        (bool success, bytes memory data) = _token.call(
-            // 0x23b872dd = bytes4(keccak256("transferFrom(address,address,uint256)"))
-            abi.encodeWithSelector(0x23b872dd, _from, address(this), _amount)
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool)))); // ERC20 TransferFrom failed 
-    }
-
-    
+    }    
     
 }

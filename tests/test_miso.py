@@ -117,16 +117,14 @@ def test_prepare_miso(
 ):
     token_1, crowdsale_1, lp_token_1, pool_liquidity_1, farm_1 = prepare_miso(
         miso_recipe_02, miso_access_controls, accounts[0])
-
-    # Crowdsale
     
     token_1 = FixedToken.at(token_1)
     crowdsale_1 = Crowdsale.at(crowdsale_1)
     farm_1 = MISOMasterChef.at(farm_1)
     lp_token_1 = UniswapV2Pair.at(lp_token_1)
 
+    # Crowdsale
     assert token_1.balanceOf(crowdsale_1) == 200 * TENPOW18
-    assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
 
     buyer_1 = accounts[4]
     amount_1 = 10 * TENPOW18
@@ -144,6 +142,7 @@ def test_prepare_miso(
 
     # Pool Liquidity
 
+    assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
     pool_liquidity_1 = PoolLiquidity.at(pool_liquidity_1)
     pool_liquidity_1.setAuction(crowdsale_1, {"from": accounts[0]})
 
@@ -166,10 +165,13 @@ def test_prepare_miso(
     # Farm
 
     lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[2]})
+    lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[3]})
+    lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[4]})
 
     farm_1.deposit(0, 10*TENPOW18, {'from': accounts[2]})
+    farm_1.deposit(0, 10*TENPOW18, {'from': accounts[3]})
+    farm_1.deposit(0, 10*TENPOW18, {'from': accounts[4]})
     
-
 
 def test_dutch_auction(FixedToken, auction_factory, dutch_auction_template, fixed_token_template, token_factory):
     name = "Test Token"
@@ -229,3 +231,5 @@ def test_dutch_auction(FixedToken, auction_factory, dutch_auction_template, fixe
 
     assert "MarketCreated" in tx.events
 
+
+# def crowdsale_process(crowdsale):

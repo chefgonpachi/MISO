@@ -1,25 +1,22 @@
 pragma solidity 0.6.12;
 
 
-// ------------------------------------------------------------------------
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ███████ Instant ████████████████████████████████████████████████████████
-// ███████████▀▀▀████████▀▀▀███████▀█████▀▀▀▀▀▀▀▀▀▀█████▀▀▀▀▀▀▀▀▀▀█████████
-// ██████████ ▄█▓┐╙████╙ ▓█▄ ▓█████ ▐███  ▀▀▀▀▀▀▀▀████▌ ▓████████▓ ╟███████
-// ███████▀╙ ▓████▄ ▀▀ ▄█████ ╙▀███ ▐███▀▀▀▀▀▀▀▀▀  ████ ╙▀▀▀▀▀▀▀▀╙ ▓███████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ████████████████████████████████████████████████████████████████████████
-// ------------------------------------------------------------------------
-
+//----------------------------------------------------------------------------------
+//    I n s t a n t
+//
+//        .:mmm.         .:mmm:.       .ii.  .:SSSSSSSSSSSSS.     .oOOOOOOOOOOOo.  
+//      .mMM'':Mm.     .:MM'':Mm:.     .II:  :SSs..........     .oOO'''''''''''OOo.
+//    .:Mm'   ':Mm.   .:Mm'   'MM:.    .II:  'sSSSSSSSSSSSSS:.  :OO.           .OO:
+//  .'mMm'     ':MM:.:MMm'     ':MM:.  .II:  .:...........:SS.  'OOo:.........:oOO'
+//  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
+//
+//----------------------------------------------------------------------------------
 
 // GP: Token escrow, lock up tokens for a period of time
 import "./Utils/CloneFactory.sol";
-import "./Utils/Owned.sol";
 import "./Access/MISOAccessControls.sol";
 
-contract MISOFermenter is Owned, CloneFactory {
+contract MISOFermenter is CloneFactory {
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
@@ -93,7 +90,7 @@ contract MISOFermenter is Owned, CloneFactory {
      * @dev Should have operator access.
      * @param _escrowTemplate Escrow template to create a token.
      */
-    function addEscrowTemplate(address _escrowTemplate) external onlyOwner{
+    function addEscrowTemplate(address _escrowTemplate) external {
          require(
             accessControls.hasOperatorRole(msg.sender),
             "MISOFermenter: Sender must be operator"

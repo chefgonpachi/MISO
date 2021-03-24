@@ -29,4 +29,5 @@ def main():
     verify("access_control", MISOAccessControls) 
     verify("masterchef_template", MISOMasterChef) 
     verify("farm_factory", MISOFarmFactory) 
+    verify("miso_helper", MISOHelper) 
 

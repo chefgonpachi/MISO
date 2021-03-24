@@ -132,30 +132,30 @@ def test_market_create_auction_data(DutchAuction, auction_factory,dutch_auction_
         auction_factory.createMarket(template_id,token_address,AUCTION_TOKENS,wallet, _data,{"from":accounts[0],"value":eth_to_transfer})
 
     #############Failed to transfer minimumFee########
-    _data = dutch_auction_template.getAuctionInitData(
-        auction_factory,
-        fixed_token_cal,
-        AUCTION_TOKENS,
-        start_date,
-        end_date,
-        ETH_ADDRESS,
-        AUCTION_START_PRICE,
-        AUCTION_RESERVE,
-        operator,
-        ZERO_ADDRESS,
-        wallet,
-        {"from": accounts[0]}
-    )
-    with reverts("MISOMarket: Failed to transfer minimumFee"):
-        auction_factory.createMarket(template_id,fixed_token_cal,AUCTION_TOKENS,wallet, _data)
+    # _data = dutch_auction_template.getAuctionInitData(
+    #     auction_factory,
+    #     fixed_token_cal,
+    #     AUCTION_TOKENS,
+    #     start_date,
+    #     end_date,
+    #     ETH_ADDRESS,
+    #     AUCTION_START_PRICE,
+    #     AUCTION_RESERVE,
+    #     operator,
+    #     ZERO_ADDRESS,
+    #     wallet, {"from": accounts[0]}
+    # )
+    # with reverts("MISOMarket: Failed to transfer minimumFee"):
+    #     auction_factory.createMarket(template_id,fixed_token_cal,AUCTION_TOKENS,wallet,_data,{"from":accounts[0],"value":0})
     
-    """ fixed_token_cal.approve(auction_factory, AUCTION_TOKENS, {"from": accounts[0]})
+    # """ fixed_token_cal.approve(auction_factory, AUCTION_TOKENS, {"from": accounts[0]})
     
-    Auction_Tokens = 0 * TENPOW18
-    _data = dutch_auction_template.getAuctionInitData(auction_factory, fixed_token_cal, Auction_Tokens, start_date, end_date, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, operator, ZERO_ADDRESS, wallet, {"from": accounts[0]})
+    # Auction_Tokens = 0 * TENPOW18
+    # _data = dutch_auction_template.getAuctionInitData(auction_factory, fixed_token_cal, Auction_Tokens, start_date, end_date, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE, operator, ZERO_ADDRESS, wallet, {"from": accounts[0]})
     
-    auction_factory.createMarket(template_id,fixed_token_cal,Auction_Tokens,wallet, _data,{"from":accounts[0],"value":ETH_TO_FEE})
-    """
+    # auction_factory.createMarket(template_id,fixed_token_cal,Auction_Tokens,wallet, _data,{"from":accounts[0],"value":ETH_TO_FEE})
+    # """
+
 def test_create_crowdsale_data(Crowdsale,auction_factory, fixed_token_cal, crowdsale_template):
     assert fixed_token_cal.balanceOf(accounts[0]) == AUCTION_TOKENS
     start_time = chain.time() + 10

@@ -49,7 +49,7 @@ def prepare_miso(miso_recipe_02, miso_access_controls, owner):
 
     startTime = chain.time() + 50
     endTime = chain.time() + 1000
-    market_rate = 10
+    market_rate = 10 * TENPOW18
     market_goal = 20 * TENPOW18
     payment_currency = ETH_ADDRESS
 

@@ -226,8 +226,9 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         view
         returns (uint256 committed)
     {
-        if (uint256(marketStatus.amountRaised).add(_commitment) > uint256(marketPrice.goal)) {
-            return uint256(marketPrice.goal).sub(uint256(marketStatus.amountRaised));
+        uint256 maxCommitment = uint256(marketInfo.totalTokens).mul(1e18).div(uint256(marketPrice.rate));
+        if (uint256(marketStatus.amountRaised).add(_commitment) > maxCommitment) {
+            return maxCommitment.sub(uint256(marketStatus.amountRaised));
         }
         return _commitment;
     }
@@ -265,9 +266,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         commitments[beneficiary] = commitments[beneficiary].add(amount);
 
         /// @notice Update state.
-        // update state
         marketStatus.amountRaised = uint128(uint256(marketStatus.amountRaised).add(amount));
-
         emit TokensPurchased(msg.sender, beneficiary, amount, _getTokenAmount(amount));
     }
 
@@ -310,11 +309,8 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
-
             require(block.timestamp > uint256(marketInfo.endTime), "Crowdsale: auction has not finished yet");
             uint256 accountBalance = commitments[beneficiary];
-            /// @dev claimerBalance = tokensClaimable(beneficiary);
-            /// @dev claimAmount = claimerBalance.div(uint256(marketPrice.rate));
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
             _tokenPayment(paymentCurrency, beneficiary, accountBalance);
         }
@@ -328,8 +324,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         uint256 unclaimedTokens = IERC20(auctionToken).balanceOf(address(this));
         claimerCommitment = _getTokenAmount(commitments[_user]);
         claimerCommitment = claimerCommitment.sub(claimed[_user]);
-        /// @dev MZ: Is this good to calculate dust for last withdraw?
-        /// @dev Does not transfer back the equivalent amount of dust.
+
         if(claimerCommitment > unclaimedTokens){
             claimerCommitment = unclaimedTokens;
         }
@@ -388,7 +383,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
      * @return tokenAmount Number of tokens that can be purchased with the specified amount.
      */
     function _getTokenAmount(uint256 amount) internal view returns (uint256) {
-        return amount.mul(uint256(marketPrice.rate));
+        return amount.mul(uint256(marketPrice.rate)).div(1e18);
     }
 
     /**

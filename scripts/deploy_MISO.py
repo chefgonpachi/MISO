@@ -36,7 +36,7 @@ def main():
 
     # Setup PointList
     pointlist_template = deploy_pointlist_template()
-    pointlist_factory = deploy_pointlist_factory(access_control, pointlist_template, 0)
+    pointlist_factory = deploy_pointlist_factory( pointlist_template, access_control, 0)
 
     # MISOLiquidityLauncher
     weth_token = deploy_weth_token()

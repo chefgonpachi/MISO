@@ -106,8 +106,8 @@ CONTRACTS = {
         "miso_launcher":"0xEaF6d93e233c1d8606fF114B674001Fd2c8307Bc",
         "masterchef_template":"0x670005b9A0475fBbC77148466cCECbda3A9AcD04",
         "farm_factory":"0xbB0EDD447456A771235d5AfB714Dd671c626975B",
-        "pointlist_factory":"0x3b92026e1D2bc9b3b272A9a8c4d6Eb8eAd99D515",
-        "pointlist_template":"0xa1691879ed8bd902A4571Fe4F5641662FAf17DDe",
+        "pointlist_factory":"0xb5822aB99A5EFe8B85C7678901f6BFC8CA3CA2BF",
+        "pointlist_template":"0x79C2feFc8e84ae00242876B716964a0544847628",
         "uniswap_factory":"0xBc4105DE17C3C14F813b5E92A4120fA5A47D787b",
         "miso_helper":"0xc1a5fD3fE89cfe5315cF948d9a05B5d96C89A6A7",
         "miso_dev":"0x1F3389Fc75Bf55275b03347E4283f24916F402f7"

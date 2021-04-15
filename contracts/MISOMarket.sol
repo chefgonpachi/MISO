@@ -21,7 +21,7 @@ import "./Utils/SafeTransfer.sol";
 import "../../interfaces/IBentoBoxFactory.sol";
 
 
-contract MISOMarket is CloneFactory, SafeTransfer {
+contract MISOMarket is SafeTransfer {
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;

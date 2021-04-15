@@ -1,4 +1,5 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 //----------------------------------------------------------------------------------
 //    I n s t a n t
@@ -12,19 +13,21 @@ pragma solidity 0.6.12;
 //----------------------------------------------------------------------------------
 
 
-import "../../interfaces/IERC20.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
-import "../Utils/SafeTransfer.sol";
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IERC20.sol";
+import "../OpenZeppelin/math/SafeMath.sol";
+import "../Access/MISOAccessControls.sol";
+import "../Utils/SafeTransfer.sol";
+import "../Utils/BoringBatchable.sol";
+import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
+import "../../interfaces/IPointList.sol";
 
 /// @notice Attribution to delta.financial
+/// @notice Attribution to dutchswap.com
 
-
-contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
+contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
+    using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
     uint256 public constant marketTemplate = 1;
@@ -59,10 +62,9 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     /// @notice Whether crowdsale has been initialized or not.
     /// @notice Whether crowdsale has been finalized or not.
     struct MarketStatus {
-        uint128 amountRaised;
-        bool initialized; 
+        uint128 commitmentsTotal;
         bool finalized;
-        bool hasPointList;
+        bool usePointList;
     }
     MarketStatus public marketStatus;
 
@@ -72,8 +74,6 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     address payable private wallet;
     /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address.
     address public paymentCurrency;
-    /// @notice Address that can finalize crowdsale.
-    address public operator;
     /// @notice Address that manages auction approvals.
     address public pointList;
 
@@ -82,22 +82,18 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     /// @notice Amount of tokens to claim per address.
     mapping(address => uint256) public claimed;
 
-    /**
-     * @notice Event for token purchase logging.
-     * @param purchaser Who paid for the tokens.
-     * @param beneficiary Who got the tokens.
-     * @param value Value of wei or token paid for purchase.
-     * @param amount Amount of tokens purchased.
-     */
-    event TokensPurchased(
-        address indexed purchaser,
-        address indexed beneficiary,
-        uint256 value,
-        uint256 amount
-    );
+    /// @notice Event for updating auction times.  Needs to be before auction starts.
+    event AuctionTimeUpdated(uint256 startTime, uint256 endTime); 
+    /// @notice Event for updating auction prices. Needs to be before auction starts.
+    event AuctionPriceUpdated(uint256 rate, uint256 goal); 
+    /// @notice Event for updating auction wallet. Needs to be before auction starts.
+    event AuctionWalletUpdated(address wallet); 
 
+    /// @notice Event for adding a commitment.
+    event AddedCommitment(address addr, uint256 commitment);
+    
     /// @notice Event for finalization of the crowdsale
-    event CrowdsaleFinalized();
+    event AuctionFinalized();
 
     /**
      * @notice Initializes main contract variables and transfers funds for the sale.
@@ -110,7 +106,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
      * @param _endTime Crowdsale end time.
      * @param _rate Number of token units a buyer gets per wei or token.
      * @param _goal Minimum amount of funds to be raised in weis or tokens.
-     * @param _operator Address that can finalize crowdsale.
+     * @param _admin Address that can finalize auction.
      * @param _pointList Address that will manage auction approvals.
      * @param _wallet Address where collected funds will be forwarded to.
      */
@@ -123,22 +119,23 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
     ) public {
-        require(!marketStatus.initialized, "Crowdsale: already initialized"); 
         require(_startTime < 10000000000, 'Crowdsale: enter an unix timestamp in seconds, not miliseconds');
         require(_endTime < 10000000000, 'Crowdsale: enter an unix timestamp in seconds, not miliseconds');
         require(_startTime >= block.timestamp, "Crowdsale: start time is before current time");
         require(_endTime > _startTime, "Crowdsale: start time is not before end time");
         require(_rate > 0, "Crowdsale: rate is 0");
-        require(_paymentCurrency != address(0), "Crowdsale: payment currency is the zero address");
         require(_wallet != address(0), "Crowdsale: wallet is the zero address");
-        require(_operator != address(0), "Crowdsale: operator is the zero address");
+        require(_admin != address(0), "Crowdsale: admin is the zero address");
         require(_totalTokens > 0, "Crowdsale: total tokens is 0");
         require(_goal > 0, "Crowdsale: goal is 0");
         require(IERC20(_token).decimals() == 18, "Crowdsale: Token does not have 18 decimals");
+        if (_paymentCurrency != ETH_ADDRESS) {
+            require(IERC20(_paymentCurrency).decimals() > 0, "Crowdsale: Payment currency is not ERC20");
+        }
 
         marketPrice.rate = uint128(_rate);
         marketPrice.goal = uint128(_goal);
@@ -150,14 +147,14 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
         wallet = _wallet;
-        operator = _operator;
+
+        initAccessControls(_admin);
 
         _setList(_pointList);
         
         require(_getTokenAmount(_goal) <= _totalTokens, "Crowdsale: goal should be equal to or lower than total tokens or equal");
 
         _safeTransferFrom(_token, _funder, _totalTokens);
-        marketStatus.initialized = true;
     }
 
 
@@ -183,23 +180,22 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     }
 
     /**
-     * @notice Checks the amount to commit and processes the buy. Refunds the buyer if commit is too high.
+     * @notice Checks the amount of ETH to commit and adds the commitment. Refunds the buyer if commit is too high.
      * @dev low level token purchase with ETH ***DO NOT OVERRIDE***
      * This function has a non-reentrancy guard, so it shouldn't be called by
      * another `nonReentrant` function.
      * @param _beneficiary Recipient of the token purchase.
      */
-    function buyTokensEth(
+    function commitEth(
         address payable _beneficiary,
         bool readAndAgreedToMarketParticipationAgreement
     ) 
         public payable   nonReentrant    
     {
-        require(paymentCurrency == ETH_ADDRESS, "Crowdsale: payment currency is not ETH"); 
+        require(paymentCurrency == ETH_ADDRESS, "Crowdsale: Payment currency is not ETH"); 
         if(readAndAgreedToMarketParticipationAgreement == false) {
             revertBecauseUserDidNotProvideAgreement();
         }
-        _preValidatePurchase(_beneficiary, msg.value);
 
         /// @notice Get ETH able to be committed.
         uint256 ethToTransfer = calculateCommitment(msg.value);
@@ -207,12 +203,44 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         /// @notice Accept ETH Payments.
         uint256 ethToRefund = msg.value.sub(ethToTransfer);
         if (ethToTransfer > 0) {
-            _processBuy(_beneficiary, ethToTransfer);
+            _addCommitment(_beneficiary, ethToTransfer);
         }
 
         /// @notice Return any ETH to be refunded.
         if (ethToRefund > 0) {
             _beneficiary.transfer(ethToRefund);
+        }
+    }
+
+    /**
+     * @notice Buy Tokens by commiting approved ERC20 tokens to this contract address.
+     * @param _amount Amount of tokens to commit.
+     */
+    function commitTokens(uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public {
+        commitTokensFrom(msg.sender, _amount, readAndAgreedToMarketParticipationAgreement);
+    }
+
+    /**
+     * @notice Checks how much is user able to commit and processes that commitment.
+     * @dev Users must approve contract prior to committing tokens to auction.
+     * @param _from User ERC20 address.
+     * @param _amount Amount of approved ERC20 tokens.
+     */
+    function commitTokensFrom(
+        address _from,
+        uint256 _amount,
+        bool readAndAgreedToMarketParticipationAgreement
+    ) 
+        public   nonReentrant  
+    {
+        require(address(paymentCurrency) != ETH_ADDRESS, "Crowdsale: Payment currency is not a token");
+        if(readAndAgreedToMarketParticipationAgreement == false) {
+            revertBecauseUserDidNotProvideAgreement();
+        }
+        uint256 tokensToTransfer = calculateCommitment(_amount);
+        if (tokensToTransfer > 0) {
+            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _addCommitment(_from, tokensToTransfer);
         }
     }
 
@@ -227,65 +255,33 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         returns (uint256 committed)
     {
         uint256 maxCommitment = uint256(marketInfo.totalTokens).mul(1e18).div(uint256(marketPrice.rate));
-        if (uint256(marketStatus.amountRaised).add(_commitment) > maxCommitment) {
-            return maxCommitment.sub(uint256(marketStatus.amountRaised));
+        if (uint256(marketStatus.commitmentsTotal).add(_commitment) > maxCommitment) {
+            return maxCommitment.sub(uint256(marketStatus.commitmentsTotal));
         }
         return _commitment;
     }
 
     /**
-     * @notice Prevalidates purchase, transfers funds and processes the buy.
-     * @dev Low level token purchase with a token ***DO NOT OVERRIDE***
-     * This function has a non-reentrancy guard, so it shouldn't be called by
-     * another `nonReentrant` function.
-     * @param _beneficiary Recipient of the token purchase.
-     * @param _tokenAmount Value in wei or token involved in the purchase.
-     */
-    function buyTokens(
-        address _beneficiary,
-        uint256 _tokenAmount,
-        bool readAndAgreedToMarketParticipationAgreement
-    ) 
-        public   nonReentrant  
-    {
-        require(paymentCurrency != ETH_ADDRESS, "Crowdsale: payment currency is not token");
-        if(readAndAgreedToMarketParticipationAgreement == false) {
-            revertBecauseUserDidNotProvideAgreement();
-        }
-        _preValidatePurchase(_beneficiary, _tokenAmount);
-        _safeTransferFrom(paymentCurrency, msg.sender, _tokenAmount);
-        _processBuy(_beneficiary, _tokenAmount);
-    }
-
-    /**
      * @notice Updates commitment of the buyer and the amount raised, emits an event.
-     * @param beneficiary Recipient of the token purchase.
-     * @param amount Value in wei or token involved in the purchase.
+     * @param _addr Recipient of the token purchase.
+     * @param _commitment Value in wei or token involved in the purchase.
      */
-    function _processBuy(address beneficiary, uint256 amount) internal {
-        commitments[beneficiary] = commitments[beneficiary].add(amount);
+    function _addCommitment(address _addr, uint256 _commitment) internal {
+        require(block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime), "Crowdsale: outside auction hours");
+        require(_addr != address(0), "Crowdsale: beneficiary is the zero address");
+
+        uint256 newCommitment = commitments[_addr].add(_commitment);
+        if (marketStatus.usePointList) {
+            require(IPointList(pointList).hasPoints(_addr, newCommitment));
+        }
+
+        commitments[_addr] = newCommitment;
 
         /// @notice Update state.
-        marketStatus.amountRaised = uint128(uint256(marketStatus.amountRaised).add(amount));
-        emit TokensPurchased(msg.sender, beneficiary, amount, _getTokenAmount(amount));
-    }
+        // update state
+        marketStatus.commitmentsTotal = uint128(uint256(marketStatus.commitmentsTotal).add(_commitment));
 
-    /**
-     * @notice Validation of an incoming purchase.
-     * @param beneficiary Address performing the token purchase.
-     * @param amount Value in wei or token involved in the purchase.
-     */
-    function _preValidatePurchase(address beneficiary, uint256 amount) internal view {
-        require(block.timestamp >= uint256(marketInfo.startTime), "Crowdsale: not started");
-        require(block.timestamp <= uint256(marketInfo.endTime), "Crowdsale: already closed");
-        require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(amount != 0, "Crowdsale: amount is 0");
-        if (marketStatus.hasPointList) {
-            uint256 newCommitment = commitments[beneficiary].add(amount);
-            require(IPointList(pointList).hasPoints(beneficiary, newCommitment));
-        }
-        uint256 tokensAvail = IERC20(auctionToken).balanceOf(address(this));
-        require(_getTokenAmount(uint256(marketStatus.amountRaised).add(amount)) <= tokensAvail, "Crowdsale: amount of tokens exceeded");
+        emit AddedCommitment(_addr, _commitment);
     }
 
     function withdrawTokens() public  {
@@ -339,10 +335,10 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
      * @dev Must be called after crowdsale ends, to do some extra finalization work.
      * Calls the contracts finalization function.
      */
-    function finalize() public {
+    function finalize() public nonReentrant {
         require(            
-            msg.sender == operator || finalizeTimeExpired(),
-            "Crowdsale: sender must be an operator"
+            hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(),
+            "Crowdsale: sender must be an admin"
         );
         MarketStatus storage status = marketStatus;
         require(!status.finalized, "Crowdsale: already finalized");
@@ -352,9 +348,9 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
             require(auctionEnded(), "Crowdsale: Has not finished yet"); 
-            _tokenPayment(paymentCurrency, wallet, uint256(status.amountRaised));
+            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
             /// @dev Transfer unsold tokens to wallet.
-            uint256 soldTokens = _getTokenAmount(uint256(status.amountRaised));
+            uint256 soldTokens = _getTokenAmount(uint256(status.commitmentsTotal));
             uint256 unsoldTokens = uint256(info.totalTokens).sub(soldTokens);
             if(unsoldTokens > 0) {
                 _tokenPayment(auctionToken, wallet, unsoldTokens);
@@ -362,7 +358,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         } else if ( block.timestamp <= uint256(info.startTime) ) {
             /// @dev Cancelled Auction
             /// @dev You can cancel the auction before it starts
-            require( uint256(status.amountRaised) == 0, "Crowdsale: Funds already raised" );
+            require( uint256(status.commitmentsTotal) == 0, "Crowdsale: Funds already raised" );
             _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         } else {
             /// @dev Failed auction
@@ -373,7 +369,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
 
         status.finalized = true;
 
-        emit CrowdsaleFinalized();
+        emit AuctionFinalized();
     }
 
     /**
@@ -396,10 +392,10 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
 
     /**
      * @notice Checks if the sale minimum amount was raised.
-     * @return auctionSuccessful True if the amountRaised is equal or higher than goal.
+     * @return auctionSuccessful True if the commitmentsTotal is equal or higher than goal.
      */
     function auctionSuccessful() public view returns (bool) {
-        return uint256(marketStatus.amountRaised) >= uint256(marketPrice.goal);
+        return uint256(marketStatus.commitmentsTotal) >= uint256(marketPrice.goal);
     }
 
     /**
@@ -407,7 +403,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
      * @return auctionEnded True if successful or time has ended.
      */
     function auctionEnded() public view returns (bool) {
-        return block.timestamp > uint256(marketInfo.endTime) || _getTokenAmount(uint256(marketStatus.amountRaised)) == uint256(marketInfo.totalTokens);
+        return block.timestamp > uint256(marketInfo.endTime) || _getTokenAmount(uint256(marketStatus.commitmentsTotal)) == uint256(marketInfo.totalTokens);
     }
 
     /**
@@ -430,40 +426,103 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
     //--------------------------------------------------------
 
     function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender) );
         _setDocument( _name, _uri, _documentHash);
     }
 
     function removeDocument(bytes32 _name) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
+
 
     //--------------------------------------------------------
     // Point Lists
     //--------------------------------------------------------
 
+
     function setList(address _list) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender));
         _setList(_list);
     }
 
     function enableList(bool _status) external {
-        require(msg.sender == operator);
-        marketStatus.hasPointList = _status;
+        require(hasAdminRole(msg.sender));
+        marketStatus.usePointList = _status;
     }
 
     function _setList(address _pointList) private {
         if (_pointList != address(0)) {
             pointList = _pointList;
-            marketStatus.hasPointList = true;
+            marketStatus.usePointList = true;
         }
     }
+
+    //--------------------------------------------------------
+    // Setter Functions
+    //--------------------------------------------------------
+
+    /**
+     * @notice Admin can set start and end time through this function.
+     * @param _startTime Auction start time.
+     * @param _endTime Auction end time.
+     */
+    function setAuctionTime(uint256 _startTime, uint256 _endTime) external {
+        require(hasAdminRole(msg.sender));
+        require(_startTime < 10000000000, "Crowdsale: enter an unix timestamp in seconds, not miliseconds");
+        require(_endTime < 10000000000, "Crowdsale: enter an unix timestamp in seconds, not miliseconds");
+        require(_startTime >= block.timestamp, "Crowdsale: start time is before current time");
+        require(_endTime > _startTime, "Crowdsale: end time must be older than start price");
+
+        require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
+
+        marketInfo.startTime = uint64(_startTime);
+        marketInfo.endTime = uint64(_endTime);
+        
+        emit AuctionTimeUpdated(_startTime,_endTime);
+    }
+
+    /**
+     * @notice Admin can set auction price through this function.
+     * @param _rate Price per token.
+     * @param _goal Minimum amount raised and goal for the auction.
+     */
+    function setAuctionPrice(uint256 _rate, uint256 _goal) external {
+        require(hasAdminRole(msg.sender));
+        require(_goal > 0, "Crowdsale: goal is 0");
+        require(_rate > 0, "Crowdsale: rate is 0");
+
+        require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
+
+        marketPrice.rate = uint128(_rate);
+        marketPrice.goal = uint128(_goal);
+
+
+        emit AuctionPriceUpdated(_rate,_goal);
+    }
+
+    /**
+     * @notice Admin can set the auction wallet through this function.
+     * @param _wallet Auction wallet is where funds will be sent.
+     */
+    function setAuctionWallet(address payable _wallet) external {
+        require(hasAdminRole(msg.sender));
+        require(_wallet != address(0), "Crowdsale: wallet is the zero address");
+        require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
+
+        wallet = _wallet;
+
+        emit AuctionWalletUpdated(_wallet);
+    }
+
 
     //--------------------------------------------------------
     // Market Launchers
     //--------------------------------------------------------
 
+    function init(bytes calldata _data) external payable {
+
+    }
 
     /**
      * @notice Decodes and hands Crowdsale data to the initCrowdsale function.
@@ -479,7 +538,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
         ) = abi.decode(_data, (
@@ -497,7 +556,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
             )
         );
     
-        initCrowdsale(_funder, _token, _paymentCurrency, _totalTokens, _startTime, _endTime, _rate, _goal, _operator, _pointList, _wallet);
+        initCrowdsale(_funder, _token, _paymentCurrency, _totalTokens, _startTime, _endTime, _rate, _goal, _admin, _pointList, _wallet);
     }
 
     /**
@@ -510,7 +569,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
      * @param _endTime Crowdsale end time.
      * @param _rate Number of token units a buyer gets per wei or token.
      * @param _goal Minimum amount of funds to be raised in weis or tokens.
-     * @param _operator Address that can finalize crowdsale.
+     * @param _admin Address that can finalize crowdsale.
      * @param _pointList Address that will manage auction approvals.
      * @param _wallet Address where collected funds will be forwarded to.
      * @return _data All the data in bytes format.
@@ -524,7 +583,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
         uint256 _endTime,
         uint256 _rate,
         uint256 _goal,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
     )
@@ -539,7 +598,7 @@ contract Crowdsale is SafeTransfer, Documents , ReentrancyGuard  {
             _endTime,
             _rate,
             _goal,
-            _operator,
+            _admin,
             _pointList,
             _wallet
             );

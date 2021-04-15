@@ -24,6 +24,19 @@ def public_access_controls(MISOAccessControls):
     access_controls.addOperatorRole(accounts[0], {'from': accounts[0]})
     return access_controls
 
+
+
+
+#####################################
+# BentoBox
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def bento_box(BoringFactory):
+    bento_box = BoringFactory.deploy({'from': accounts[0]})
+    return bento_box
+
+
 #####################################
 # MISOTokenFactory
 ######################################
@@ -190,10 +203,10 @@ def point_list(PointList):
 ######################################
 
 @pytest.fixture(scope='module', autouse=True)
-def auction_factory(MISOMarket, miso_access_controls, dutch_auction_template, crowdsale_template):
+def auction_factory(MISOMarket, miso_access_controls,bento_box, dutch_auction_template, crowdsale_template):
     auction_factory = MISOMarket.deploy({'from': accounts[0]})
 
-    auction_factory.initMISOMarket(miso_access_controls, [dutch_auction_template, crowdsale_template], {'from': accounts[0]})
+    auction_factory.initMISOMarket(miso_access_controls, bento_box, [dutch_auction_template, crowdsale_template], {'from': accounts[0]})
     # assert miso_access_controls.hasAdminRole(accounts[0]) == True 
 
     return auction_factory

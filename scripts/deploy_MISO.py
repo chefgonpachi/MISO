@@ -31,7 +31,9 @@ def main():
     batch_auction_template = deploy_batch_auction_template()
     hyperbolic_auction_template = deploy_hyperbolic_auction_template()
 
-    miso_market = deploy_miso_market(access_control, [dutch_auction_template , crowdsale_template, batch_auction_template, hyperbolic_auction_template ])
+    bento_box = deploy_bento_box()
+
+    miso_market = deploy_miso_market(access_control, bento_box, [dutch_auction_template , crowdsale_template, batch_auction_template, hyperbolic_auction_template ])
     uniswap_factory = deploy_uniswap_factory()
 
     # Setup PointList

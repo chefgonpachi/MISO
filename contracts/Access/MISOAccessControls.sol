@@ -1,10 +1,9 @@
 pragma solidity 0.6.12;
 
-
 import "./MISOAdminAccess.sol";
 
 /**
- * @notice Access Controls 
+ * @notice Access Controls
  * @author Attr: BlockRocket.tech
  */
 contract MISOAccessControls is MISOAdminAccess {

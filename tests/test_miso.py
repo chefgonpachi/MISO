@@ -133,6 +133,10 @@ def test_prepare_miso(
     buyer_3 = accounts[3]
     amount_3 = 4.5 * TENPOW18
 
+    assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
+    pool_liquidity_1 = PoolLiquidity.at(pool_liquidity_1)
+    pool_liquidity_1.setAuction(crowdsale_1, {"from": accounts[0]})
+
     chain.sleep(50)
 
     crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_1, amount_1)
@@ -140,37 +144,33 @@ def test_prepare_miso(
     crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_3, amount_3)
     assert crowdsale_1.auctionSuccessful() == True
 
-    # Pool Liquidity
+    # # Pool Liquidity
 
-    assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
-    pool_liquidity_1 = PoolLiquidity.at(pool_liquidity_1)
-    pool_liquidity_1.setAuction(crowdsale_1, {"from": accounts[0]})
+    # chain.sleep(POOL_LAUNCH_DEADLINE)
+    # pool_liquidity_1.finalizeMarketAndLaunchLiquidityPool(
+    #     {"from": accounts[0]}
+    # )
+    # assert weth_token.balanceOf(lp_token_1) == amount_1 + amount_2 + amount_3
+    # assert token_1.balanceOf(lp_token_1) == 100 * TENPOW18
+    # assert crowdsale_1.balance() == 0
 
-    chain.sleep(POOL_LAUNCH_DEADLINE)
-    pool_liquidity_1.finalizeMarketAndLaunchLiquidityPool(
-        {"from": accounts[0]}
-    )
-    assert weth_token.balanceOf(lp_token_1) == amount_1 + amount_2 + amount_3
-    assert token_1.balanceOf(lp_token_1) == 100 * TENPOW18
-    assert crowdsale_1.balance() == 0
+    # chain.sleep(POOL_LAUNCH_LOCKTIME)
 
-    chain.sleep(POOL_LAUNCH_LOCKTIME)
+    # lp_amount = pool_liquidity_1.withdrawLPTokens({'from': accounts[0]}).return_value
 
-    lp_amount = pool_liquidity_1.withdrawLPTokens({'from': accounts[0]}).return_value
+    # lp_token_1.transfer(accounts[2], 10*TENPOW18, {'from': accounts[1]})
+    # lp_token_1.transfer(accounts[3], 10*TENPOW18, {'from': accounts[1]})
+    # lp_token_1.transfer(accounts[4], 10*TENPOW18, {'from': accounts[1]})
 
-    lp_token_1.transfer(accounts[2], 10*TENPOW18, {'from': accounts[1]})
-    lp_token_1.transfer(accounts[3], 10*TENPOW18, {'from': accounts[1]})
-    lp_token_1.transfer(accounts[4], 10*TENPOW18, {'from': accounts[1]})
+    # # Farm
 
-    # Farm
+    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[2]})
+    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[3]})
+    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[4]})
 
-    lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[2]})
-    lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[3]})
-    lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[4]})
-
-    farm_1.deposit(0, 10*TENPOW18, {'from': accounts[2]})
-    farm_1.deposit(0, 10*TENPOW18, {'from': accounts[3]})
-    farm_1.deposit(0, 10*TENPOW18, {'from': accounts[4]})
+    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[2]})
+    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[3]})
+    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[4]})
     
 
 def test_dutch_auction(FixedToken, auction_factory, dutch_auction_template, fixed_token_template, token_factory):

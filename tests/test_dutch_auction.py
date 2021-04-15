@@ -4,14 +4,15 @@ from brownie.convert import to_address
 import pytest
 from brownie import Contract
 from settings import *
+from test_pool_liquidity_02 import _deposit_eth, _deposit_token, _pool_liquidity_02_helper
 
-
-# AG: What if the token is not minable during an auction? Should commit tokens to auction
+# GP: What if the token is not minable during an auction? Should commit tokens to auction
 
 # reset the chain after every test case
 @pytest.fixture(autouse=True)
 def isolation(fn_isolation):
     pass
+
 
 
 @pytest.fixture(scope='function')
@@ -27,7 +28,6 @@ def dutch_auction_init_with_abi(DutchAuction):
 
 def test_dutch_auction_totalTokensCommitted(dutch_auction):
     assert dutch_auction.totalTokensCommitted() == 0
-
 
 def test_dutch_auction_commitEth(dutch_auction):
     token_buyer =  accounts[2]
@@ -120,7 +120,9 @@ def test_dutch_auction_fail_init_tests(dutch_auction_init_with_abi,fixed_token2)
     dutch_auction_init_with_abi.initAuction(accounts[0], fixed_token2, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE,operator,ZERO_ADDRESS, wallet, {"from": accounts[0]})
     assert dutch_auction_init_with_abi.clearingPrice() == AUCTION_START_PRICE
     chain.sleep(10)
-    with reverts("DutchAuction: auction already initialized"):
+    start_time = chain.time() +10
+    end_time = start_time + AUCTION_TIME
+    with reverts("Already initialised"):
         dutch_auction_init_with_abi.initAuction(accounts[0], fixed_token2, AUCTION_TOKENS, start_time, end_time, ETH_ADDRESS, AUCTION_START_PRICE, AUCTION_RESERVE,operator,ZERO_ADDRESS, wallet, {"from": accounts[0]})
 
 def test_dutch_auction_twoPurchases(dutch_auction):
@@ -187,7 +189,7 @@ def test_dutch_auction_claim(dutch_auction):
     chain.mine()
     assert dutch_auction.auctionSuccessful({'from': accounts[0]}) == True
 
-    with reverts("DutchAuction: sender must be an operator"):
+    with reverts("DutchAuction: sender must be an admin"):
         dutch_auction.finalize({'from': accounts[8]})
 
     dutch_auction.finalize({'from': accounts[0]})
@@ -239,14 +241,14 @@ def test_dutch_auction_clearingPrice(dutch_auction):
 
 ############### Commit Eth Test ###############################
 
-def test_dutch_auction_commit_eth(dutch_auction_cal):
-    assert dutch_auction_cal.tokensClaimable(accounts[2]) == 0
+def test_dutch_auction_commit_eth(dutch_auction_cal_pool_eth):
+    assert dutch_auction_cal_pool_eth.tokensClaimable(accounts[2]) == 0
     token_buyer_a=  accounts[2]
     token_buyer_b =  accounts[3]
 
-    tx = dutch_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
+    tx = dutch_auction_cal_pool_eth.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":90 * TENPOW18})
+    tx = dutch_auction_cal_pool_eth.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":90 * TENPOW18})
     assert 'AddedCommitment' in tx.events
     #### Initial balance of token_buyer_b = 100. Then transfer 90 but
     #### only 80 can be transfered as max is 100.
@@ -254,23 +256,23 @@ def test_dutch_auction_commit_eth(dutch_auction_cal):
     assert round(token_buyer_b.balance()/TENPOW18) == 20
 
     ####### commiting eth beyond max ###########
-    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":20 * TENPOW18})
+    tx = dutch_auction_cal_pool_eth.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":20 * TENPOW18})
     assert round(token_buyer_b.balance()/TENPOW18) == 20
 
 
 ############## Calculate Commitment test ######################
-def test_dutch_auction_calculate_commitment(dutch_auction_cal):
-    assert dutch_auction_cal.tokensClaimable(accounts[2]) == 0
+def test_dutch_auction_calculate_commitment(dutch_auction_cal_pool_eth):
+    assert dutch_auction_cal_pool_eth.tokensClaimable(accounts[2]) == 0
     token_buyer_a=  accounts[2]
     token_buyer_b =  accounts[3]
-    tx = dutch_auction_cal.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
+    tx = dutch_auction_cal_pool_eth.commitEth(token_buyer_a, True, {"from": token_buyer_a, "value":20 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    tx = dutch_auction_cal.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":70 * TENPOW18})
+    tx = dutch_auction_cal_pool_eth.commitEth(token_buyer_b, True, {"from": token_buyer_b, "value":70 * TENPOW18})
     assert 'AddedCommitment' in tx.events
-    commitment_not_max = dutch_auction_cal.calculateCommitment(5*TENPOW18, {"from":accounts[4]})
+    commitment_not_max = dutch_auction_cal_pool_eth.calculateCommitment(5*TENPOW18, {"from":accounts[4]})
     assert round(commitment_not_max/TENPOW18) == 5
     
-    commitment_more_than_max = dutch_auction_cal.calculateCommitment(30*TENPOW18, {"from":accounts[4]})
+    commitment_more_than_max = dutch_auction_cal_pool_eth.calculateCommitment(30*TENPOW18, {"from":accounts[4]})
     assert round(commitment_more_than_max/TENPOW18) == 10
 
 
@@ -302,6 +304,68 @@ def test_dutch_auction_commit_tokens(dutch_auction_pay_by_token,fixed_token_paym
     with reverts("DutchAuction: payment currency is not ETH address"):
         eth_to_transfer = 20 * TENPOW18
         tx = dutch_auction_pay_by_token.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
+
+
+###########################
+#Pool Liquidity Test
+###########################
+
+def test_pool_liquidity(dutch_auction_cal_pool_eth,_pool_liquidity_02_eth, weth_token, fixed_token_cal):
+    _pool_liquidity_02_eth.setMarket(dutch_auction_cal_pool_eth, {"from":accounts[0]})
+    
+    _deposit_eth(_pool_liquidity_02_eth,weth_token,ETH_TO_DEPOSIT, accounts[0])
+    
+    token_to_deposit = 10 * TENPOW18
+    _deposit_token_2(_pool_liquidity_02_eth, fixed_token_cal,token_to_deposit,accounts[5])
+    
+    chain.sleep(POOL_LAUNCH_DEADLINE+10)
+    _pool_liquidity_02_eth.finalizeMarketAndLaunchLiquidityPool({"from":accounts[0]})
+
+
+def test_pool_liquidity_two_tokens(dutch_auction_cal_pool_tokens, _pool_liquidity_02_tokens, fixed_token_cal,fixed_token2):
+    _pool_liquidity_02_tokens.setMarket(dutch_auction_cal_pool_tokens, {"from":accounts[0]})
+    
+    balance_before_token_1 = fixed_token_cal.balanceOf(accounts[5])
+    token_to_deposit = 10 * TENPOW18
+    _deposit_token_1(_pool_liquidity_02_tokens, fixed_token_cal, token_to_deposit, accounts[5])
+    balance_after_token_1 = fixed_token_cal.balanceOf(accounts[5])
+    assert balance_before_token_1 - balance_after_token_1  == (POOL_LIQUIDITY_PERCENT / 10000) * token_to_deposit
+
+    balance_before_token_2 = fixed_token2.balanceOf(accounts[0])
+    token_to_deposit = 10 * TENPOW18
+    _deposit_token_2(_pool_liquidity_02_tokens, fixed_token2, token_to_deposit, accounts[0])
+    balance_after_token_2 = fixed_token2.balanceOf(accounts[0])
+    assert balance_before_token_2- balance_after_token_2 == token_to_deposit
+
+    chain.sleep(POOL_LAUNCH_DEADLINE+10)
+    liquidity_generated = _pool_liquidity_02_tokens.finalizeMarketAndLaunchLiquidityPool({"from": accounts[0]}).return_value
+    assert liquidity_generated > 1
+
+@pytest.fixture(scope='function')
+def _pool_liquidity_02_eth(PoolLiquidity02, public_access_controls, fixed_token_cal, weth_token, uniswap_factory):
+    isEth = True
+    pool_liquidity = _pool_liquidity_02_helper(PoolLiquidity02,isEth, public_access_controls,weth_token,fixed_token_cal,uniswap_factory)    
+    return pool_liquidity
+
+@pytest.fixture(scope='function')
+def _pool_liquidity_02_tokens(PoolLiquidity02, public_access_controls, fixed_token_cal, fixed_token2, uniswap_factory):
+    isEth = False
+    pool_liquidity = _pool_liquidity_02_helper(PoolLiquidity02, isEth, public_access_controls,fixed_token_cal,fixed_token2,uniswap_factory)    
+    return pool_liquidity
+
+
+def _deposit_eth(pool_liquidity_02, weth_token, amount, depositor):
+    pool_liquidity_02.depositETH({"from": depositor, "value": amount})
+    
+def _deposit_token_1(pool_liquidity_02, token, amount, depositor):
+    token.approve(pool_liquidity_02, amount, {"from": depositor})
+    tx = pool_liquidity_02.depositToken1(amount, {"from": depositor})
+    assert "Transfer" in tx.events
+
+def _deposit_token_2(pool_liquidity_02, token, amount, depositor):
+    token.approve(pool_liquidity_02, amount, {"from": depositor})
+    tx = pool_liquidity_02.depositToken2(amount, {"from": depositor})
+    assert "Transfer" in tx.events
 
 
 
@@ -361,14 +425,23 @@ def fixed_token_payment_currency(FixedToken):
 #   Helper Function
 ###########################
 @pytest.fixture(scope='function', autouse=True)
-def dutch_auction_cal(DutchAuction, fixed_token_cal):
+def dutch_auction_cal_pool_eth(DutchAuction, fixed_token_cal, _pool_liquidity_02_eth):
+    dutch_auction = _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02_eth)
+    return dutch_auction
+
+@pytest.fixture(scope='function', autouse=True)
+def dutch_auction_cal_pool_tokens(DutchAuction, fixed_token_cal, _pool_liquidity_02_tokens):
+    dutch_auction = _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02_tokens)
+    return dutch_auction
+
+def _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02):
     start_price = 1 * TENPOW18
     auction_tokens = 100 * TENPOW18
     
     start_time = chain.time() + 10
     end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
-    operator = accounts[0]
+    operator = _pool_liquidity_02
     dutch_auction_cal = DutchAuction.deploy({"from": accounts[5]})
 
     fixed_token_cal.approve(dutch_auction_cal, auction_tokens, {"from": accounts[5]})
@@ -395,6 +468,7 @@ def dutch_auction_cal(DutchAuction, fixed_token_cal):
     chain.sleep(10)
     return dutch_auction_cal 
 
+
 ###########################
 #   Helper Function
 ###########################
@@ -405,6 +479,6 @@ def fixed_token_cal(FixedToken):
     symbol = "CAL"
     owner = accounts[5]
 
-    fixed_token_cal.initToken(name, symbol, owner, 250*TENPOW18, {'from': owner})
+    fixed_token_cal.initToken(name, symbol, owner, 1000*TENPOW18, {'from': owner})
 
     return fixed_token_cal

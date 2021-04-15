@@ -49,6 +49,33 @@ def pool_liquidity_02(PoolLiquidity02, public_access_controls, token_1, token_2,
     return pool_liquidity
 
 
+
+###########################
+#### Helper Function
+###########################
+def _deposit_eth(pool_liquidity_02, weth_token, amount, depositor):
+    pool_liquidity_02.depositETH({"from": depositor, "value": amount})
+    assert pool_liquidity_02.getWethBalance() == amount
+
+def _deposit_token(pool_liquidity_02, token, amount, depositor):
+    tx = pool_liquidity_02.depositTokens(amount, {"from": depositor})
+    assert "Transfer" in tx.events
+
+def _pool_liquidity_02_helper(PoolLiquidity02, isEth, public_access_controls, token_1, token_2, uniswap_factory):
+
+    deadline = chain.time() + POOL_LAUNCH_DEADLINE
+    launch_window = POOL_LAUNCH_WINDOW
+    locktime = POOL_LAUNCH_LOCKTIME
+    liquidity_percent = POOL_LIQUIDITY_PERCENT
+    is_token1_weth = isEth
+    pool_liquidity = PoolLiquidity02.deploy({"from": accounts[0]})
+    pool_liquidity.initPoolLiquidity(public_access_controls, 
+    token_1, token_2, uniswap_factory, 
+    accounts[0], accounts[0], liquidity_percent, deadline, launch_window, locktime, is_token1_weth)
+
+    return pool_liquidity
+
+
 @pytest.fixture(scope='function')
 def deposit_token1(pool_liquidity_02, token_1):
     assert token_1.balance() == 0
@@ -211,3 +238,4 @@ def test_withdrawDepositsWrongOperator(pool_liquidity_02):
     
     with reverts("PoolLiquidity02: Sender must be operator"):
         pool_liquidity_02.withdrawDeposits({"from": accounts[5]})
+        

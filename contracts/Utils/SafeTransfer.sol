@@ -9,7 +9,7 @@ contract SafeTransfer {
     //--------------------------------------------------------
 
     /// @dev Helper function to handle both ETH and ERC20 payments
-    function _tokenPayment(
+    function _safeTokenPayment(
         address _token,
         address payable _to,
         uint256 _amount
@@ -20,6 +20,21 @@ contract SafeTransfer {
             _safeTransfer(_token, _to, _amount);
         }
     }
+
+
+    /// @dev Helper function to handle both ETH and ERC20 payments
+    function _tokenPayment(
+        address _token,
+        address payable _to,
+        uint256 _amount
+    ) internal {
+        if (address(_token) == ETH_ADDRESS) {
+            _to.transfer(_amount);
+        } else {
+            _safeTransfer(_token, _to, _amount);
+        }
+    }
+
 
     /// @dev Transfer helper from UniswapV2 Router
     function _safeApprove(address token, address to, uint value) internal {

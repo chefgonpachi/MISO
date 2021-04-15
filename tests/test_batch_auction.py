@@ -91,7 +91,7 @@ def init_market_abi(batch_auction_init,batch_auction_token_2):
     start_time = chain.time() +10
     end_time = start_time + AUCTION_TIME
     wallet = accounts[1]
-    operator = accounts[0]
+    admin = accounts[0]
     batch_auction_token_2.approve(batch_auction_init, AUCTION_TOKENS, {"from": accounts[0]})
 
     _data = batch_auction_init.getBatchAuctionInitData(
@@ -102,14 +102,13 @@ def init_market_abi(batch_auction_init,batch_auction_token_2):
         end_time,
         ETH_ADDRESS,
         AUCTION_MINIMUM_COMMITMENT,
-        operator,
+        admin,
         ZERO_ADDRESS,
         wallet,
         {"from": accounts[0]}
     )
     
     batch_auction_init.initMarket(_data, {"from":accounts[0]})
-    assert batch_auction_init.operator() == accounts[0]
     chain.sleep(10)
     return batch_auction_init 
 
@@ -126,7 +125,7 @@ def test_finalize_abi_batch_auction(init_market_abi,batch_auction_init,batch_auc
     with reverts("BatchAuction: Value must be higher than 0"):
         batch_auction_init.commitEth(token_buyer, True, {"from":token_buyer, "value": 0})
 
-    with reverts("BatchAuction: Sender must be operator"): 
+    with reverts("BatchAuction: Sender must be admin"): 
         batch_auction_init.finalize({"from":accounts[9]})
 
     with reverts("BatchAuction: Payment currency is not a token"):
@@ -168,7 +167,7 @@ def test_finalize_batch_auction_successful(batch_auction,batch_auction_token):
     with reverts("BatchAuction: Value must be higher than 0"):
         batch_auction.commitEth(token_buyer, True, {"from": token_buyer, "value":0})
 
-    with reverts("BatchAuction: Sender must be operator"): 
+    with reverts("BatchAuction: Sender must be admin"): 
         batch_auction.finalize({"from":accounts[9]})
 
     with reverts("BatchAuction: Payment currency is not a token"):
@@ -300,7 +299,7 @@ def batch_auction_pay_by_token(BatchAuction,fixed_token_payment_currency, fixed_
         wallet,
         {"from": accounts[0]}
     )
-    with reverts("BatchAuction: auction already initialized"):
+    with reverts("Already initialised"):
         batch_auction_pay_by_token.initAuction(
         funder,
         fixed_token_cal,

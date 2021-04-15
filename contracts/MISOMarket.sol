@@ -18,6 +18,8 @@ import "../interfaces/IERC20.sol";
 import "./Access/MISOAccessControls.sol";
 import "./Utils/SafeTransfer.sol";
 
+import "../../interfaces/IBentoBoxFactory.sol";
+
 
 contract MISOMarket is CloneFactory, SafeTransfer {
 
@@ -39,6 +41,8 @@ contract MISOMarket is CloneFactory, SafeTransfer {
 
     /// @notice Template id to track respective auction template.
     uint256 public auctionTemplateId;
+
+    IBentoBoxFactory public bentoBox;
 
     /// @notice Mapping from market template id to market template address.
     mapping(uint256 => address) private auctionTemplates;
@@ -85,10 +89,12 @@ contract MISOMarket is CloneFactory, SafeTransfer {
      * @param _accessControls Sets address to get the access controls from.
      * @param _templates Initial array of MISOMarket templates.
      */
-    function initMISOMarket(address _accessControls, address[] memory _templates) external {
+    function initMISOMarket(address _accessControls, address _bentoBox, address[] memory _templates) external {
         /// @dev Maybe missing require message?
         require(!initialised);
         accessControls = MISOAccessControls(_accessControls);
+
+        bentoBox = IBentoBoxFactory(_bentoBox);
 
         auctionTemplateId = 0;
         for(uint i = 0; i < _templates.length; i++) {
@@ -109,6 +115,18 @@ contract MISOMarket is CloneFactory, SafeTransfer {
             "MISOMarket: Sender must be operator"
         );
         marketFees.minimumFee = uint128(_amount);
+    }
+
+    /**
+     * @notice Sets the BentoBox address.
+     * @param _bentoBox BentoBox address.
+     */
+    function setBentoBox(address _bentoBox) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOMarket: Sender must be operator"
+        );
+        bentoBox = IBentoBoxFactory(_bentoBox);
     }
 
     /**
@@ -158,7 +176,7 @@ contract MISOMarket is CloneFactory, SafeTransfer {
             integratorFee = misoFee * uint256(_marketFees.integratorFeePct) / 1000;
             misoFee = misoFee - integratorFee;
         }
-        newMarket = createClone(auctionTemplate);
+        newMarket = bentoBox.deploy(auctionTemplate, "", false);
         auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
         auctions.push(address(newMarket));
         emit MarketCreated(msg.sender, address(newMarket), auctionTemplate);

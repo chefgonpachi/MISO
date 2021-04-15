@@ -97,7 +97,7 @@ def test_hyperbolic_auction_withdraw_tokens(hyperbolic_auction):
     with reverts("HyperbolicAuction: not finalized"):
         hyperbolic_auction.withdrawTokens({'from':accounts[0]})
     
-    with reverts("HyperbolicAuction: sender must be an operator"):
+    with reverts("HyperbolicAuction: sender must be an admin"):
         hyperbolic_auction.finalizeAuction({'from':accounts[8]})
     
     

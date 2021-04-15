@@ -1,4 +1,5 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 //----------------------------------------------------------------------------------
 //    I n s t a n t
@@ -14,16 +15,20 @@ pragma solidity 0.6.12;
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../OpenZeppelin/math/SafeMath.sol";
+import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
+import "../Utils/BoringBatchable.sol";
+import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
-import "../../interfaces/IERC20.sol";
 
 /// @notice Attribution to delta.financial
+/// @notice Attribution to dutchswap.com
 
 
-contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
+contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Documents, ReentrancyGuard  {
     using SafeMath for uint256;
+    using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
     uint256 public constant marketTemplate = 3;
@@ -41,11 +46,10 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
 
     /// @notice Market dynamic variables.
     struct MarketStatus {
-        uint256 commitmentsTotal;
-        uint256 minimumCommitmentAmount;
-        bool initialized; 
+        uint128 commitmentsTotal;
+        uint128 minimumCommitmentAmount;
         bool finalized;
-        bool hasPointList;
+        bool usePointList;
     }
 
     MarketStatus public marketStatus;
@@ -53,8 +57,6 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
     address public auctionToken;
     /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address.
     address public paymentCurrency;
-    /// @notice Address that can finalize auction.
-    address public operator;
     /// @notice Address that manages auction approvals.
     address public pointList;
     address payable public wallet; // Where the auction funds will get paid
@@ -62,6 +64,13 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
     mapping(address => uint256) public commitments;
     /// @notice Amount of tokens to claim per address.
     mapping(address => uint256) public claimed;
+
+    /// @notice Event for updating auction times.  Needs to be before auction starts.
+    event AuctionTimeUpdated(uint256 startTime, uint256 endTime); 
+    /// @notice Event for updating auction prices. Needs to be before auction starts.
+    event AuctionPriceUpdated(uint256 minimumCommitmentAmount); 
+    /// @notice Event for updating auction wallet. Needs to be before auction starts.
+    event AuctionWalletUpdated(address wallet); 
 
     /// @notice Event for adding a commitment.
     event AddedCommitment(address addr, uint256 commitment);
@@ -77,8 +86,8 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
      * @param _startTime Auction start time.
      * @param _endTime Auction end time.
      * @param _paymentCurrency The currency the crowdsale accepts for payment. Can be ETH or token address.
-     * @param _minimumCommitmentAmount Minimum amount user can commit in auction.
-     * @param _operator Address that can finalize auction.
+     * @param _minimumCommitmentAmount Minimum amount collected at which the auction will be successful.
+     * @param _admin Address that can finalize auction.
      * @param _wallet Address where collected funds will be forwarded to.
      */
     function initAuction(
@@ -89,36 +98,36 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
         uint256 _endTime,
         address _paymentCurrency,
         uint256 _minimumCommitmentAmount,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
     ) public {
-        require(!marketStatus.initialized, "BatchAuction: auction already initialized");
         require(_startTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
         require(_endTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
         require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
         require(_totalTokens > 0,"BatchAuction: total tokens must be greater than zero");
-        require(_paymentCurrency != address(0), "BatchAuction: payment currency is the zero address");
-        require(_operator != address(0), "BatchAuction: operator is the zero address");
+        require(_admin != address(0), "BatchAuction: admin is the zero address");
         require(_wallet != address(0), "BatchAuction: wallet is the zero address");
         require(IERC20(_token).decimals() == 18, "BatchAuction: Token does not have 18 decimals");
+        if (_paymentCurrency != ETH_ADDRESS) {
+            require(IERC20(_paymentCurrency).decimals() > 0, "BatchAuction: Payment currency is not ERC20");
+        }
 
-        auctionToken = _token;
-        paymentCurrency = _paymentCurrency;
-        marketStatus.minimumCommitmentAmount = _minimumCommitmentAmount;
+        marketStatus.minimumCommitmentAmount = uint128(_minimumCommitmentAmount);
         
         marketInfo.startTime = uint64(_startTime);
         marketInfo.endTime = uint64(_endTime);
         marketInfo.totalTokens = uint128(_totalTokens);
 
-        operator = _operator;
+        auctionToken = _token;
+        paymentCurrency = _paymentCurrency;
         wallet = _wallet;
+
+        initAccessControls(_admin);
 
         _setList(_pointList);
         _safeTransferFrom(auctionToken, _funder, _totalTokens);
-
-        marketStatus.initialized = true;
     }
 
 
@@ -172,7 +181,6 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
      * @param _amount Amount of approved ERC20 tokens.
      */
     function commitTokensFrom(address _from, uint256 _amount, bool readAndAgreedToMarketParticipationAgreement) public   nonReentrant  {
-        /// @dev Isn't "paymentCurrency == ETH_ADDRESS" enough?
         require(paymentCurrency != ETH_ADDRESS, "BatchAuction: Payment currency is not a token");
         if(readAndAgreedToMarketParticipationAgreement == false) {
             revertBecauseUserDidNotProvideAgreement();
@@ -194,11 +202,11 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
         require(block.timestamp >= marketInfo.startTime && block.timestamp <= marketInfo.endTime, "BatchAuction: outside auction hours"); 
 
         uint256 newCommitment = commitments[_addr].add(_commitment);
-        if (marketStatus.hasPointList) {
+        if (marketStatus.usePointList) {
             require(IPointList(pointList).hasPoints(_addr, newCommitment));
         }
         commitments[_addr] = newCommitment;
-        marketStatus.commitmentsTotal = marketStatus.commitmentsTotal.add(_commitment);
+        marketStatus.commitmentsTotal = uint128(uint256(marketStatus.commitmentsTotal).add(_commitment));
         emit AddedCommitment(_addr, _commitment);
     }
 
@@ -217,7 +225,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
      * @return Token price.
      */
     function tokenPrice() public view returns (uint256) {
-        return marketStatus.commitmentsTotal.mul(1e18).div(uint256(marketInfo.totalTokens));
+        return uint256(marketStatus.commitmentsTotal).mul(1e18).div(uint256(marketInfo.totalTokens));
     }
 
 
@@ -229,13 +237,13 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
     /// @dev Transfer contract funds to initialized wallet.
     function finalize() public    nonReentrant 
     {
-        require(msg.sender == operator || finalizeTimeExpired(),  "BatchAuction: Sender must be operator");
+        require(hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(),  "BatchAuction: Sender must be admin");
         require(!marketStatus.finalized, "BatchAuction: Auction has already finalized");
         require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, marketStatus.commitmentsTotal);
+            _tokenPayment(paymentCurrency, wallet, uint256(marketStatus.commitmentsTotal));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
@@ -289,7 +297,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
      * @return True if tokens sold greater than or equals to the minimum commitment amount.
      */
     function auctionSuccessful() public view returns (bool) {
-        return marketStatus.commitmentsTotal >= marketStatus.minimumCommitmentAmount && marketStatus.commitmentsTotal > 0;
+        return uint256(marketStatus.commitmentsTotal) >= uint256(marketStatus.minimumCommitmentAmount) && uint256(marketStatus.commitmentsTotal) > 0;
     }
 
     /**
@@ -312,40 +320,97 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
     //--------------------------------------------------------
 
     function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender) );
         _setDocument( _name, _uri, _documentHash);
     }
 
     function removeDocument(bytes32 _name) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
+
 
     //--------------------------------------------------------
     // Point Lists
     //--------------------------------------------------------
 
+
     function setList(address _list) external {
-        require(msg.sender == operator);
+        require(hasAdminRole(msg.sender));
         _setList(_list);
     }
 
     function enableList(bool _status) external {
-        require(msg.sender == operator);
-        marketStatus.hasPointList = _status;
+        require(hasAdminRole(msg.sender));
+        marketStatus.usePointList = _status;
     }
 
     function _setList(address _pointList) private {
         if (_pointList != address(0)) {
             pointList = _pointList;
-            marketStatus.hasPointList = true;
+            marketStatus.usePointList = true;
         }
     }
+
+    //--------------------------------------------------------
+    // Setter Functions
+    //--------------------------------------------------------
+
+    /**
+     * @notice Admin can set start and end time through this function.
+     * @param _startTime Auction start time.
+     * @param _endTime Auction end time.
+     */
+    function setAuctionTime(uint256 _startTime, uint256 _endTime) external {
+        require(hasAdminRole(msg.sender));
+        require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_endTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
+        require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
+
+        require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
+
+        marketInfo.startTime = uint64(_startTime);
+        marketInfo.endTime = uint64(_endTime);
+        
+        emit AuctionTimeUpdated(_startTime,_endTime);
+    }
+
+    /**
+     * @notice Admin can set start and min price through this function.
+     * @param _minimumCommitmentAmount Auction minimum raised target.
+     */
+    function setAuctionPrice(uint256 _minimumCommitmentAmount) external {
+        require(hasAdminRole(msg.sender));
+
+        require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
+
+        marketStatus.minimumCommitmentAmount = uint128(_minimumCommitmentAmount);
+
+        emit AuctionPriceUpdated(_minimumCommitmentAmount);
+    }
+
+    /**
+     * @notice Admin can set the auction wallet through this function.
+     * @param _wallet Auction wallet is where funds will be sent.
+     */
+    function setAuctionWallet(address payable _wallet) external {
+        require(hasAdminRole(msg.sender));
+        require(_wallet != address(0), "BatchAuction: wallet is the zero address");
+        require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
+
+        wallet = _wallet;
+
+        emit AuctionWalletUpdated(_wallet);
+    }
+
 
     //--------------------------------------------------------
     // Market Launchers
     //--------------------------------------------------------
 
+    function init(bytes calldata _data) external payable {
+    }
 
     function initMarket(
         bytes calldata _data
@@ -358,7 +423,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
         uint256 _endTime,
         address _paymentCurrency,
         uint256 _minimumCommitmentAmount,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
         ) = abi.decode(_data, (
@@ -373,7 +438,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
             address,
             address
         ));
-        initAuction(_funder, _token, _totalTokens, _startTime, _endTime, _paymentCurrency, _minimumCommitmentAmount, _operator, _pointList,  _wallet);
+        initAuction(_funder, _token, _totalTokens, _startTime, _endTime, _paymentCurrency, _minimumCommitmentAmount, _admin, _pointList,  _wallet);
     }
 
      function getBatchAuctionInitData(
@@ -384,7 +449,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
         uint256 _endTime,
         address _paymentCurrency,
         uint256 _minimumCommitmentAmount,
-        address _operator,
+        address _admin,
         address _pointList,
         address payable _wallet
     )
@@ -400,7 +465,7 @@ contract BatchAuction is SafeTransfer, Documents, ReentrancyGuard  {
             _endTime,
             _paymentCurrency,
             _minimumCommitmentAmount,
-            _operator,
+            _admin,
             _pointList,
             _wallet
             );

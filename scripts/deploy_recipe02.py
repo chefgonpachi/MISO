@@ -70,7 +70,7 @@ def main():
     startTime = chain.time() + 50
     endTime = chain.time() + 1000
     market_rate = 100
-    market_goal = 200
+    market_goal = 200 
 
     launchwindow = 3 * 24 * 60 * 60
     deadline = 200

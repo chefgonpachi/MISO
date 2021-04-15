@@ -245,4 +245,12 @@ contract MISOFarmFactory is CloneFactory {
     function numberOfFarms() external view returns (uint256) {
         return farms.length;
     }
+
+    /**
+     * @notice Get all farm created in the factory.
+     * @return created farms.
+     */
+    function getFarms() external view returns(address[] memory) {
+        return farms;
+    }
 }

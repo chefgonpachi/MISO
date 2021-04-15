@@ -43,6 +43,15 @@ def deploy_user_access_control(operator):
     return access_control
 
 
+def deploy_bento_box():
+    bento_box_address = CONTRACTS[network.show_active()]["bento_box"]
+    if bento_box_address == '':
+        bento_box = BoringFactory.deploy({"from":accounts[0]}, publish_source=publish())
+    else:
+        bento_box = BoringFactory.at(bento_box_address)
+    return bento_box
+
+
 def deploy_weth_token():
     weth_token_address = CONTRACTS[network.show_active()]["weth_token"]
     if weth_token_address == '':
@@ -152,14 +161,14 @@ def deploy_hyperbolic_auction_template():
     return hyperbolic_auction_template
 
 
-def deploy_miso_market(access_control, templates):
+def deploy_miso_market(access_control, bento_box, templates):
     miso_market_address = CONTRACTS[network.show_active()]["miso_market"]
     if miso_market_address == '':
         # if network.show_active() == "development": publish = False 
         # else: publish = True
         miso_market = MISOMarket.deploy({"from":accounts[0]}, publish_source=publish())
         wait_deploy(miso_market)
-        miso_market.initMISOMarket(access_control, templates, {"from":accounts[0]})
+        miso_market.initMISOMarket(access_control, bento_box, templates, {"from":accounts[0]})
 
     else:
         miso_market = MISOMarket.at(miso_market_address)

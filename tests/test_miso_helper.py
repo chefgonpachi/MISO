@@ -165,3 +165,78 @@ def test_getBatchAuctionInfo(miso_helper, batch_auction):
 def test_getHyperbolicAuctionInfo(miso_helper, hyperbolic_auction):
     hyperbolic_auction_info = miso_helper.getHyperbolicAuctionInfo(hyperbolic_auction)
     print("hyperbolic_auction_info:", hyperbolic_auction_info)
+
+def test_getFarms(miso_helper, create_farm):
+    farms = miso_helper.getFarms(ZERO_ADDRESS)
+
+    print("farms:", farms)
+
+    assert 1==1
+
+@pytest.fixture(scope='function')
+def create_farm(MISOMasterChef, farm_factory, farm_template, fixed_token_cal, miso_access_controls, lp_token):
+    rewards_per_block = 1 * TENPOW18
+    # Define the start time relative to sales
+    start_block =  len(chain) + 10
+    wallet = accounts[4]
+    dev_addr = wallet
+    fixed_token_cal.approve(farm_factory, AUCTION_TOKENS, {"from": accounts[0]})
+    integratorFeeAccount = accounts[6]
+    miso_dev = accounts[5]
+    integratorFeeAccount = accounts[6]
+
+    before_deploy_balance_miso_dev = miso_dev.balance()
+    before_deploy_balance_integrator = integratorFeeAccount.balance()
+
+    data = farm_template.getInitData(fixed_token_cal, rewards_per_block, start_block, dev_addr, accounts[0])
+    tx = farm_factory.createFarm(1,wallet, data,{"from":accounts[0]})
+    master_chef = MISOMasterChef.at(tx.return_value)
+    assert "FarmCreated" in tx.events
+    assert farm_factory.numberOfFarms() == 1
+
+    master_chef.addToken(150, lp_token, False, {'from': accounts[0]})
+    
+    after_deploy_balance_miso_dev = miso_dev.balance()
+    after_deploy_balance_integrator = integratorFeeAccount.balance()
+    
+    assert before_deploy_balance_miso_dev==after_deploy_balance_miso_dev
+    assert before_deploy_balance_integrator == after_deploy_balance_integrator
+
+
+#####################################
+# Reward Token
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def reward_token(FixedToken):
+    reward_token = FixedToken.deploy({'from': accounts[0]})
+    name = "Reward Token"
+    symbol = "RWD"
+    owner = accounts[1]
+    initial_supply = 100000 * TENPOW18
+
+    reward_token.initToken(name, symbol, owner, initial_supply, {'from': owner})
+
+    return reward_token
+
+
+
+#####################################
+# LP Token
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def lp_token(UniswapV2Pair, uniswap_factory, weth_token, reward_token):
+    # lp_token = UniswapV2Pair.deploy({"from": accounts[0]})
+
+    # lp_token.initialize(weth_token, reward_token, {"from": accounts[0]})
+    tx = uniswap_factory.createPair(weth_token, reward_token, {"from": accounts[0]})
+
+    lp_token = UniswapV2Pair.at(tx.return_value)
+
+    weth_token.deposit({'from': accounts[1], 'value': 1 * TENPOW18})
+    reward_token.transfer(lp_token, 100000 * TENPOW18, {'from':accounts[1]})
+    weth_token.transfer(lp_token, 1 * TENPOW18, {'from':accounts[1]})
+    lp_token.mint(accounts[1], {'from': accounts[1]})
+
+    return lp_token
+

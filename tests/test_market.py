@@ -188,8 +188,8 @@ def test_create_crowdsale_data(Crowdsale,auction_factory, fixed_token_cal, crowd
     token_buyer =  accounts[1]
     eth_to_transfer = 5 * TENPOW18
     
-    tx = new_crowdsale.buyTokensEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
-    assert 'TokensPurchased' in tx.events
+    tx = new_crowdsale.commitEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
+    assert 'AddedCommitment' in tx.events
 
 def test_market_integrator_fee_accounts(auction_factory,fixed_token_cal, crowdsale_template):
     
@@ -276,9 +276,9 @@ def test_market_set_dividends_not_operator(auction_factory):
     with reverts():
         auction_factory.setDividends(miso_dev,{"from":accounts[5]})
 
-def test_market_init_again(auction_factory,miso_access_controls,dutch_auction_template):
+def test_market_init_again(auction_factory,bento_box,miso_access_controls,dutch_auction_template):
     with reverts():
-        auction_factory.initMISOMarket(miso_access_controls, [dutch_auction_template], {'from': accounts[0]})
+        auction_factory.initMISOMarket(miso_access_controls,bento_box, [dutch_auction_template], {'from': accounts[0]})
 
 
 

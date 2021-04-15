@@ -118,18 +118,6 @@ contract MISOMarket is CloneFactory, SafeTransfer {
     }
 
     /**
-     * @notice Sets the BentoBox address.
-     * @param _bentoBox BentoBox address.
-     */
-    function setBentoBox(address _bentoBox) external {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "MISOMarket: Sender must be operator"
-        );
-        bentoBox = IBentoBoxFactory(_bentoBox);
-    }
-
-    /**
      * @notice Sets integrator fee percentage.
      * @param _amount Percentage amount.
      */

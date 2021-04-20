@@ -1,13 +1,12 @@
 pragma solidity 0.6.12;
 
-import "./MISOAccessControls.sol";
 import "../../interfaces/IPointList.sol";
 import "../../interfaces/IERC20.sol";
 
 /**
- * @notice TokenPointList - MISO Point List template that references a given `token` balance to return approvals.
+ * @notice TokenPointList - MISO Point List that references a given `token` balance to return approvals.
  */
-contract TokenPointList is MISOAccessControls {
+contract TokenPointList {
     /// @notice Token contract for point list reference - can be ERC20, ERC721 or other tokens with `balanceOf()` check.
     IERC20 public token;
     
@@ -18,13 +17,11 @@ contract TokenPointList is MISOAccessControls {
     }
 
     /**
-     * @notice Initializes token point list with admin address and reference token.
-     * @param _admin Admin address.
+     * @notice Initializes token point list with reference token.
      * @param _token Token address.
      */
-    function initPointList(address _admin, IERC20 _token) public {
+    function initPointList(IERC20 _token) public {
         require(!initialised, "Already initialised");
-        initAccessControls(_admin);
         token = _token;
         initialised = true;
     }

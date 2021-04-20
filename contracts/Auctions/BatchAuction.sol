@@ -102,8 +102,8 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         address _pointList,
         address payable _wallet
     ) public {
-        require(_startTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
-        require(_endTime < 10000000000, 'BatchAuction: enter an unix timestamp in seconds, not miliseconds');
+        require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
+        require(_endTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
         require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
         require(_totalTokens > 0,"BatchAuction: total tokens must be greater than zero");
@@ -143,7 +143,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
      * @dev Attribution to the awesome delta.financial contracts
     */  
     function marketParticipationAgreement() public pure returns (string memory) {
-        return "I understand that I'm interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I have reviewed the code of this smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
+        return "I understand that I am interacting with a smart contract. I understand that tokens commited are subject to the token issuer and local laws where applicable. I have reviewed the code of this smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
     }
     /** 
      * @dev Not using modifiers is a purposeful choice for code readability.
@@ -237,7 +237,10 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     /// @dev Transfer contract funds to initialized wallet.
     function finalize() public    nonReentrant 
     {
-        require(hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(),  "BatchAuction: Sender must be admin");
+        require(hasAdminRole(msg.sender) 
+                || wallet == msg.sender
+                || hasSmartContractRole(msg.sender) 
+                || finalizeTimeExpired(),  "BatchAuction: Sender must be admin");
         require(!marketStatus.finalized, "BatchAuction: Auction has already finalized");
         require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
         if (auctionSuccessful()) {
@@ -319,12 +322,20 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     // Documents
     //--------------------------------------------------------
 
-    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+    function setDocument(string calldata _name, string calldata _data) external {
         require(hasAdminRole(msg.sender) );
-        _setDocument( _name, _uri, _documentHash);
+        _setDocument( _name, _data);
     }
 
-    function removeDocument(bytes32 _name) external {
+    function setDocuments(string[] calldata _name, string[] calldata _data) external {
+        require(hasAdminRole(msg.sender) );
+        uint256 numDocs = _name.length;
+        for (uint256 i = 0; i < numDocs; i++) {
+            _setDocument( _name[i], _data[i]);
+        }
+    }
+
+    function removeDocument(string calldata _name) external {
         require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
@@ -397,7 +408,6 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     function setAuctionWallet(address payable _wallet) external {
         require(hasAdminRole(msg.sender));
         require(_wallet != address(0), "BatchAuction: wallet is the zero address");
-        require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
 
         wallet = _wallet;
 

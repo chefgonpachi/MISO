@@ -302,7 +302,7 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
      */
     function tokensClaimable(address _user) public view returns (uint256) {
         uint256 tokensAvailable = commitments[_user].mul(1e18).div(clearingPrice());
-        return tokensAvailable.sub(claimed[msg.sender]);
+        return tokensAvailable.sub(claimed[_user]);
     }
 
     /**
@@ -404,7 +404,10 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     function finalize() public   nonReentrant  
     {
 
-        require(hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
+        require(hasAdminRole(msg.sender) 
+                || hasSmartContractRole(msg.sender) 
+                || wallet == msg.sender
+                || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
         MarketStatus storage status = marketStatus;
 
         require(!status.finalized, "DutchAuction: auction already finalized");
@@ -461,12 +464,20 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     // Documents
     //--------------------------------------------------------
 
-    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+    function setDocument(string calldata _name, string calldata _data) external {
         require(hasAdminRole(msg.sender) );
-        _setDocument( _name, _uri, _documentHash);
+        _setDocument( _name, _data);
     }
 
-    function removeDocument(bytes32 _name) external {
+    function setDocuments(string[] calldata _name, string[] calldata _data) external {
+        require(hasAdminRole(msg.sender) );
+        uint256 numDocs = _name.length;
+        for (uint256 i = 0; i < numDocs; i++) {
+            _setDocument( _name[i], _data[i]);
+        }
+    }
+
+    function removeDocument(string calldata _name) external {
         require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
@@ -509,7 +520,6 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
         require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
-
         require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
         marketInfo.startTime = uint64(_startTime);
@@ -527,7 +537,6 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         require(hasAdminRole(msg.sender));
         require(_startPrice > _minimumPrice, "DutchAuction: start price must be higher than minimum price");
         require(_minimumPrice > 0, "DutchAuction: minimum price must be greater than 0"); 
-
         require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
         marketPrice.startPrice = uint128(_startPrice);
@@ -543,7 +552,6 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     function setAuctionWallet(address payable _wallet) external {
         require(hasAdminRole(msg.sender));
         require(_wallet != address(0), "DutchAuction: wallet is the zero address");
-        require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
         wallet = _wallet;
 

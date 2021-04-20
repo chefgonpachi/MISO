@@ -384,10 +384,13 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
      * @notice Auction finishes successfully above the reserve
      * @dev Transfer contract funds to initialized wallet.
      */
-    function finalizeAuction()
+    function finalize()
         public   nonReentrant 
     {
-        require(hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(), "HyperbolicAuction: sender must be an admin");
+        require(hasAdminRole(msg.sender) 
+                || wallet == msg.sender
+                || hasSmartContractRole(msg.sender) 
+                || finalizeTimeExpired(), "HyperbolicAuction: sender must be an admin");
         MarketStatus storage status = marketStatus;
         MarketInfo storage info = marketInfo;
 
@@ -418,7 +421,7 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
      */
     function tokensClaimable(address _user) public view returns (uint256) {
         uint256 tokensAvailable = commitments[_user].mul(1e18).div(clearingPrice());
-        return tokensAvailable.sub(claimed[msg.sender]);
+        return tokensAvailable.sub(claimed[_user]);
     }
 
 
@@ -454,12 +457,20 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
     // Documents
     //--------------------------------------------------------
 
-    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+    function setDocument(string calldata _name, string calldata _data) external {
         require(hasAdminRole(msg.sender) );
-        _setDocument( _name, _uri, _documentHash);
+        _setDocument( _name, _data);
     }
 
-    function removeDocument(bytes32 _name) external {
+    function setDocuments(string[] calldata _name, string[] calldata _data) external {
+        require(hasAdminRole(msg.sender) );
+        uint256 numDocs = _name.length;
+        for (uint256 i = 0; i < numDocs; i++) {
+            _setDocument( _name[i], _data[i]);
+        }
+    }
+
+    function removeDocument(string calldata _name) external {
         require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
@@ -502,7 +513,6 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
         require(_endTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "HyperbolicAuction: start time is before current time");
         require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start price");
-
         require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
         marketInfo.startTime = uint64(_startTime);
@@ -517,9 +527,7 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
      */
     function setAuctionPrice( uint256 _minimumPrice) external {
         require(hasAdminRole(msg.sender));
-
         require(_minimumPrice > 0, "HyperbolicAuction: minimum price must be greater than 0"); 
-
         require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
         marketPrice.minimumPrice = uint128(_minimumPrice);
@@ -534,7 +542,6 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
     function setAuctionWallet(address payable _wallet) external {
         require(hasAdminRole(msg.sender));
         require(_wallet != address(0), "HyperbolicAuction: wallet is the zero address");
-        require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
         wallet = _wallet;
 

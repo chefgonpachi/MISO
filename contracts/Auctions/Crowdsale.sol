@@ -337,7 +337,10 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      */
     function finalize() public nonReentrant {
         require(            
-            hasAdminRole(msg.sender) || hasSmartContractRole(msg.sender) || finalizeTimeExpired(),
+            hasAdminRole(msg.sender) 
+            || wallet == msg.sender
+            || hasSmartContractRole(msg.sender) 
+            || finalizeTimeExpired(),
             "Crowdsale: sender must be an admin"
         );
         MarketStatus storage status = marketStatus;
@@ -425,16 +428,23 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     // Documents
     //--------------------------------------------------------
 
-    function setDocument(bytes32 _name, string calldata _uri, bytes32 _documentHash) external {
+    function setDocument(string calldata _name, string calldata _data) external {
         require(hasAdminRole(msg.sender) );
-        _setDocument( _name, _uri, _documentHash);
+        _setDocument( _name, _data);
     }
 
-    function removeDocument(bytes32 _name) external {
+    function setDocuments(string[] calldata _name, string[] calldata _data) external {
+        require(hasAdminRole(msg.sender) );
+        uint256 numDocs = _name.length;
+        for (uint256 i = 0; i < numDocs; i++) {
+            _setDocument( _name[i], _data[i]);
+        }
+    }
+
+    function removeDocument(string calldata _name) external {
         require(hasAdminRole(msg.sender));
         _removeDocument(_name);
     }
-
 
     //--------------------------------------------------------
     // Point Lists
@@ -508,8 +518,6 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     function setAuctionWallet(address payable _wallet) external {
         require(hasAdminRole(msg.sender));
         require(_wallet != address(0), "Crowdsale: wallet is the zero address");
-        require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
-
         wallet = _wallet;
 
         emit AuctionWalletUpdated(_wallet);

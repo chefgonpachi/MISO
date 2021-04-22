@@ -116,6 +116,5 @@ CONTRACTS = {
         "access_control":"",
         "masterchef_template":"",
         "farm_factory":""
-
     }
 }

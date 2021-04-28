@@ -34,7 +34,7 @@ def main():
     # MISOLiquidityLauncher
     weth_token = deploy_weth_token()
 
-    pool_liquidity_template = deploy_pool_liquidity_template()    
+    pool_liquidity_template = deploy_pool_liquidity_template()
     miso_launcher = deploy_miso_launcher(access_control, weth_token)
     if miso_launcher.launcherTemplateId() == 0:
         miso_launcher.addLiquidityLauncherTemplate(
@@ -50,18 +50,18 @@ def main():
     # Create mintable for testing
 
     recipe_02 = MISORecipe02.deploy(
-        miso_token_factory, 
-        weth_token, 
-        miso_market, 
-        miso_launcher, 
-        uniswap_factory, 
-        farm_factory, 
+        miso_token_factory,
+        weth_token,
+        miso_market,
+        miso_launcher,
+        uniswap_factory,
+        farm_factory,
         {"from": accounts[0]}
     )
 
     # recipe_02_address = web3.toChecksumAddress(0x3FD2f53bA85345E17aF41e845f1c41014962db5F)
     # recipe_02 = MISORecipe02.at(recipe_02_address)
-    
+
     # Access control admin must set the smart contract roles
     # user_access_control.addSmartContractRole(recipe_02, {'from': accounts[0]})
 
@@ -74,7 +74,7 @@ def main():
     startTime = chain.time() + 50
     endTime = chain.time() + 1000
     market_rate = 100
-    market_goal = 200 
+    market_goal = 200
 
     launchwindow = 3 * 24 * 60 * 60
     deadline = 200
@@ -106,8 +106,8 @@ def main():
         operator,
 
         deadline,
-        launchwindow, 
-        locktime, 
+        launchwindow,
+        locktime,
         tokensToLiquidity,
 
         rewards_per_block,

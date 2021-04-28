@@ -192,6 +192,5 @@ CONTRACTS = {
         "miso_helper":"",
         "miso_dev":"",
         "bento_box":""
-
     }
 }

@@ -239,7 +239,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
         }
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -293,7 +293,6 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      * @dev Withdraw tokens only after crowdsale ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
-    // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
     function withdrawTokens(address payable beneficiary) public   nonReentrant  {    
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "Crowdsale: not finalized");
@@ -301,14 +300,14 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "Crowdsale: no tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "Crowdsale: auction has not finished yet");
             uint256 accountBalance = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, accountBalance);
+            _safeTokenPayment(paymentCurrency, beneficiary, accountBalance);
         }
     }
 
@@ -351,29 +350,34 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
             require(auctionEnded(), "Crowdsale: Has not finished yet"); 
-            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
             /// @dev Transfer unsold tokens to wallet.
             uint256 soldTokens = _getTokenAmount(uint256(status.commitmentsTotal));
             uint256 unsoldTokens = uint256(info.totalTokens).sub(soldTokens);
             if(unsoldTokens > 0) {
-                _tokenPayment(auctionToken, wallet, unsoldTokens);
+                _safeTokenPayment(auctionToken, wallet, unsoldTokens);
             }
         } else if ( block.timestamp <= uint256(info.startTime) ) {
             /// @dev Cancelled Auction
             /// @dev You can cancel the auction before it starts
             require( uint256(status.commitmentsTotal) == 0, "Crowdsale: Funds already raised" );
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(auctionEnded(), "Crowdsale: Has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         }
 
         status.finalized = true;
 
         emit AuctionFinalized();
     }
+
+    function tokenPrice() public view returns (uint256) {
+        return uint256(1e18).mul(1e18).div(uint256(marketPrice.rate));   
+    }
+
 
     /**
      * @notice Calculates the number of tokens to purchase.
@@ -410,7 +414,8 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     }
 
     /**
-     * @return Returns true if market has been finalized
+     * @notice Checks if the sale has been finalised.
+     * @return bool True if sale has been finalised.
      */
     function finalized() public view returns (bool) {
         return marketStatus.finalized;

@@ -276,7 +276,7 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         }
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -414,17 +414,17 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
         } else if ( block.timestamp <= uint256(marketInfo.startTime) ) {
             /// @dev Cancelled Auction
             /// @dev You can cancel the auction before it starts
             require( uint256(status.commitmentsTotal) == 0, "DutchAuction: auction already committed" );
-            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         }
         status.finalized = true;
         emit AuctionFinalized();
@@ -448,14 +448,14 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
     }
 

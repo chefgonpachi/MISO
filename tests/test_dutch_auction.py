@@ -4,7 +4,6 @@ from brownie.convert import to_address
 import pytest
 from brownie import Contract
 from settings import *
-from test_pool_liquidity_02 import _deposit_eth, _deposit_token, _pool_liquidity_02_helper
 
 # GP: What if the token is not minable during an auction? Should commit tokens to auction
 
@@ -306,66 +305,7 @@ def test_dutch_auction_commit_tokens(dutch_auction_pay_by_token,fixed_token_paym
         tx = dutch_auction_pay_by_token.commitEth(token_buyer, True, {"from": token_buyer, "value":eth_to_transfer})
 
 
-###########################
-#Pool Liquidity Test
-###########################
 
-def test_pool_liquidity(dutch_auction_cal_pool_eth,_pool_liquidity_02_eth, weth_token, fixed_token_cal):
-    _pool_liquidity_02_eth.setMarket(dutch_auction_cal_pool_eth, {"from":accounts[0]})
-    
-    _deposit_eth(_pool_liquidity_02_eth,weth_token,ETH_TO_DEPOSIT, accounts[0])
-    
-    token_to_deposit = 10 * TENPOW18
-    _deposit_token_2(_pool_liquidity_02_eth, fixed_token_cal,token_to_deposit,accounts[5])
-    
-    chain.sleep(POOL_LAUNCH_DEADLINE+10)
-    _pool_liquidity_02_eth.finalizeMarketAndLaunchLiquidityPool({"from":accounts[0]})
-
-
-def test_pool_liquidity_two_tokens(dutch_auction_cal_pool_tokens, _pool_liquidity_02_tokens, fixed_token_cal,fixed_token2):
-    _pool_liquidity_02_tokens.setMarket(dutch_auction_cal_pool_tokens, {"from":accounts[0]})
-    
-    balance_before_token_1 = fixed_token_cal.balanceOf(accounts[5])
-    token_to_deposit = 10 * TENPOW18
-    _deposit_token_1(_pool_liquidity_02_tokens, fixed_token_cal, token_to_deposit, accounts[5])
-    balance_after_token_1 = fixed_token_cal.balanceOf(accounts[5])
-    assert balance_before_token_1 - balance_after_token_1  == (POOL_LIQUIDITY_PERCENT / 10000) * token_to_deposit
-
-    balance_before_token_2 = fixed_token2.balanceOf(accounts[0])
-    token_to_deposit = 10 * TENPOW18
-    _deposit_token_2(_pool_liquidity_02_tokens, fixed_token2, token_to_deposit, accounts[0])
-    balance_after_token_2 = fixed_token2.balanceOf(accounts[0])
-    assert balance_before_token_2- balance_after_token_2 == token_to_deposit
-
-    chain.sleep(POOL_LAUNCH_DEADLINE+10)
-    liquidity_generated = _pool_liquidity_02_tokens.finalizeMarketAndLaunchLiquidityPool({"from": accounts[0]}).return_value
-    assert liquidity_generated > 1
-
-@pytest.fixture(scope='function')
-def _pool_liquidity_02_eth(PoolLiquidity02, public_access_controls, fixed_token_cal, weth_token, uniswap_factory):
-    isEth = True
-    pool_liquidity = _pool_liquidity_02_helper(PoolLiquidity02,isEth, public_access_controls,weth_token,fixed_token_cal,uniswap_factory)    
-    return pool_liquidity
-
-@pytest.fixture(scope='function')
-def _pool_liquidity_02_tokens(PoolLiquidity02, public_access_controls, fixed_token_cal, fixed_token2, uniswap_factory):
-    isEth = False
-    pool_liquidity = _pool_liquidity_02_helper(PoolLiquidity02, isEth, public_access_controls,fixed_token_cal,fixed_token2,uniswap_factory)    
-    return pool_liquidity
-
-
-def _deposit_eth(pool_liquidity_02, weth_token, amount, depositor):
-    pool_liquidity_02.depositETH({"from": depositor, "value": amount})
-    
-def _deposit_token_1(pool_liquidity_02, token, amount, depositor):
-    token.approve(pool_liquidity_02, amount, {"from": depositor})
-    tx = pool_liquidity_02.depositToken1(amount, {"from": depositor})
-    assert "Transfer" in tx.events
-
-def _deposit_token_2(pool_liquidity_02, token, amount, depositor):
-    token.approve(pool_liquidity_02, amount, {"from": depositor})
-    tx = pool_liquidity_02.depositToken2(amount, {"from": depositor})
-    assert "Transfer" in tx.events
 
 
 
@@ -429,11 +369,6 @@ def dutch_auction_cal_pool_eth(DutchAuction, fixed_token_cal, _pool_liquidity_02
     dutch_auction = _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02_eth)
     return dutch_auction
 
-@pytest.fixture(scope='function', autouse=True)
-def dutch_auction_cal_pool_tokens(DutchAuction, fixed_token_cal, _pool_liquidity_02_tokens):
-    dutch_auction = _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02_tokens)
-    return dutch_auction
-
 def _dutch_auction_cal(DutchAuction, fixed_token_cal, _pool_liquidity_02):
     start_price = 1 * TENPOW18
     auction_tokens = 100 * TENPOW18
@@ -482,3 +417,23 @@ def fixed_token_cal(FixedToken):
     fixed_token_cal.initToken(name, symbol, owner, 1000*TENPOW18, {'from': owner})
 
     return fixed_token_cal
+
+@pytest.fixture(scope='function')
+def _pool_liquidity_02_eth(PoolLiquidity02, public_access_controls, fixed_token_cal, weth_token, uniswap_factory):
+    isEth = True
+    pool_liquidity = _pool_liquidity_02_helper(PoolLiquidity02,isEth, public_access_controls,weth_token,fixed_token_cal,uniswap_factory)    
+    return pool_liquidity
+
+def _pool_liquidity_02_helper(PoolLiquidity02, isEth, public_access_controls, token_1, token_2, uniswap_factory):
+
+    deadline = chain.time() + POOL_LAUNCH_DEADLINE
+    launch_window = POOL_LAUNCH_WINDOW
+    locktime = POOL_LAUNCH_LOCKTIME
+    liquidity_percent = POOL_LIQUIDITY_PERCENT
+    is_token1_weth = isEth
+    pool_liquidity = PoolLiquidity02.deploy({"from": accounts[0]})
+    pool_liquidity.initPoolLiquidity(
+    token_1, token_2, uniswap_factory, 
+    accounts[0], accounts[0], liquidity_percent, deadline,locktime)
+
+    return pool_liquidity

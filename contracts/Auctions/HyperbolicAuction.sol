@@ -295,10 +295,9 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
         if(readAndAgreedToMarketParticipationAgreement == false) {
             revertBecauseUserDidNotProvideAgreement();
         }
-        require(_amount> 0, "HyperbolicAuction: Value must be higher than 0");
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -398,17 +397,17 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
         } else if ( block.timestamp <= uint256(info.startTime) ) {
             /// @dev Cancelled Auction
             /// @dev You can cancel the auction before it starts
             require( uint256(status.commitmentsTotal) == 0, "HyperbolicAuction: auction already committed" );
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > uint256(info.endTime), "HyperbolicAuction: auction has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         }
         status.finalized = true;
         emit AuctionFinalized();
@@ -441,14 +440,14 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
             require(tokensToClaim > 0, "HyperbolicAuction: no tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
 
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "HyperbolicAuction: auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
     }
 

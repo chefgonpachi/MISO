@@ -186,7 +186,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             revertBecauseUserDidNotProvideAgreement();
         }
         require(_amount> 0, "BatchAuction: Value must be higher than 0");
-        _safeTransferFrom(paymentCurrency, _from, _amount);
+        _safeTransferFrom(paymentCurrency, msg.sender, _amount);
         _addCommitment(_from, _amount);
 
     }
@@ -246,12 +246,12 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, uint256(marketStatus.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(marketStatus.commitmentsTotal));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
-            _tokenPayment(auctionToken, wallet, marketInfo.totalTokens);
+            _safeTokenPayment(auctionToken, wallet, marketInfo.totalTokens);
         }
         marketStatus.finalized = true;
         emit AuctionFinalized();
@@ -271,7 +271,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             require(tokensToClaim > 0, "BatchAuction: No tokens to claim");
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
 
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
@@ -279,7 +279,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             uint256 fundsCommitted = commitments[beneficiary];
             require(fundsCommitted > 0, "BatchAuction: No funds committed");
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
     }
 
@@ -305,12 +305,19 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
 
     /**
      * @notice Checks if the auction has ended.
-     * @return True if current time is greater than auction end time.
+     * @return bool True if current time is greater than auction end time.
      */
     function auctionEnded() public view returns (bool) {
         return block.timestamp > marketInfo.endTime;
     }
 
+    /**
+     * @notice Checks if the auction has been finalised.
+     * @return bool True if auction has been finalised.
+     */
+    function finalized() public view returns (bool) {
+        return marketStatus.finalized;
+    }
 
     /// @notice Returns true if 7 days have passed since the end of the auction
     function finalizeTimeExpired() public view returns (bool) {

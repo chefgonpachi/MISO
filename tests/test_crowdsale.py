@@ -6,104 +6,67 @@ from brownie import Contract
 from settings import *
 from test_pool_liquidity import deposit_eth, deposit_tokens
 
-
 # reset the chain after every test case
 @pytest.fixture(autouse=True)
 def isolation(fn_isolation):
     pass
 
-# Crowdsale with a simple operator
-@pytest.fixture(scope='module', autouse=True)
+
+
+@pytest.fixture(scope='function', autouse=True)
 def crowdsale(Crowdsale, mintable_token):
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
-    mintable_token.mint(accounts[0], AUCTION_TOKENS, {"from": accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == AUCTION_TOKENS
-
-    start_time = chain.time() + 10
-    end_time = start_time + CROWDSALE_TIME
-    wallet = accounts[4]
     operator = accounts[0]
-    
-    mintable_token.approve(crowdsale, AUCTION_TOKENS, {"from": accounts[0]})
-    crowdsale.initCrowdsale(
-        accounts[0],
-        mintable_token,
-        ETH_ADDRESS,
-        CROWDSALE_TOKENS,
-        start_time,
-        end_time,
-        CROWDSALE_RATE,
-        CROWDSALE_GOAL,
-        operator,
-        ZERO_ADDRESS,
-        wallet,
-        {"from": accounts[0]}
-    )
-    assert mintable_token.balanceOf(crowdsale) == AUCTION_TOKENS
-    chain.sleep(10)
+    TOKEN_QUANTITY = CROWDSALE_TOKENS
+    RATE = CROWDSALE_RATE
+    crowdsale = _crowdsale_helper(Crowdsale,mintable_token, TOKEN_QUANTITY, RATE, ETH_ADDRESS, operator)
     return crowdsale
 
-# Crowdsale with token payment
-@pytest.fixture(scope='module', autouse=True)
-def crowdsale_2(Crowdsale, mintable_token, fixed_token2):
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
-    mintable_token.mint(accounts[0], CROWDSALE_TOKENS_2, {"from": accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == CROWDSALE_TOKENS_2
-
-    start_time = chain.time() + 10
-    end_time = start_time + CROWDSALE_TIME
+@pytest.fixture(scope='function', autouse=True)
+def crowdsale_2(Crowdsale,mintable_token, fixed_token2):
     operator = accounts[0]
-    wallet = accounts[4]
-    
-    mintable_token.approve(crowdsale, CROWDSALE_TOKENS_2, {"from": accounts[0]})
-    crowdsale.initCrowdsale(
-        accounts[0],
-        mintable_token,
-        fixed_token2,
-        CROWDSALE_TOKENS_2,
-        start_time,
-        end_time,
-        CROWDSALE_RATE_2,
-        CROWDSALE_GOAL,
-        operator,
-        ZERO_ADDRESS,
-        wallet,
-        {"from": accounts[0]}
-    )
-    assert mintable_token.balanceOf(crowdsale) == CROWDSALE_TOKENS_2
-    chain.sleep(10)
-    return crowdsale 
+    TOKEN_QUANTITY = CROWDSALE_TOKENS_2
+    RATE = CROWDSALE_RATE_2
+    crowdsale = _crowdsale_helper(Crowdsale, mintable_token,TOKEN_QUANTITY, RATE,fixed_token2,operator)
+    return crowdsale
 
-# Crowdsale with a pool liquidity operator
-@pytest.fixture(scope='module', autouse=True)
-def crowdsale_3(Crowdsale, mintable_token, pool_liquidity):
-    crowdsale = Crowdsale.deploy({"from": accounts[0]})
-    mintable_token.mint(accounts[0], AUCTION_TOKENS, {"from": accounts[0]})
-    assert mintable_token.balanceOf(accounts[0]) == AUCTION_TOKENS
-
-    start_time = chain.time() + 10
-    end_time = start_time + CROWDSALE_TIME
-    wallet = accounts[4]
+@pytest.fixture(scope='function', autouse=True)
+def crowdsale_3(Crowdsale,mintable_token,pool_liquidity):
     operator = pool_liquidity
+    TOKEN_QUANTITY = CROWDSALE_TOKENS
+    RATE = CROWDSALE_RATE
+    crowdsale = _crowdsale_helper(Crowdsale, mintable_token,TOKEN_QUANTITY, RATE, ETH_ADDRESS,operator)
+    return crowdsale
     
-    mintable_token.approve(crowdsale, AUCTION_TOKENS, {"from": accounts[0]})
+# Crowdsale with a simple operator
+def _crowdsale_helper(Crowdsale, mintable_token, TOKENS_QUANTITY, RATE, PAYMENT_CURRENCY, operator):
+    crowdsale = Crowdsale.deploy({"from": accounts[0]})
+    mintable_token.mint(accounts[0], TOKENS_QUANTITY, {"from": accounts[0]})
+    assert mintable_token.balanceOf(accounts[0]) == TOKENS_QUANTITY
+
+    start_time = chain.time() + 10
+    end_time = start_time + CROWDSALE_TIME
+    wallet = accounts[4]
+    operator = operator
+    
+    mintable_token.approve(crowdsale, TOKENS_QUANTITY, {"from": accounts[0]})
     crowdsale.initCrowdsale(
         accounts[0],
         mintable_token,
-        ETH_ADDRESS,
-        CROWDSALE_TOKENS,
+        PAYMENT_CURRENCY,
+        TOKENS_QUANTITY,
         start_time,
         end_time,
-        CROWDSALE_RATE,
+        RATE,
         CROWDSALE_GOAL,
         operator,
         ZERO_ADDRESS,
         wallet,
         {"from": accounts[0]}
     )
-    assert mintable_token.balanceOf(crowdsale) == AUCTION_TOKENS
+    assert mintable_token.balanceOf(crowdsale) == TOKENS_QUANTITY
     chain.sleep(10)
     return crowdsale
+
 
 #####################################
 # Helper Functions 
@@ -469,10 +432,10 @@ def test_crowdsale_withdraw_tokens_goal_reached(crowdsale, buy_tokens, mintable_
     
 
 ################ Withdraw Token Test##########################
-def test_crowdsale_3_withdraw_tokens_after_finalize_expires(crowdsale_3, mintable_token):
+def test_crowdsale_3_withdraw_tokens_after_finalize_expires(crowdsale_3, mintable_token, pool_liquidity):
     crowdsale_3 = _buy_tokens(crowdsale_3)
     chain.sleep(CROWDSALE_TIME + 14*24*3600)
-    tx = crowdsale_3.finalize({"from": accounts[5]})
+    tx = crowdsale_3.finalize({"from": pool_liquidity})
     assert 'AuctionFinalized' in tx.events
     _withdraw_tokens(crowdsale_3, mintable_token)
 
@@ -611,3 +574,35 @@ def test_crowdsale_2_buy_tokens_with_ETH_for_currency_token(crowdsale_2, fixed_t
     eth_to_transfer = 5 * TENPOW18
     with reverts():
             crowdsale_2.commitEth(token_buyer, True, {"value": eth_to_transfer, "from": token_buyer})
+
+##################################################
+# Documentation Test
+##################################################
+def test_set_document(crowdsale):
+    tx = crowdsale.setDocument(DOCUMENT_NAME, DOCUMENT_DATA, {"from": accounts[0]})
+    
+    (_data, _lastModified) = crowdsale.getDocument(DOCUMENT_NAME)
+    assert _data == DOCUMENT_DATA
+    assert "DocumentUpdated" in tx.events
+
+def test_set_document_zero_value(crowdsale):
+    with reverts("Zero name is not allowed"):
+        crowdsale.setDocument("", DOCUMENT_DATA, {"from": accounts[0]})
+
+def test_set_document_zero_data_length(crowdsale):
+    with reverts("Should not be a empty data"):
+        crowdsale.setDocument(DOCUMENT_NAME,"", {"from": accounts[0]})
+
+def test_crowdsale_commit_eth_no_agreement(crowdsale):
+    token_buyer =  accounts[5]
+    eth_to_transfer = 5 * TENPOW18
+    with reverts("No agreement provided, please review the smart contract before interacting with it"):
+        crowdsale.commitEth(token_buyer, False, {"value": eth_to_transfer, "from": accounts[5]})
+
+def test_crowdsale_commit_tokens_no_agreement(crowdsale_2, fixed_token2):
+    token_to_transfer = 5 * TENPOW18
+    fixed_token2.transfer(accounts[1], token_to_transfer, {"from": accounts[0]})
+    token_buyer =  accounts[1]
+    fixed_token2.approve(crowdsale_2, token_to_transfer, {"from": accounts[1]})
+    with reverts("No agreement provided, please review the smart contract before interacting with it"):
+        tx = crowdsale_2.commitTokens(token_to_transfer, False, {"from": token_buyer})

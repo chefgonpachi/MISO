@@ -461,11 +461,11 @@ def miso_recipe_02(MISORecipe02,miso_access_controls,token_factory_sushi, weth_t
     
     return miso_recipe_02
 
-@pytest.fixture(scope='module', autouse=True)
-def miso_recipe_03(MISORecipe03,weth_token,uniswap_factory,farm_factory):
-    miso_recipe_03 = MISORecipe03.deploy(weth_token,uniswap_factory,farm_factory, {"from":accounts[0]})
+# @pytest.fixture(scope='module', autouse=True)
+# def miso_recipe_03(MISORecipe03,weth_token,uniswap_factory,farm_factory):
+#     miso_recipe_03 = MISORecipe03.deploy(weth_token,uniswap_factory,farm_factory, {"from":accounts[0]})
     
-    return miso_recipe_03
+#     return miso_recipe_03
 
 #####################################
 # Token Lock
@@ -477,3 +477,10 @@ def token_lock(TokenVault,fixed_token2):
     return token_lock
 
 
+#####################################
+#Documentation
+#####################################
+@pytest.fixture(scope='module', autouse=True)
+def document(Documents):
+    document = Documents.deploy({"from": accounts[0]})
+    return document

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+
 pragma solidity 0.6.12;
 
 // Audit on 5-Jan-2021 by Keno and BoringCrypto

@@ -12,7 +12,6 @@ pragma solidity 0.6.12;
 //----------------------------------------------------------------------------------
 
 
-import "./Utils/CloneFactory.sol";
 import "../interfaces/IMisoMarket.sol";
 import "../interfaces/IERC20.sol";
 import "./Access/MISOAccessControls.sol";

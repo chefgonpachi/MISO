@@ -14,6 +14,12 @@ def load_accounts():
         # 0x1F3389Fc75Bf55275b03347E4283f24916F402f7
         accounts.add('fa3c06c67426b848e6cef377a2dbd2d832d3718999fbe377236676c9216d8ec0')
 
+    if network.show_active() in ['bsc-main', 'bsc-test']:
+        # 0x24a74011101564cC754C64Ad8b260e98b63aBAd5
+        accounts.add('3894dbdbcc8c341b8bfdb95322ed22e1e94cd2f0385d0d52b43509a98ec06000')
+        # 0xd8B680B6FBdf1254cF91dF2e0CBe32E303dFfC32
+        accounts.add('3894dbdbcc8c341b8bfdb95322ed22e1e94cd2f0385d0d52b43509a98ec06001')
+
 def publish():
     if network.show_active() == "development":
         return False 

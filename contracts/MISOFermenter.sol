@@ -12,9 +12,10 @@ pragma solidity 0.6.12;
 //
 //----------------------------------------------------------------------------------
 
-// GP: Token escrow, lock up tokens for a period of time
 import "./Utils/CloneFactory.sol";
 import "./Access/MISOAccessControls.sol";
+
+/// @notice  Token escrow, lock up tokens for a period of time
 
 contract MISOFermenter is CloneFactory {
 

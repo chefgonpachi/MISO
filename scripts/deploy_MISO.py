@@ -51,6 +51,8 @@ def main():
     # MISOFarmFactory
     masterchef_template = deploy_masterchef_template()    
     farm_factory = deploy_farm_factory(access_control)
+    print("farm_factory.farmTemplateId():", farm_factory.farmTemplateId())
+    print("accounts[0]:", accounts[0])
     if farm_factory.farmTemplateId() == 0:
         farm_factory.addFarmTemplate(masterchef_template, {"from": accounts[0]} )
 

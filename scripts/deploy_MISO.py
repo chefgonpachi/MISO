@@ -4,6 +4,7 @@ from .contracts import *
 from .contract_addresses import *
 import time
 
+
 def main():
     load_accounts()
 
@@ -13,7 +14,7 @@ def main():
 
     # GP: Split into public and miso access control
     access_control = deploy_access_control(operator)
-    
+
     # Setup MISOTokenFactory
     miso_token_factory = deploy_miso_token_factory(access_control)
     mintable_token_template = deploy_mintable_token_template()
@@ -25,7 +26,7 @@ def main():
         miso_token_factory.addTokenTemplate(fixed_token_template , {'from': operator} )
         miso_token_factory.addTokenTemplate(sushi_token_template , {'from': operator} )
 
-    # Setup MISO Market  
+    # Setup MISO Market
     crowdsale_template = deploy_crowdsale_template()
     dutch_auction_template = deploy_dutch_auction_template()
     batch_auction_template = deploy_batch_auction_template()
@@ -49,11 +50,12 @@ def main():
         miso_launcher.addLiquidityLauncherTemplate(pool_liquidity_template , {"from": accounts[0]} )
 
     # MISOFarmFactory
-    masterchef_template = deploy_masterchef_template()    
+    masterchef_template = deploy_masterchef_template()
     farm_factory = deploy_farm_factory(access_control)
     print("farm_factory.farmTemplateId():", farm_factory.farmTemplateId())
     print("accounts[0]:", accounts[0])
     if farm_factory.farmTemplateId() == 0:
-        farm_factory.addFarmTemplate(masterchef_template, {"from": accounts[0]} )
+        farm_factory.addFarmTemplate(
+            masterchef_template, {"from": accounts[0]})
 
     miso_helper = deploy_miso_helper(access_control, miso_token_factory, miso_market, miso_launcher, farm_factory)    

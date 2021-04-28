@@ -4,6 +4,7 @@ from .contracts import *
 from .contract_addresses import *
 import time
 
+
 def main():
     load_accounts()
 
@@ -19,13 +20,15 @@ def main():
     # Setup MISOTokenFactory
     miso_token_factory = deploy_miso_token_factory(access_control)
     mintable_token_template = deploy_mintable_token_template()
-    if miso_token_factory.tokenTemplateId() == 0 :
-        miso_token_factory.addTokenTemplate(mintable_token_template, {'from': operator} )
+    if miso_token_factory.tokenTemplateId() == 0:
+        miso_token_factory.addTokenTemplate(
+            mintable_token_template, {'from': operator})
 
-    # Setup MISO Market  
+    # Setup MISO Market
     crowdsale_template = deploy_crowdsale_template()
     dutch_auction_template = deploy_dutch_auction_template()
-    miso_market = deploy_miso_market(access_control, [dutch_auction_template, crowdsale_template])
+    miso_market = deploy_miso_market(
+        access_control, [dutch_auction_template, crowdsale_template])
     uniswap_factory = deploy_uniswap_factory()
 
     # MISOLiquidityLauncher
@@ -34,14 +37,15 @@ def main():
     pool_liquidity_template = deploy_pool_liquidity_template()    
     miso_launcher = deploy_miso_launcher(access_control, weth_token)
     if miso_launcher.launcherTemplateId() == 0:
-        miso_launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
+        miso_launcher.addLiquidityLauncherTemplate(
+            pool_liquidity_template, {"from": accounts[0]})
 
     # MISOFarmFactory
-    masterchef_template = deploy_masterchef_template()    
+    masterchef_template = deploy_masterchef_template()
     farm_factory = deploy_farm_factory(access_control)
     if farm_factory.farmTemplateId() == 0:
-        farm_factory.addFarmTemplate(masterchef_template, {"from": accounts[0]} )
-
+        farm_factory.addFarmTemplate(
+            masterchef_template, {"from": accounts[0]})
 
     # Create mintable for testing
 
@@ -80,7 +84,7 @@ def main():
     # Create new Farm
     rewards_per_block = 1 * TENPOW18
     # Define the start time relative to sales
-    start_block =  len(chain) + 10
+    start_block = len(chain) + 10
     dev_addr = wallet
     tokensToFarm = 100 * TENPOW18
     alloc_point = 10
@@ -94,7 +98,7 @@ def main():
         tokensToMarket,
         paymentCurrency,
 
-        startTime, 
+        startTime,
         endTime,
         market_rate,
         market_goal,
@@ -106,13 +110,12 @@ def main():
         locktime, 
         tokensToLiquidity,
 
-        rewards_per_block, 
+        rewards_per_block,
         start_block,
-        dev_addr, 
+        dev_addr,
         tokensToFarm,
         alloc_point,
         integratorFeeAccount, {'from': accounts[0]}
     )
     time.sleep(1)
     print("tx events: " + str(tx.events))
-

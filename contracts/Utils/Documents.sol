@@ -94,6 +94,7 @@ contract Documents {
      * @return string Name of the document name.
      */
     function getDocumentName(uint256 _index) external view returns (string memory) {
+        require(_index < _docNames.length, "Index out of bounds");
         return _docNames[_index];
     }
 

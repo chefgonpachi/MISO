@@ -15,7 +15,7 @@ import "./MISOAccessControls.sol";
 // Appropriated from BokkyPooBahs Fixed Supply Token Factory
 // ----------------------------------------------------------------------------
 
-contract PointListFactory is CloneFactory, SafeTransfer {
+contract ListFactory is CloneFactory, SafeTransfer {
     using SafeMath for uint;
 
     /// @notice Responsible for access rights to the contract.
@@ -52,7 +52,7 @@ contract PointListFactory is CloneFactory, SafeTransfer {
     event MinimumFeeUpdated(uint oldFee, uint newFee);
 
     /// @notice Event emitted when point list factory is initialised.
-    event MisoInitPointListFactory();
+    event MisoInitListFactory();
 
     /**
      * @notice Initializes point list factory variables.
@@ -60,20 +60,20 @@ contract PointListFactory is CloneFactory, SafeTransfer {
      * @param _pointListTemplate Point list template address.
      * @param _minimumFee Minimum fee number.
      */
-    function initPointListFactory(address _accessControls, address _pointListTemplate, uint256 _minimumFee) public  {
+    function initListFactory(address _accessControls, address _pointListTemplate, uint256 _minimumFee) external  {
         require(!initialised);
         accessControls = MISOAccessControls(_accessControls);
         pointListTemplate = _pointListTemplate;
         minimumFee = _minimumFee;
         initialised = true;
-        emit MisoInitPointListFactory();
+        emit MisoInitListFactory();
     }
 
     /**
      * @notice Gets the number of point lists created by factory.
      * @return uint Number of point lists.
      */
-    function numberOfChildren() public view returns (uint) {
+    function numberOfChildren() external view returns (uint) {
         return lists.length;
     }
 
@@ -81,8 +81,8 @@ contract PointListFactory is CloneFactory, SafeTransfer {
      * @notice Deprecates factory.
      * @param _newAddress Blank address.
      */
-    function deprecateFactory(address _newAddress) public {
-        require(accessControls.hasAdminRole(msg.sender), "PointListFactory: Sender must be admin");
+    function deprecateFactory(address _newAddress) external {
+        require(accessControls.hasAdminRole(msg.sender), "ListFactory: Sender must be admin");
         require(newAddress == address(0));
         emit FactoryDeprecated(_newAddress);
         newAddress = _newAddress;
@@ -92,8 +92,8 @@ contract PointListFactory is CloneFactory, SafeTransfer {
      * @notice Sets minimum fee.
      * @param _minimumFee Minimum fee number.
      */
-    function setMinimumFee(uint256 _minimumFee) public {
-        require(accessControls.hasAdminRole(msg.sender), "PointListFactory: Sender must be admin");
+    function setMinimumFee(uint256 _minimumFee) external {
+        require(accessControls.hasAdminRole(msg.sender), "ListFactory: Sender must be admin");
         emit MinimumFeeUpdated(minimumFee, _minimumFee);
         minimumFee = _minimumFee;
     }
@@ -102,7 +102,7 @@ contract PointListFactory is CloneFactory, SafeTransfer {
      * @notice Sets dividend address.
      * @param _divaddr Dividend address.
      */
-    function setDividends(address payable _divaddr) public  {
+    function setDividends(address payable _divaddr) external  {
         require(accessControls.hasAdminRole(msg.sender), "MISOTokenFactory: Sender must be Admin");
         misoDiv = _divaddr;
     }
@@ -119,13 +119,12 @@ contract PointListFactory is CloneFactory, SafeTransfer {
         address[] memory _accounts,
         uint256[] memory _amounts
     )
-        public payable returns (address pointList)
+        external payable returns (address pointList)
     {
         require(msg.value >= minimumFee);
         pointList = createClone(pointListTemplate);
         if (_accounts.length > 0) {
             IPointList(pointList).initPointList(address(this));
-            MISOAccessControls(pointList).addOperatorRole(address(this));
             IPointList(pointList).setPoints(_accounts, _amounts);
             MISOAccessControls(pointList).addAdminRole(_listOwner);
             MISOAccessControls(pointList).removeAdminRole(address(this));
@@ -146,8 +145,8 @@ contract PointListFactory is CloneFactory, SafeTransfer {
      * @param _tokens Number of tokens.
      * @return success True.
      */
-    function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) public returns (bool success) {
-        require(accessControls.hasAdminRole(msg.sender), "PointListFactory: Sender must be operator");
+    function transferAnyERC20Token(address _tokenAddress, uint256 _tokens) external returns (bool success) {
+        require(accessControls.hasAdminRole(msg.sender), "ListFactory: Sender must be operator");
         _safeTransfer(_tokenAddress, misoDiv, _tokens);
         return true;
     }

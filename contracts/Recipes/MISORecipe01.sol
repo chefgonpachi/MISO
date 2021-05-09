@@ -129,7 +129,8 @@ contract MISORecipe01 {
         token.approve(address(misoMarket), tokensToMarket);
 
         // Scope for adding liquidity
-        IPoolLiquidity poolLiquidity = IPoolLiquidity(misoLauncher.createLiquidityLauncher(1));
+        uint256 templateId = misoLauncher.currentTemplateId(1);
+        IPoolLiquidity poolLiquidity = IPoolLiquidity(misoLauncher.createLauncher(templateId,address(token),0,address(0),""));
 
         {
         address operator = msg.sender;

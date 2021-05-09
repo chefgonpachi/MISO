@@ -11,19 +11,19 @@ pragma solidity 0.6.12;
 //
 //----------------------------------------------------------------------------------
 
-
 import "../interfaces/IMisoMarket.sol";
 import "../interfaces/IERC20.sol";
 import "./Access/MISOAccessControls.sol";
 import "./Utils/SafeTransfer.sol";
 
-import "../../interfaces/IBentoBoxFactory.sol";
+import "../interfaces/IBentoBoxFactory.sol";
 
 
 contract MISOMarket is SafeTransfer {
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
+    bytes32 public constant MARKET_MINTER_ROLE = keccak256("MARKET_MINTER_ROLE");
 
     /// @notice Whether market has been initialized or not.
     bool private initialised;
@@ -49,6 +49,9 @@ contract MISOMarket is SafeTransfer {
     /// @notice Mapping from market template address to market template id.
     mapping(address => uint256) private auctionTemplateToId;
 
+    // /// @notice mapping from template type to template id
+    mapping(uint256 => uint256) public currentTemplateId;
+
     /// @notice Mapping from auction created through this contract to Auction struct.
     mapping(address => Auction) public auctionInfo;
 
@@ -60,6 +63,9 @@ contract MISOMarket is SafeTransfer {
 
     /// @notice Minimum fee to create a farm through the factory.
     MarketFees public marketFees;
+
+    /// @notice Contract locked status. If locked, only minters can deploy
+    bool public locked;
 
     ///@notice Any donations if set are sent here.
     address payable public misoDiv;
@@ -76,9 +82,6 @@ contract MISOMarket is SafeTransfer {
     /// @notice Event emitted when auction is created using template id.
     event MarketCreated(address indexed owner, address indexed addr, address marketTemplate);
 
-    /// @notice event emitted when auction is created using template id
-    event MarketInitialized(address indexed addr, uint256 templateId, bytes data);
-
     constructor() public {
     }
 
@@ -89,17 +92,18 @@ contract MISOMarket is SafeTransfer {
      * @param _templates Initial array of MISOMarket templates.
      */
     function initMISOMarket(address _accessControls, address _bentoBox, address[] memory _templates) external {
-        /// @dev Maybe missing require message?
         require(!initialised);
-        accessControls = MISOAccessControls(_accessControls);
+        require(_accessControls != address(0), "initMISOMarket: accessControls cannot be set to zero");
+        require(_bentoBox != address(0), "initMISOMarket: bentoBox cannot be set to zero");
 
+        accessControls = MISOAccessControls(_accessControls);
         bentoBox = IBentoBoxFactory(_bentoBox);
 
         auctionTemplateId = 0;
         for(uint i = 0; i < _templates.length; i++) {
             _addAuctionTemplate(_templates[i]);
         }
-
+        locked = true;
         initialised = true;
         emit MisoInitMarket(msg.sender);
     }
@@ -115,6 +119,19 @@ contract MISOMarket is SafeTransfer {
         );
         marketFees.minimumFee = uint128(_amount);
     }
+
+    /**
+     * @notice Sets the factory to be locked or unlocked.
+     * @param _locked bool.
+     */
+    function setLocked(bool _locked) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOMarket: Sender must be admin"
+        );
+        locked = _locked;
+    }
+
 
     /**
      * @notice Sets integrator fee percentage.
@@ -135,10 +152,34 @@ contract MISOMarket is SafeTransfer {
      * @param _divaddr Dividend address.
      */
     function setDividends(address payable _divaddr) external {
-        require(accessControls.hasAdminRole(msg.sender), "MISOFarmFactory.setDev: Sender must be operator");
+        require(accessControls.hasAdminRole(msg.sender), "MISOMarket.setDev: Sender must be operator");
         require(_divaddr != address(0));
         misoDiv = _divaddr;
     }
+
+    /**
+     * @notice Sets the current template ID for any type.
+     * @param _templateType Type of template.
+     * @param _templateId The ID of the current template for that type
+     */
+    function setCurrentTemplateId(uint256 _templateType, uint256 _templateId) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOMarket: Sender must be admin"
+        );
+        currentTemplateId[_templateType] = _templateId;
+    }
+
+
+    /**
+     * @notice Used to check whether an address has the minter role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
+     */
+    function hasMarketMinterRole(address _address) public view returns (bool) {
+        return accessControls.hasRole(MARKET_MINTER_ROLE, _address);
+    }
+
 
     /**
      * @notice Creates a new MISOMarket from template _templateId and transfers fees.
@@ -146,13 +187,21 @@ contract MISOMarket is SafeTransfer {
      * @param _integratorFeeAccount Address to pay the fee to.
      * @return newMarket Market address.
      */
-    /// @dev GP: Add fees like Token Factory
     function deployMarket(
         uint256 _templateId,
         address payable _integratorFeeAccount
     )
         public payable returns (address newMarket)
     {
+        /// @dev If the contract is locked, only admin and minters can deploy. 
+        if (locked) {
+            require(accessControls.hasAdminRole(msg.sender) 
+                    || accessControls.hasMinterRole(msg.sender)
+                    || hasMarketMinterRole(msg.sender),
+                "MISOMarket: Sender must be minter if locked"
+            );
+        }
+
         MarketFees memory _marketFees = marketFees;
         address auctionTemplate = auctionTemplates[_templateId];
         require(msg.value >= uint256(_marketFees.minimumFee), "MISOMarket: Failed to transfer minimumFee");
@@ -163,6 +212,8 @@ contract MISOMarket is SafeTransfer {
             integratorFee = misoFee * uint256(_marketFees.integratorFeePct) / 1000;
             misoFee = misoFee - integratorFee;
         }
+
+        /// @dev Deploy using the BentoBox factory. 
         newMarket = bentoBox.deploy(auctionTemplate, "", false);
         auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
         auctions.push(address(newMarket));
@@ -194,7 +245,6 @@ contract MISOMarket is SafeTransfer {
     )
         external payable returns (address newMarket)
     {
-        emit MarketInitialized(address(newMarket), _templateId, _data);
         newMarket = deployMarket(_templateId, _integratorFeeAccount);
         if (_tokenSupply > 0) {
             _safeTransferFrom(_token, msg.sender, _tokenSupply);
@@ -218,6 +268,7 @@ contract MISOMarket is SafeTransfer {
      */
     function addAuctionTemplate(address _template) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOMarket: Sender must be operator"
         );
@@ -231,10 +282,10 @@ contract MISOMarket is SafeTransfer {
      */
     function removeAuctionTemplate(uint256 _templateId) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOMarket: Sender must be operator"
         );
-        // require(auctionTemplates[_templateId] != address(0), "MISOMarket: Auction template doesn't exist");
         address template = auctionTemplates[_templateId];
         auctionTemplates[_templateId] = address(0);
         delete auctionTemplateToId[template];
@@ -250,9 +301,14 @@ contract MISOMarket is SafeTransfer {
             auctionTemplateToId[_template] == 0,
             "MISOMarket: Template already exists"
         );
+        require(auctionTemplateToId[_template] == 0, "MISOMarket: Template already added");
+        uint256 templateType = IMisoMarket(_template).marketTemplate();
+        require(templateType > 0, "MISOMarket: Incorrect template code ");
         auctionTemplateId++;
+
         auctionTemplates[auctionTemplateId] = _template;
         auctionTemplateToId[_template] = auctionTemplateId;
+        currentTemplateId[templateType] = auctionTemplateId;
         emit AuctionTemplateAdded(_template, auctionTemplateId);
     }
 

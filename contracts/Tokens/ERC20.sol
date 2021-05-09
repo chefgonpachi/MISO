@@ -1,11 +1,9 @@
-
-
 pragma solidity 0.6.12;
 
 import "../OpenZeppelin/GSN/Context.sol";
 import "../OpenZeppelin/math/SafeMath.sol";
 import "../OpenZeppelin/utils/Address.sol";
-import "../../../interfaces/IERC20.sol";
+import "../../interfaces/IERC20.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -58,10 +56,10 @@ contract ERC20 is IERC20, Context {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    function _initERC20(string memory name, string memory symbol) internal {
+    function _initERC20(string memory name_, string memory symbol_) internal {
         require(!_initialized, "ERC20: token has already been initialized!");
-        _name = name;
-        _symbol = symbol;
+        _name = name_;
+        _symbol = symbol_;
         _decimals = 18;
         uint256 chainId;
         assembly {

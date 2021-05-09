@@ -91,7 +91,7 @@ contract TokenHelper {
         info.addr = _address;
         info.name = token.name();
         info.symbol = token.symbol();
-        // info.decimals = token.decimals();
+        info.decimals = token.decimals();
 
         return info;
     }
@@ -173,7 +173,7 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 templateId;
         uint256 rewardsPerBlock;
         uint256 bonusMultiplier;
-        TokenInfo rewardTokenInfo;
+        TokenInfo rewardToken;
         PoolInfo[] pools;
     }
 
@@ -183,7 +183,7 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 lastRewardBlock;
         uint256 accRewardsPerShare;
         uint256 totalStaked;
-        TokenInfo rewardTokenInfo;
+        TokenInfo stakingToken;
     }
 
     struct UserPoolInfo {
@@ -194,6 +194,13 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 lpAllowance;
         uint256 rewardDebt;
         uint256 pendingRewards;
+    }
+
+    struct UserPoolsInfo {
+        address farm;
+        uint256[] pids;
+        uint256[] totalStaked;
+        uint256[] pendingRewards;
     }
 
     function getPools(address _farm) public view returns(PoolInfo[] memory) {
@@ -209,6 +216,7 @@ contract FarmHelper is BaseHelper, TokenHelper {
                 pools[i].accRewardsPerShare
             ) = farm.poolInfo(i);
             pools[i].totalStaked = IERC20(pools[i].lpToken).balanceOf(_farm);
+            pools[i].stakingToken = getTokenInfo(pools[i].lpToken);
         }
         return pools;
     }
@@ -228,46 +236,69 @@ contract FarmHelper is BaseHelper, TokenHelper {
             infos[i].templateId = templateId;
             infos[i].rewardsPerBlock = farm.rewardsPerBlock();
             infos[i].bonusMultiplier = farm.bonusMultiplier();
-            infos[i].rewardTokenInfo = getTokenInfo(farm.rewards());
+            infos[i].rewardToken = getTokenInfo(farm.rewards());
             infos[i].pools = getPools(farmAddr);
         }
 
         return infos;
     }
 
-    function getUserPoolInfo(address _user, address _farm, uint256 _pid) public view returns(UserPoolInfo memory) {
+    function getFarmDetail(address _farm, address _user) 
+        public
+        view
+        returns(FarmInfo memory farmInfo, UserPoolInfo[] memory userInfos) 
+    {
         IFarm farm = IFarm(_farm);
+        farmInfo.addr = _farm;
+        farmInfo.templateId = farmFactory.getTemplateId(_farm);
+        farmInfo.rewardsPerBlock = farm.rewardsPerBlock();
+        farmInfo.bonusMultiplier = farm.bonusMultiplier();
+        farmInfo.rewardToken = getTokenInfo(farm.rewards());
+        farmInfo.pools = getPools(_farm);
 
-        uint256 poolLength = farm.poolLength();
-        PoolInfo[] memory pools = new PoolInfo[](poolLength);
-
-        (address lpToken,,,) = farm.poolInfo(_pid);
-        UserPoolInfo memory userInfo;
-
-        (userInfo.totalStaked, userInfo.rewardDebt) = farm.userInfo(_pid, _user);
-        userInfo.lpBalance = IERC20(lpToken).balanceOf(_user);
-        userInfo.lpAllowance = IERC20(lpToken).allowance(_user, _farm);
-        userInfo.pendingRewards = farm.pendingRewards(_pid, _user);
-        userInfo.farm = _farm;
-        userInfo.pid = _pid;
-
-        return userInfo;
+        if(_user != address(0)) {
+            PoolInfo[] memory pools = farmInfo.pools;
+            userInfos = new UserPoolInfo[](pools.length);
+            for(uint i = 0; i < pools.length; i++) {
+                UserPoolInfo memory userInfo = userInfos[i];
+                address stakingToken = pools[i].stakingToken.addr;
+                (userInfo.totalStaked, userInfo.rewardDebt) = farm.userInfo(i, _user);
+                userInfo.lpBalance = IERC20(stakingToken).balanceOf(_user);
+                userInfo.lpAllowance = IERC20(stakingToken).allowance(_user, _farm);
+                userInfo.pendingRewards = farm.pendingRewards(i, _user);
+                (userInfo.totalStaked,) = farm.userInfo(i, _user);
+                userInfo.farm = _farm;
+                userInfo.pid = i;
+                userInfos[i] = userInfo;
+            }
+        }
+        return (farmInfo, userInfos);
     }
 
-    function getUserPoolInfos(address _user, address _farm) public view returns(UserPoolInfo[] memory) {
-        IFarm farm = IFarm(_farm);
+    function getUserPoolsInfos(address _user) public view returns(UserPoolsInfo[] memory) {
+        uint256 numberOfFarms = farmFactory.numberOfFarms();
 
-        uint256 poolLength = farm.poolLength();
-        UserPoolInfo[] memory infos = new UserPoolInfo[](poolLength);
-        for(uint256 i = 0; i < poolLength; i++) {
-            (address lpToken,,,) = farm.poolInfo(i);
-            infos[i].lpBalance = IERC20(lpToken).balanceOf(_user);
-            infos[i].lpAllowance = IERC20(lpToken).allowance(_user, _farm);
-            infos[i].pendingRewards = farm.pendingRewards(i, _user);
-            infos[i].farm = _farm;
-            infos[i].pid = i;
+        UserPoolsInfo[] memory infos = new UserPoolsInfo[](numberOfFarms);
+
+        for (uint256 i = 0; i < numberOfFarms; i++) {
+            address farmAddr = farmFactory.farms(i);
+            IFarm farm = IFarm(farmAddr);
+            uint256 poolLength = farm.poolLength();
+            uint256[] memory totalStaked = new uint256[](poolLength);
+            uint256[] memory pendingRewards = new uint256[](poolLength);
+            uint256[] memory pids = new uint256[](poolLength);
+
+            for(uint256 j = 0; j < poolLength; j++) {
+                (address stakingToken,,,) = farm.poolInfo(j);
+                (totalStaked[j],) = farm.userInfo(j, _user);
+                pendingRewards[j] = farm.pendingRewards(j, _user);
+                pids[j] = j;
+            }
+            infos[i].totalStaked = totalStaked;
+            infos[i].pendingRewards = pendingRewards;
+            infos[i].pids = pids;
+            infos[i].farm = farmAddr;
         }
-
         return infos;
     }
 }

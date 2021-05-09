@@ -6,7 +6,7 @@ import "../../interfaces/IERC20.sol";
 /**
  * @notice TokenPointList - MISO Point List that references a given `token` balance to return approvals.
  */
-contract TokenPointList {
+contract TokenList {
     /// @notice Token contract for point list reference - can be ERC20, ERC721 or other tokens with `balanceOf()` check.
     IERC20 public token;
     

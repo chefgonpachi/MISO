@@ -84,7 +84,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
     // Bonus muliplier for early rewards makers.
     uint256 public bonusMultiplier;
     // MISOFarmFactory template id
-    uint256 public constant farmTemplate = 1;
+    uint256 public constant override farmTemplate = 1;
     // For initial setup
     bool private initialised;
 
@@ -107,7 +107,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         uint256 _startBlock,
         address _devaddr,
         address _admin
-    ) public override {
+    ) public {
         require(!initialised);
         rewards = IERC20(_rewards);
         totalAllocPoint = 0;
@@ -341,4 +341,12 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         require(msg.sender == devaddr, "dev: wut?");
         devaddr = _devaddr;
     }
+
+    // Update dev percentage.
+    function setDevPercentage(uint256 _devPercentage) public {
+        require(msg.sender == devaddr, "dev: wut?");
+        devPercentage = _devPercentage;
+    }
+
+    
 }

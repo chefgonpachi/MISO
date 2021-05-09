@@ -69,8 +69,6 @@ contract TokenVault is SafeTransfer {
         lockedItem[_id].owner = _withdrawer;
 
         allDepositIds.push(_id);
-        /* UserInfo storage user_token = users[_withdrawer];
-        user_token.lockToItems[_tokenAddress].push(item.nonce); */
 
         UserInfo storage userItem = users[_withdrawer];
         userItem.lockedItemsWithUser.add(_tokenAddress);

@@ -44,16 +44,18 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
-contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
+contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
     using BoringERC20 for IERC20;
 
     // MISOMarket template id.
-    uint256 public constant marketTemplate = 4;
+    /// @dev For different marketplace types, this must be incremented.
+    uint256 public constant override marketTemplate = 4;
     /// @dev The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -108,6 +110,8 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
 
     /// @notice Event for finalization of the auction.
     event AuctionFinalized();
+    /// @notice Event for cancellation of the auction.
+    event AuctionCancelled();
 
     /**
      * @notice Initializes main contract variables and transfers funds for the auction.
@@ -376,7 +380,7 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
      * @return Returns true if 14 days have passed since the end of the auction
      */
     function finalizeTimeExpired() public view returns (bool) {
-        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+        return uint256(marketInfo.endTime) + 7 days < block.timestamp;
     }
 
     /**
@@ -398,11 +402,6 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
             _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
-        } else if ( block.timestamp <= uint256(info.startTime) ) {
-            /// @dev Cancelled Auction
-            /// @dev You can cancel the auction before it starts
-            require( uint256(status.commitmentsTotal) == 0, "HyperbolicAuction: auction already committed" );
-            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
@@ -411,6 +410,23 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
         }
         status.finalized = true;
         emit AuctionFinalized();
+    }
+
+    /**
+     * @notice Cancel Auction
+     * @dev Admin can cancel the auction before it starts
+     */
+    function cancelAuction() public   nonReentrant  
+    {
+        require(hasAdminRole(msg.sender));
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "HyperbolicAuction: auction already finalized");
+        require( uint256(status.commitmentsTotal) == 0, "HyperbolicAuction: auction already committed" );
+
+        _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+
+        status.finalized = true;
+        emit AuctionCancelled();
     }
 
     /** 
@@ -553,14 +569,14 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
     /// Market Launchers
     ///--------------------------------------------------------
 
-    function init(bytes calldata _data) external payable {
+    function init(bytes calldata _data) external override payable {
     }
 
     /**
      * @notice Decodes and hands auction data to the initAuction function.
      * @param _data Encoded data for initialization.
      */
-    function initMarket(bytes calldata _data) public {
+    function initMarket(bytes calldata _data) public override {
         (
         address _funder,
         address _token,
@@ -639,5 +655,8 @@ contract HyperbolicAuction is MISOAccessControls, BoringBatchable, SafeTransfer,
     ) {
         return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
     }
-
+    
+    function getTotalTokens() external view returns(uint256) {
+        return uint256(marketInfo.totalTokens);
+    }
 }

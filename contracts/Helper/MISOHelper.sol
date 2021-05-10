@@ -7,7 +7,7 @@ import "../Access/MISOAccessControls.sol";
 
 
 //==================
-//    Uniswap       
+//    Uniswap V2       
 //==================
 
 interface IUniswapFactory {
@@ -30,30 +30,32 @@ interface IUniswapPair {
 //==================
 
 interface IDocument {
-    function getDocument(bytes32 _name) external view returns (string memory, bytes32, uint256);
-    function getAllDocuments() external view returns (bytes32[] memory);
+    function getDocument(string calldata _name) external view returns (string memory, uint256);
+    function getDocumentCount() external view returns (uint256);
+    function getDocumentName(uint256 index) external view returns (string memory);    
 }
 
 contract DocumentHepler {
     struct Document {
-        bytes32 docHash;
+        string name;
+        string data;
         uint256 lastModified;
-        string uri;
     }
 
     function getDocuments(address _document) public view returns(Document[] memory) {
         IDocument document = IDocument(_document);
-        bytes32[] memory documentNames = document.getAllDocuments();
-        Document[] memory documents = new Document[](documentNames.length);
+        uint256 documentCount = document.getDocumentCount();
 
-        for(uint256 i = 0; i < documentNames.length; i++) {
+        Document[] memory documents = new Document[](documentCount);
+
+        for(uint256 i = 0; i < documentCount; i++) {
+            string memory documentName = document.getDocumentName(i);
             (
-                documents[i].uri,
-                documents[i].docHash,
+                documents[i].data,
                 documents[i].lastModified
-            ) = document.getDocument(documentNames[i]);
+            ) = document.getDocument(documentName);
+            documents[i].name = documentName;
         }
-
         return documents;
     }
 }
@@ -89,9 +91,13 @@ contract TokenHelper {
         info.addr = _address;
         info.name = token.name();
         info.symbol = token.symbol();
-        // info.decimals = token.decimals();
+        info.decimals = token.decimals();
 
         return info;
+    }
+
+    function allowance(address _token, address _owner, address _spender) public view returns(uint256) {
+        return IERC20(_token).allowance(_owner, _spender);
     }
 
 }
@@ -167,7 +173,7 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 templateId;
         uint256 rewardsPerBlock;
         uint256 bonusMultiplier;
-        TokenInfo rewardTokenInfo;
+        TokenInfo rewardToken;
         PoolInfo[] pools;
     }
 
@@ -176,16 +182,13 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 allocPoint;
         uint256 lastRewardBlock;
         uint256 accRewardsPerShare;
-        // uint112 reserve0;
-        // uint112 reserve1;
         uint256 totalStaked;
-        // TokenInfo token0;
-        // TokenInfo token1;
-        TokenInfo rewardTokenInfo;
-        UserPoolInfo userInfo;
+        TokenInfo stakingToken;
     }
 
     struct UserPoolInfo {
+        address farm;
+        uint256 pid;
         uint256 totalStaked;
         uint256 lpBalance;
         uint256 lpAllowance;
@@ -193,42 +196,33 @@ contract FarmHelper is BaseHelper, TokenHelper {
         uint256 pendingRewards;
     }
 
-    function getPools(address _farm, address _user) public view returns(PoolInfo[] memory) {
+    struct UserPoolsInfo {
+        address farm;
+        uint256[] pids;
+        uint256[] totalStaked;
+        uint256[] pendingRewards;
+    }
+
+    function getPools(address _farm) public view returns(PoolInfo[] memory) {
         IFarm farm = IFarm(_farm);
         uint256 poolLength = farm.poolLength();
         PoolInfo[] memory pools = new PoolInfo[](poolLength);
         
         for(uint256 i = 0; i < poolLength; i++) {
-            address lpToken;
             (
-                lpToken,
+                pools[i].lpToken,
                 pools[i].allocPoint,
                 pools[i].lastRewardBlock,
                 pools[i].accRewardsPerShare
             ) = farm.poolInfo(i);
-            // IUniswapPair pair = IUniswapPair(lpToken);
-            // address token0 = pair.token0();
-            // address token1 = pair.token1();
-            // (pools[i].reserve0, pools[i].reserve1,) = pair.getReserves();
-            // pools[i].token0 = getTokenInfo(token0);
-            // pools[i].token1 = getTokenInfo(token1);
-            pools[i].lpToken = lpToken;
-
-            if(_user != address(0)) {
-                UserPoolInfo memory userInfo;
-                (userInfo.totalStaked, userInfo.rewardDebt) = farm.userInfo(i, _user);
-                userInfo.lpBalance = IERC20(lpToken).balanceOf(_user);
-                userInfo.lpAllowance = IERC20(lpToken).allowance(_user, _farm);
-                userInfo.pendingRewards = farm.pendingRewards(i, _user);
-
-                pools[i].userInfo = userInfo;
-            }
+            pools[i].totalStaked = IERC20(pools[i].lpToken).balanceOf(_farm);
+            pools[i].stakingToken = getTokenInfo(pools[i].lpToken);
         }
         return pools;
-    }    
+    }
 
 
-    function getFarms(address _user) public view returns(FarmInfo[] memory) {
+    function getFarms() public view returns(FarmInfo[] memory) {
         uint256 numberOfFarms = farmFactory.numberOfFarms();
 
         FarmInfo[] memory infos = new FarmInfo[](numberOfFarms);
@@ -242,26 +236,70 @@ contract FarmHelper is BaseHelper, TokenHelper {
             infos[i].templateId = templateId;
             infos[i].rewardsPerBlock = farm.rewardsPerBlock();
             infos[i].bonusMultiplier = farm.bonusMultiplier();
-            infos[i].rewardTokenInfo = getTokenInfo(farm.rewards());
-            infos[i].rewardTokenInfo = getTokenInfo(farm.rewards());
-            infos[i].pools = getPools(farmAddr, _user);
+            infos[i].rewardToken = getTokenInfo(farm.rewards());
+            infos[i].pools = getPools(farmAddr);
         }
 
         return infos;
     }
 
-    function getUserPoolInfo(address _user, address _farm, uint256 _pid) public view returns(UserPoolInfo memory) {
+    function getFarmDetail(address _farm, address _user) 
+        public
+        view
+        returns(FarmInfo memory farmInfo, UserPoolInfo[] memory userInfos) 
+    {
         IFarm farm = IFarm(_farm);
+        farmInfo.addr = _farm;
+        farmInfo.templateId = farmFactory.getTemplateId(_farm);
+        farmInfo.rewardsPerBlock = farm.rewardsPerBlock();
+        farmInfo.bonusMultiplier = farm.bonusMultiplier();
+        farmInfo.rewardToken = getTokenInfo(farm.rewards());
+        farmInfo.pools = getPools(_farm);
 
-        (address lpToken,,,) = farm.poolInfo(_pid);
-        UserPoolInfo memory userInfo;
+        if(_user != address(0)) {
+            PoolInfo[] memory pools = farmInfo.pools;
+            userInfos = new UserPoolInfo[](pools.length);
+            for(uint i = 0; i < pools.length; i++) {
+                UserPoolInfo memory userInfo = userInfos[i];
+                address stakingToken = pools[i].stakingToken.addr;
+                (userInfo.totalStaked, userInfo.rewardDebt) = farm.userInfo(i, _user);
+                userInfo.lpBalance = IERC20(stakingToken).balanceOf(_user);
+                userInfo.lpAllowance = IERC20(stakingToken).allowance(_user, _farm);
+                userInfo.pendingRewards = farm.pendingRewards(i, _user);
+                (userInfo.totalStaked,) = farm.userInfo(i, _user);
+                userInfo.farm = _farm;
+                userInfo.pid = i;
+                userInfos[i] = userInfo;
+            }
+        }
+        return (farmInfo, userInfos);
+    }
 
-        (userInfo.totalStaked, userInfo.rewardDebt) = farm.userInfo(_pid, _user);
-        userInfo.lpBalance = IERC20(lpToken).balanceOf(_user);
-        userInfo.lpAllowance = IERC20(lpToken).allowance(_user, _farm);
-        userInfo.pendingRewards = farm.pendingRewards(_pid, _user);
+    function getUserPoolsInfos(address _user) public view returns(UserPoolsInfo[] memory) {
+        uint256 numberOfFarms = farmFactory.numberOfFarms();
 
-        return userInfo;
+        UserPoolsInfo[] memory infos = new UserPoolsInfo[](numberOfFarms);
+
+        for (uint256 i = 0; i < numberOfFarms; i++) {
+            address farmAddr = farmFactory.farms(i);
+            IFarm farm = IFarm(farmAddr);
+            uint256 poolLength = farm.poolLength();
+            uint256[] memory totalStaked = new uint256[](poolLength);
+            uint256[] memory pendingRewards = new uint256[](poolLength);
+            uint256[] memory pids = new uint256[](poolLength);
+
+            for(uint256 j = 0; j < poolLength; j++) {
+                (address stakingToken,,,) = farm.poolInfo(j);
+                (totalStaked[j],) = farm.userInfo(j, _user);
+                pendingRewards[j] = farm.pendingRewards(j, _user);
+                pids[j] = j;
+            }
+            infos[i].totalStaked = totalStaked;
+            infos[i].pendingRewards = pendingRewards;
+            infos[i].pids = pids;
+            infos[i].farm = farmAddr;
+        }
+        return infos;
     }
 }
 
@@ -296,7 +334,10 @@ interface IMisoMarket {
         uint128 totalTokens
         );
     function auctionSuccessful() external view returns (bool);
-
+    function commitments(address user) external view returns (uint256);
+    function claimed(address user) external view returns (uint256);
+    function tokensClaimable(address user) external view returns (uint256);
+    function hasAdminRole(address user) external view returns (bool);
 }
 
 interface ICrowdsale is IMisoMarket {
@@ -336,6 +377,8 @@ interface IHyperbolicAuction is IMisoMarket {
 
 contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
 
+    address constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     struct CrowdsaleInfo {
         address addr;
         address paymentCurrency;
@@ -349,6 +392,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         bool usePointList;
         bool auctionSuccessful;
         TokenInfo tokenInfo;
+        TokenInfo paymentCurrencyInfo;
         Document[] documents;
     }
 
@@ -366,6 +410,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         bool usePointList;
         bool auctionSuccessful;
         TokenInfo tokenInfo;
+        TokenInfo paymentCurrencyInfo;
         Document[] documents;
     }
 
@@ -381,6 +426,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         bool usePointList;
         bool auctionSuccessful;
         TokenInfo tokenInfo;
+        TokenInfo paymentCurrencyInfo;
         Document[] documents;
     }
 
@@ -397,6 +443,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         bool usePointList;
         bool auctionSuccessful;
         TokenInfo tokenInfo;
+        TokenInfo paymentCurrencyInfo;
         Document[] documents;
     }
 
@@ -425,8 +472,9 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
 
     struct UserMarketInfo {
         uint256 commitments;
+        uint256 tokensClaimable;
         uint256 claimed;
-        bool isOperator;
+        bool isAdmin;
     }
 
     function getMarkets() public view returns (MarketBaseInfo[] memory) {
@@ -466,6 +514,16 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         (info.rate, info.goal) = crowdsale.marketPrice();
         (info.auctionSuccessful) = crowdsale.auctionSuccessful();
         info.tokenInfo = getTokenInfo(crowdsale.auctionToken());
+
+        address paymentCurrency = crowdsale.paymentCurrency();
+        TokenInfo memory paymentCurrencyInfo;
+        if(paymentCurrency == ETH_ADDRESS) {
+            paymentCurrencyInfo = _getETHInfo();
+        } else {
+            paymentCurrencyInfo = getTokenInfo(paymentCurrency);
+        }
+        info.paymentCurrencyInfo = paymentCurrencyInfo;
+
         info.documents = getDocuments(_crowdsale);
 
         return info;
@@ -477,9 +535,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         DutchAuctionInfo memory info;
 
         info.addr = address(dutchAuction);
-        info.paymentCurrency = dutchAuction.paymentCurrency();
-        // info.totalTokensCommitted = dutchAuction.totalTokensCommitted();
-        // info.totalTokensCommitted = dutchAuction.clearingPrice();
+        // info.paymentCurrency = dutchAuction.paymentCurrency();
         (info.startTime, info.endTime, info.totalTokens) = dutchAuction.marketInfo();
         (info.startPrice, info.minimumPrice) = dutchAuction.marketPrice();
         (info.auctionSuccessful) = dutchAuction.auctionSuccessful();
@@ -489,6 +545,15 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
             info.usePointList
         ) = dutchAuction.marketStatus();
         info.tokenInfo = getTokenInfo(dutchAuction.auctionToken());
+
+        address paymentCurrency = dutchAuction.paymentCurrency();
+        TokenInfo memory paymentCurrencyInfo;
+        if(paymentCurrency == ETH_ADDRESS) {
+            paymentCurrencyInfo = _getETHInfo();
+        } else {
+            paymentCurrencyInfo = getTokenInfo(paymentCurrency);
+        }
+        info.paymentCurrencyInfo = paymentCurrencyInfo;
         info.documents = getDocuments(_dutchAuction);
 
         return info;
@@ -502,6 +567,7 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         info.addr = address(batchAuction);
         info.paymentCurrency = batchAuction.paymentCurrency();
         (info.startTime, info.endTime, info.totalTokens) = batchAuction.marketInfo();
+        (info.auctionSuccessful) = batchAuction.auctionSuccessful();
         (
             info.commitmentsTotal,
             info.minimumCommitmentAmount,
@@ -509,6 +575,14 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
             info.usePointList
         ) = batchAuction.marketStatus();
         info.tokenInfo = getTokenInfo(batchAuction.auctionToken());
+        address paymentCurrency = batchAuction.paymentCurrency();
+        TokenInfo memory paymentCurrencyInfo;
+        if(paymentCurrency == ETH_ADDRESS) {
+            paymentCurrencyInfo = _getETHInfo();
+        } else {
+            paymentCurrencyInfo = getTokenInfo(paymentCurrency);
+        }
+        info.paymentCurrencyInfo = paymentCurrencyInfo;
         info.documents = getDocuments(_batchAuction);
 
         return info;
@@ -530,10 +604,35 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
             info.usePointList
         ) = hyperbolicAuction.marketStatus();
         info.tokenInfo = getTokenInfo(hyperbolicAuction.auctionToken());
+        
+        address paymentCurrency = hyperbolicAuction.paymentCurrency();
+        TokenInfo memory paymentCurrencyInfo;
+        if(paymentCurrency == ETH_ADDRESS) {
+            paymentCurrencyInfo = _getETHInfo();
+        } else {
+            paymentCurrencyInfo = getTokenInfo(paymentCurrency);
+        }
+        info.paymentCurrencyInfo = paymentCurrencyInfo;
         info.documents = getDocuments(_hyperbolicAuction);
 
         return info;
     }
+
+    function getUserMarketInfo(address _action, address _user) public view returns(UserMarketInfo memory userInfo) {
+        IMisoMarket market = IMisoMarket(_action);
+        userInfo.commitments = market.commitments(_user);
+        userInfo.tokensClaimable = market.tokensClaimable(_user);
+        userInfo.claimed = market.claimed(_user);
+        userInfo.isAdmin = market.hasAdminRole(_user);
+    }
+
+    function _getETHInfo() private pure returns(TokenInfo memory token) {
+            token.addr = ETH_ADDRESS;
+            token.name = "ETHEREUM";
+            token.symbol = "ETH";
+            token.decimals = 18;
+    }
+
 }
 
 contract MISOHelper is MarketHelper, FarmHelper {

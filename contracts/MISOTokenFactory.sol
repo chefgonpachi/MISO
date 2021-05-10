@@ -15,13 +15,17 @@ pragma solidity 0.6.12;
 import "./Utils/CloneFactory.sol";
 import "../interfaces/IMisoToken.sol";
 import "./Access/MISOAccessControls.sol";
-import "../interfaces/IERC20.sol";
 import "./Utils/SafeTransfer.sol";
+
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+}
 
 contract MISOTokenFactory is CloneFactory, SafeTransfer{
     
     /// @notice Responsible for access rights to the contract
     MISOAccessControls public accessControls;
+    bytes32 public constant TOKEN_MINTER_ROLE = keccak256("TOKEN_MINTER_ROLE");
 
     /// @notice Whether token factory has been initialized or not.
     bool private initialised;
@@ -48,9 +52,15 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     /// @notice mapping from token template address to token template id
     mapping(address => uint256) private tokenTemplateToId;
 
+    /// @notice mapping from template type to template id
+    mapping(uint256 => uint256) public currentTemplateId;
+
     /// @notice Minimum fee to create a token through the factory.
     uint256 public minimumFee;
     uint256 public integratorFeePct;
+
+    /// @notice Contract locked status. If locked, only minters can deploy
+    bool public locked;
 
     /// @notice Any MISO dividends collected are sent here.
     address payable public misoDiv;
@@ -78,10 +88,11 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      * @dev Can only be initialized once.
      * @param _accessControls Sets address to get the access controls from.
      */
-    /// @dev GP: Add fee inits.
+    /// @dev GP: Migrate to the BentoBox.
     function initMISOTokenFactory(address _accessControls) external  {
         require(!initialised);
         initialised = true;
+        locked = true;
         accessControls = MISOAccessControls(_accessControls);
         emit MisoInitTokenFactory(msg.sender);
     }
@@ -126,7 +137,45 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
         );
         require(_divaddr != address(0));
         misoDiv = _divaddr;
+    }    
+    
+    /**
+     * @notice Sets the factory to be locked or unlocked.
+     * @param _locked bool.
+     */
+    function setLocked(bool _locked) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOTokenFactory: Sender must be admin"
+        );
+        locked = _locked;
     }
+
+
+    /**
+     * @notice Sets the current template ID for any type.
+     * @param _templateType Type of template.
+     * @param _templateId The ID of the current template for that type
+     */
+    function setCurrentTemplateId(uint256 _templateType, uint256 _templateId) external {
+        require(
+            accessControls.hasAdminRole(msg.sender) ||
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOTokenFactory: Sender must be admin"
+        );
+        currentTemplateId[_templateType] = _templateId;
+    }
+
+    /**
+     * @notice Used to check whether an address has the minter role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
+     */
+    function hasTokenMinterRole(address _address) public view returns (bool) {
+        return accessControls.hasRole(TOKEN_MINTER_ROLE, _address);
+    }
+
+
 
     /**
      * @notice Creates a token corresponding to template id and transfers fees.
@@ -141,6 +190,14 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     )
         public payable returns (address token)
     {
+        /// @dev If the contract is locked, only admin and minters can deploy. 
+        if (locked) {
+            require(accessControls.hasAdminRole(msg.sender) 
+                    || accessControls.hasMinterRole(msg.sender)
+                    || hasTokenMinterRole(msg.sender),
+                "MISOTokenFactory: Sender must be minter if locked"
+            );
+        }
         require(msg.value >= minimumFee, "MISOTokenFactory: Failed to transfer minimumFee");
         require(tokenTemplates[_templateId] != address(0));
         uint256 integratorFee = 0;
@@ -193,14 +250,19 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
      */
     function addTokenTemplate(address _template) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOTokenFactory: Sender must be operator"
         );
+        uint256 templateType = IMisoToken(_template).tokenTemplate();
+        require(templateType > 0, "MISOLauncher: Incorrect template code ");
         require(tokenTemplateToId[_template] == 0);
         tokenTemplateId++;
         tokenTemplates[tokenTemplateId] = _template;
         tokenTemplateToId[_template] = tokenTemplateId;
+        currentTemplateId[templateType] = tokenTemplateId;
         emit TokenTemplateAdded(_template, tokenTemplateId);
+
     }
 
     /**
@@ -210,6 +272,7 @@ contract MISOTokenFactory is CloneFactory, SafeTransfer{
     */
     function removeTokenTemplate(uint256 _templateId) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOTokenFactory: Sender must be operator"
         );

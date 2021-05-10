@@ -7,16 +7,22 @@ import "../OpenZeppelin/access/AccessControl.sol";
 
 contract MintableToken is AccessControl, ERC20Burnable, ERC20Pausable, IMisoToken {
     
+    /// @notice Miso template id for the token factory.
+    /// @dev For different token types, this must be incremented.
+    uint256 public constant override tokenTemplate = 2;
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public override {
+    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public {
         _initERC20(_name, _symbol);
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         _setupRole(MINTER_ROLE, _owner);
         _setupRole(PAUSER_ROLE, _owner);
         _mint(msg.sender, _initialSupply);
     }
+
+    function init(bytes calldata _data) external override payable {}
 
    function initToken(
         bytes calldata _data

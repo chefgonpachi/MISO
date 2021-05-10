@@ -1,6 +1,4 @@
 pragma solidity 0.6.12;
-
-
                                                                                                                                                                                                                     
 //----------------------------------------------------------------------------------
 //    I n s t a n t
@@ -21,9 +19,12 @@ contract MISOFarmFactory is CloneFactory {
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
+    bytes32 public constant FARM_MINTER_ROLE = keccak256("FARM_MINTER_ROLE");
 
     /// @notice Whether farm factory has been initialized or not.
     bool private initialised;
+    /// @notice Contract locked status. If locked, only minters can deploy
+    bool public locked;
 
     /// @notice Struct to track Farm template.
     struct Farm {
@@ -46,6 +47,9 @@ contract MISOFarmFactory is CloneFactory {
 
     /// @notice mapping from farm template address to farm template id
     mapping(address => uint256) private farmTemplateToId;
+
+    // /// @notice mapping from template type to template id
+    mapping(uint256 => uint256) public currentTemplateId;
 
     /// @notice Minimum fee to create a farm through the factory.
     uint256 public minimumFee;
@@ -85,6 +89,7 @@ contract MISOFarmFactory is CloneFactory {
         /// @dev Maybe missing require message?
         require(!initialised);
         require(_misoDiv != address(0));
+        locked = true;
         initialised = true;
         misoDiv = _misoDiv;
         minimumFee = _minimumFee;
@@ -136,6 +141,44 @@ contract MISOFarmFactory is CloneFactory {
     }
 
     /**
+     * @notice Sets the factory to be locked or unlocked.
+     * @param _locked bool.
+     */
+    function setLocked(bool _locked) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOFarmFactory: Sender must be admin"
+        );
+        locked = _locked;
+    }
+
+
+    /**
+     * @notice Sets the current template ID for any type.
+     * @param _templateType Type of template.
+     * @param _templateId The ID of the current template for that type
+     */
+    function setCurrentTemplateId(uint256 _templateType, uint256 _templateId) external {
+        require(
+            accessControls.hasAdminRole(msg.sender) ||
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOFarmFactory: Sender must be admin"
+        );
+        currentTemplateId[_templateType] = _templateId;
+    }
+
+    /**
+     * @notice Used to check whether an address has the minter role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
+     */
+    function hasFarmMinterRole(address _address) public view returns (bool) {
+        return accessControls.hasRole(FARM_MINTER_ROLE, _address);
+    }
+
+
+
+    /**
      * @notice Deploys a farm corresponding to the _templateId and transfers fees.
      * @param _templateId Template id of the farm to create.
      * @param _integratorFeeAccount Address to pay the fee to.
@@ -147,6 +190,15 @@ contract MISOFarmFactory is CloneFactory {
     )
         public payable returns (address farm)
     {
+        /// @dev If the contract is locked, only admin and minters can deploy. 
+        if (locked) {
+            require(accessControls.hasAdminRole(msg.sender) 
+                    || accessControls.hasMinterRole(msg.sender)
+                    || hasFarmMinterRole(msg.sender),
+                "MISOFarmFactory: Sender must be minter if locked"
+            );
+        }
+
         require(msg.value >= minimumFee, "MISOFarmFactory: Failed to transfer minimumFee");
         require(farmTemplates[_templateId] != address(0));
         uint256 integratorFee = 0;
@@ -193,14 +245,19 @@ contract MISOFarmFactory is CloneFactory {
      */
     function addFarmTemplate(address _template) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOFarmFactory: Sender must be operator"
         );
-        require(farmTemplateToId[_template] == 0);
+        require(farmTemplateToId[_template] == 0, "MISOFarmFactory: Template already added");
+        uint256 templateType = IMisoFarm(_template).farmTemplate();
+        require(templateType > 0, "MISOFarmFactory: Incorrect template code ");
         farmTemplateId++;
         farmTemplates[farmTemplateId] = _template;
         farmTemplateToId[_template] = farmTemplateId;
+        currentTemplateId[templateType] = farmTemplateId;
         emit FarmTemplateAdded(_template, farmTemplateId);
+
     }
 
      /**
@@ -210,6 +267,7 @@ contract MISOFarmFactory is CloneFactory {
      */
     function removeFarmTemplate(uint256 _templateId) external {
         require(
+            accessControls.hasAdminRole(msg.sender) ||
             accessControls.hasOperatorRole(msg.sender),
             "MISOFarmFactory: Sender must be operator"
         );

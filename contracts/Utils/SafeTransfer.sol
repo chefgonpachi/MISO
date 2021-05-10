@@ -4,10 +4,6 @@ contract SafeTransfer {
 
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    //--------------------------------------------------------
-    // Helper Functions
-    //--------------------------------------------------------
-
     /// @dev Helper function to handle both ETH and ERC20 payments
     function _safeTokenPayment(
         address _token,

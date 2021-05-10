@@ -22,16 +22,18 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
-contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
+contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
-    uint256 public constant marketTemplate = 2;
+    /// @dev For different marketplace types, this must be incremented.
+    uint256 public constant override marketTemplate = 2;
     /// @dev The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -84,6 +86,8 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     event AddedCommitment(address addr, uint256 commitment);   
     /// @notice Event for finalization of the auction.
     event AuctionFinalized();
+    /// @notice Event for cancellation of the auction.
+    event AuctionCancelled();
 
     /**
      * @notice Initializes main contract variables and transfers funds for the auction.
@@ -276,7 +280,7 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         }
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -361,7 +365,7 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
      * @return Returns true if 14 days have passed since the end of the auction
      */
     function finalizeTimeExpired() public view returns (bool) {
-        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+        return uint256(marketInfo.endTime) + 7 days < block.timestamp;
     }
 
     /**
@@ -397,6 +401,22 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     // Finalize Auction
     //--------------------------------------------------------
 
+
+    /**
+     * @notice Cancel Auction
+     * @dev Admin can cancel the auction before it starts
+     */
+    function cancelAuction() public   nonReentrant  
+    {
+        require(hasAdminRole(msg.sender));
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "DutchAuction: auction already finalized");
+        require( uint256(status.commitmentsTotal) == 0, "DutchAuction: auction already committed" );
+        _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+        status.finalized = true;
+        emit AuctionCancelled();
+    }
+
     /**
      * @notice Auction finishes successfully above the reserve.
      * @dev Transfer contract funds to initialized wallet.
@@ -414,22 +434,17 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
-        } else if ( block.timestamp <= uint256(marketInfo.startTime) ) {
-            /// @dev Cancelled Auction
-            /// @dev You can cancel the auction before it starts
-            require( uint256(status.commitmentsTotal) == 0, "DutchAuction: auction already committed" );
-            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         }
         status.finalized = true;
         emit AuctionFinalized();
-
     }
+
 
     /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
     function withdrawTokens() public  {
@@ -448,14 +463,14 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
     }
 
@@ -568,13 +583,13 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
      * @param _data Encoded data for initialization.
      */
 
-    function init(bytes calldata _data) external payable {
+    function init(bytes calldata _data) external override payable {
 
     }
 
     function initMarket(
         bytes calldata _data
-    ) public {
+    ) public override {
         (
         address _funder,
         address _token,
@@ -657,6 +672,10 @@ contract DutchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         bool 
     ) {
         return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
+
+    function getTotalTokens() external view returns(uint256) {
+        return uint256(marketInfo.totalTokens);
     }
 
 }

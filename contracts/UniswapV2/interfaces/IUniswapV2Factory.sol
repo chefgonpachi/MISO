@@ -11,6 +11,9 @@ interface IUniswapV2Factory {
     function allPairs(uint) external view returns (address pair);
     function allPairsLength() external view returns (uint);
 
+    function pairCodeHash() external pure returns (bytes32);
+
+
     function createPair(address tokenA, address tokenB) external returns (address pair);
 
     function setFeeTo(address) external;

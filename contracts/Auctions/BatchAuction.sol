@@ -21,17 +21,19 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
 
-contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Documents, ReentrancyGuard  {
+contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents, ReentrancyGuard  {
     using SafeMath for uint256;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
-    uint256 public constant marketTemplate = 3;
+    /// @dev For different marketplace types, this must be incremented.
+    uint256 public constant override marketTemplate = 3;
 
     /// @dev The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -76,6 +78,8 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     event AddedCommitment(address addr, uint256 commitment);
     /// @notice Event for finalization of the auction.
     event AuctionFinalized();
+    /// @notice Event for cancellation of the auction.
+    event AuctionCancelled();
 
     /**
      * @notice Initializes main contract variables and transfers funds for the auction.
@@ -186,7 +190,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             revertBecauseUserDidNotProvideAgreement();
         }
         require(_amount> 0, "BatchAuction: Value must be higher than 0");
-        _safeTransferFrom(paymentCurrency, _from, _amount);
+        _safeTransferFrom(paymentCurrency, msg.sender, _amount);
         _addCommitment(_from, _amount);
 
     }
@@ -246,15 +250,32 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
-            _tokenPayment(paymentCurrency, wallet, uint256(marketStatus.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(marketStatus.commitmentsTotal));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(block.timestamp > marketInfo.endTime, "BatchAuction: Auction has not finished yet");
-            _tokenPayment(auctionToken, wallet, marketInfo.totalTokens);
+            _safeTokenPayment(auctionToken, wallet, marketInfo.totalTokens);
         }
         marketStatus.finalized = true;
         emit AuctionFinalized();
+    }
+
+    /**
+     * @notice Cancel Auction
+     * @dev Admin can cancel the auction before it starts
+     */
+    function cancelAuction() public   nonReentrant  
+    {
+        require(hasAdminRole(msg.sender));
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "Crowdsale: already finalized");
+        require( uint256(status.commitmentsTotal) == 0, "Crowdsale: Funds already raised" );
+
+        _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+
+        status.finalized = true;
+        emit AuctionCancelled();
     }
 
     /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
@@ -271,7 +292,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             require(tokensToClaim > 0, "BatchAuction: No tokens to claim");
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
 
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
@@ -279,7 +300,7 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
             uint256 fundsCommitted = commitments[beneficiary];
             require(fundsCommitted > 0, "BatchAuction: No funds committed");
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, fundsCommitted);
+            _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
         }
     }
 
@@ -305,16 +326,23 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
 
     /**
      * @notice Checks if the auction has ended.
-     * @return True if current time is greater than auction end time.
+     * @return bool True if current time is greater than auction end time.
      */
     function auctionEnded() public view returns (bool) {
         return block.timestamp > marketInfo.endTime;
     }
 
+    /**
+     * @notice Checks if the auction has been finalised.
+     * @return bool True if auction has been finalised.
+     */
+    function finalized() public view returns (bool) {
+        return marketStatus.finalized;
+    }
 
     /// @notice Returns true if 7 days have passed since the end of the auction
     function finalizeTimeExpired() public view returns (bool) {
-        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+        return uint256(marketInfo.endTime) + 7 days < block.timestamp;
     }
 
 
@@ -419,12 +447,12 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
     // Market Launchers
     //--------------------------------------------------------
 
-    function init(bytes calldata _data) external payable {
+    function init(bytes calldata _data) external override payable {
     }
 
     function initMarket(
         bytes calldata _data
-    ) public {
+    ) public override {
         (
         address _funder,
         address _token,
@@ -485,9 +513,13 @@ contract BatchAuction is MISOAccessControls, BoringBatchable, SafeTransfer, Docu
         address token, 
         uint64 startTime,
         uint64 endTime,
-        bool finalized
+        bool marketFinalized
     ) {
         return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
+
+    function getTotalTokens() external view returns(uint256) {
+        return uint256(marketInfo.totalTokens);
     }
 
 }

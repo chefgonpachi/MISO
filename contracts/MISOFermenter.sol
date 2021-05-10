@@ -1,6 +1,5 @@
 pragma solidity 0.6.12;
 
-
 //----------------------------------------------------------------------------------
 //    I n s t a n t
 //
@@ -12,17 +11,21 @@ pragma solidity 0.6.12;
 //
 //----------------------------------------------------------------------------------
 
-// GP: Token escrow, lock up tokens for a period of time
 import "./Utils/CloneFactory.sol";
 import "./Access/MISOAccessControls.sol";
+
+/// @notice  Token escrow, lock up tokens for a period of time
 
 contract MISOFermenter is CloneFactory {
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
+    bytes32 public constant VAULT_MINTER_ROLE = keccak256("VAULT_MINTER_ROLE");
 
     /// @notice Whether farm factory has been initialized or not.
     bool private initialised;
+    /// @notice Contract locked status. If locked, only minters can deploy
+    bool public locked;
 
     /// @notice Struct to track Fermenter template.
     struct Fermenter{
@@ -63,13 +66,38 @@ contract MISOFermenter is CloneFactory {
      * @dev Can only be initialized once.
      * @param _accessControls Sets address to get the access controls from.
      */
-    function _initMISOFermenter(address _accessControls) external {
+    function initMISOFermenter(address _accessControls) external {
         /// @dev Maybe missing require message?
         require(!initialised);
         initialised = true;
+        locked = true;
         accessControls = MISOAccessControls(_accessControls);
         emit MisoInitFermenter(msg.sender);
     }
+
+    /**
+     * @notice Sets the factory to be locked or unlocked.
+     * @param _locked bool.
+     */
+    function setLocked(bool _locked) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "MISOFermenter: Sender must be admin"
+        );
+        locked = _locked;
+    }
+
+
+    /**
+     * @notice Used to check whether an address has the minter role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
+     */
+    function hasVaultMinterRole(address _address) public view returns (bool) {
+        return accessControls.hasRole(VAULT_MINTER_ROLE, _address);
+    }
+
+
 
     /**
      * @notice Creates a new escrow corresponding to template Id.
@@ -77,7 +105,16 @@ contract MISOFermenter is CloneFactory {
      * @return newEscrow Escrow address.
      */
     function createEscrow(uint256 _templateId) external returns (address newEscrow) {
-        /// @dev Maybe missing require message?
+
+        /// @dev If the contract is locked, only admin and minters can deploy. 
+        if (locked) {
+            require(accessControls.hasAdminRole(msg.sender) 
+                    || accessControls.hasMinterRole(msg.sender)
+                    || hasVaultMinterRole(msg.sender),
+                "MISOFermenter: Sender must be minter if locked"
+            );
+        }
+
         require(escrowTemplates[_templateId]!= address(0));
         newEscrow = createClone(escrowTemplates[_templateId]);
         isChildEscrow[address(newEscrow)] = Fermenter(true,_templateId,escrows.length-1);
@@ -107,6 +144,10 @@ contract MISOFermenter is CloneFactory {
      * @param _templateId Refers to template that is to be deleted.
      */
     function removeEscrowTemplate(uint256 _templateId) external {
+        require(
+            accessControls.hasOperatorRole(msg.sender),
+            "MISOFermenter: Sender must be operator"
+        );
         require(escrowTemplates[_templateId] != address(0));
         address template = escrowTemplates[_templateId];
         escrowTemplates[_templateId] = address(0);

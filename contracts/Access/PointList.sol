@@ -19,9 +19,6 @@ contract PointList is IPointList, MISOAccessControls {
     /// @notice Maping an address to a number fo points.
     mapping(address => uint256) public points;
 
-    /// @notice Whether initialised or not.
-    bool private initialised;
-
     /// @notice Number of total points.
     uint256 public totalPoints;
 
@@ -37,9 +34,7 @@ contract PointList is IPointList, MISOAccessControls {
      * @param _admin Admins address.
      */
     function initPointList(address _admin) public override {
-        require(!initialised, "Already initialised");
         initAccessControls(_admin);
-        initialised = true;
     }
 
     /**
@@ -67,7 +62,7 @@ contract PointList is IPointList, MISOAccessControls {
      * @param _amounts An array of corresponding amounts.
      */
     function setPoints(address[] memory _accounts, uint256[] memory _amounts) external override {
-        require(hasOperatorRole(msg.sender), "PointList.setPoints: Sender must be operator");
+        require(hasAdminRole(msg.sender) || hasOperatorRole(msg.sender), "PointList.setPoints: Sender must be operator");
         require(_accounts.length != 0);
         require(_accounts.length == _amounts.length);
         for (uint i = 0; i < _accounts.length; i++) {
@@ -77,7 +72,7 @@ contract PointList is IPointList, MISOAccessControls {
 
             if (amount != previousPoints) {
                 points[account] = amount;
-                totalPoints = totalPoints.add(amount).sub(previousPoints);
+                totalPoints = totalPoints.sub(previousPoints).add(amount);
                 emit PointsUpdated(account, previousPoints, amount);
             }
         }

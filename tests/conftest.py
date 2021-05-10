@@ -45,7 +45,7 @@ def bento_box(BoringFactory):
 def token_factory(MISOTokenFactory, miso_access_controls, fixed_token_template, mintable_token_template):
     token_factory = MISOTokenFactory.deploy({'from': accounts[0]})
     token_factory.initMISOTokenFactory(miso_access_controls, {'from': accounts[0]})
-    
+    token_factory.setLocked(False, {'from': accounts[0]})
     fixed_token_tx = token_factory.addTokenTemplate(fixed_token_template, {"from": accounts[0]})
     mintable_token_tx = token_factory.addTokenTemplate(mintable_token_template, {"from": accounts[0]})
     assert "TokenTemplateAdded" in fixed_token_tx.events
@@ -208,7 +208,7 @@ def auction_factory(MISOMarket, miso_access_controls,bento_box, dutch_auction_te
 
     auction_factory.initMISOMarket(miso_access_controls, bento_box, [dutch_auction_template, crowdsale_template], {'from': accounts[0]})
     # assert miso_access_controls.hasAdminRole(accounts[0]) == True 
-
+    auction_factory.setLocked(False, {"from": accounts[0]})
     return auction_factory
 
 #####################################
@@ -382,45 +382,68 @@ def uniswap_factory(UniswapV2Factory):
 # MISOLauncher
 ######################################
 
-@pytest.fixture(scope='module', autouse=True)
-def pool_liquidity_template(PoolLiquidity):
-    pool_liquidity_template = PoolLiquidity.deploy({"from": accounts[0]})
-    return pool_liquidity_template
+# @pytest.fixture(scope='module', autouse=True)
+# def pool_liquidity_template(PoolLiquidity):
+#     pool_liquidity_template = PoolLiquidity.deploy({"from": accounts[0]})
+#     return pool_liquidity_template
 
 # @pytest.fixture(scope='module', autouse=True)
 # def seed_liquidity_template(SeedLiquidity):
 #     seed_liquidity_template = SeedLiquidity.deploy({"from": accounts[0]})
 #     return seed_liquidity_template
 
+
 @pytest.fixture(scope='module', autouse=True)
-def launcher(MISOLiquidityLauncher, miso_access_controls, pool_liquidity_template, weth_token):
-    launcher = MISOLiquidityLauncher.deploy({"from": accounts[0]})
-    launcher.initMISOLiquidityLauncher(miso_access_controls, weth_token)
+def post_auction_launcher_template(PostAuctionLauncher, weth_token):
+    post_auction_launcher_template = PostAuctionLauncher.deploy(weth_token, {"from": accounts[0]})
+    return post_auction_launcher_template
+
+
+
+@pytest.fixture(scope='module', autouse=True)
+def launcher(MISOLauncher, miso_access_controls, post_auction_launcher_template, weth_token, bento_box):
+    launcher = MISOLauncher.deploy({"from": accounts[0]})
+    launcher.initMISOLauncher(miso_access_controls, weth_token, bento_box)
+    launcher.setLocked(False, {"from": accounts[0]})
+
     assert launcher.accessControls() == miso_access_controls
     assert launcher.WETH() == weth_token
-    launcher.addLiquidityLauncherTemplate(pool_liquidity_template, {"from": accounts[0]} )
+    launcher.addLiquidityLauncherTemplate(post_auction_launcher_template, {"from": accounts[0]} )
 
     return launcher
 
+# @pytest.fixture(scope='module', autouse=True)
+# def pool_liquidity(PoolLiquidity, public_access_controls, mintable_token, weth_token, uniswap_factory):
+
+#     deadline = chain.time() + POOL_LAUNCH_DEADLINE
+#     launch_window = POOL_LAUNCH_WINDOW
+#     locktime = POOL_LAUNCH_LOCKTIME
+#     pool_liquidity = PoolLiquidity.deploy({"from": accounts[0]})
+#     pool_liquidity.initPoolLiquidity(public_access_controls, mintable_token, weth_token, uniswap_factory, accounts[0], accounts[0], deadline, launch_window, locktime)
+
+#     return pool_liquidity
+
+# @pytest.fixture(scope='module', autouse=True)
+# def launcher_pool_liquidity(PoolLiquidity, launcher):
+#     template_id = 1
+    # template_type = 1
+    # template_id = launcher.currentTemplateId(template_type)
+#     tx = launcher.createLiquidityLauncher(template_id, {"from": accounts[0]})
+#     assert "LauncherCreated" in tx.events
+#     pool_liquidity = PoolLiquidity.at(web3.toChecksumAddress(tx.events['LauncherCreated']['addr']))
+
+#     return pool_liquidity
+
 @pytest.fixture(scope='module', autouse=True)
-def pool_liquidity(PoolLiquidity, public_access_controls, mintable_token, weth_token, uniswap_factory):
+def launcher_post_auction(PostAuctionLauncher, launcher):
+    template_type = 3
+    template_id = launcher.currentTemplateId(template_type)
+    tx = launcher.deployLauncher(template_id,accounts[0], {"from": accounts[0]})
+    assert "LauncherCreated" in tx.events
+    post_auction = PostAuctionLauncher.at(web3.toChecksumAddress(tx.events['LauncherCreated']['addr']))
 
-    deadline = chain.time() + POOL_LAUNCH_DEADLINE
-    launch_window = POOL_LAUNCH_WINDOW
-    locktime = POOL_LAUNCH_LOCKTIME
-    pool_liquidity = PoolLiquidity.deploy({"from": accounts[0]})
-    pool_liquidity.initPoolLiquidity(public_access_controls, mintable_token, weth_token, uniswap_factory, accounts[0], accounts[0], deadline, launch_window, locktime)
+    return post_auction
 
-    return pool_liquidity
-
-@pytest.fixture(scope='module', autouse=True)
-def launcher_pool_liquidity(PoolLiquidity, launcher):
-    template_id = 1
-    tx = launcher.createLiquidityLauncher(template_id, {"from": accounts[0]})
-    assert "LiquidityLauncherCreated" in tx.events
-    pool_liquidity = PoolLiquidity.at(web3.toChecksumAddress(tx.events['LiquidityLauncherCreated']['addr']))
-
-    return pool_liquidity
 
 
 #####################################
@@ -434,6 +457,8 @@ def farm_factory(MISOFarmFactory,miso_access_controls,farm_template):
     token_fee = 0
     farm_factory = MISOFarmFactory.deploy({"from":accounts[0]})
     farm_factory.initMISOFarmFactory(miso_access_controls,miso_dev, minimum_fee, token_fee,{"from":accounts[0]})
+    farm_factory.setLocked(False, {'from': accounts[0]})
+
     tx = farm_factory.addFarmTemplate(farm_template, {"from":accounts[0]})
     assert "FarmTemplateAdded" in tx.events
     return farm_factory
@@ -451,7 +476,8 @@ def farm_template(MISOMasterChef):
 def token_factory_sushi(MISOTokenFactory, miso_access_controls, sushi_token_template):
     token_factory_sushi = MISOTokenFactory.deploy({'from': accounts[0]})
     token_factory_sushi.initMISOTokenFactory(miso_access_controls, {'from': accounts[0]})
-    
+    token_factory_sushi.setLocked(False, {'from': accounts[0]})
+ 
     token_factory_sushi.addTokenTemplate(sushi_token_template, {"from": accounts[0]})
     return token_factory_sushi
 
@@ -461,11 +487,11 @@ def miso_recipe_02(MISORecipe02,miso_access_controls,token_factory_sushi, weth_t
     
     return miso_recipe_02
 
-@pytest.fixture(scope='module', autouse=True)
-def miso_recipe_03(MISORecipe03,weth_token,uniswap_factory,farm_factory):
-    miso_recipe_03 = MISORecipe03.deploy(weth_token,uniswap_factory,farm_factory, {"from":accounts[0]})
+# @pytest.fixture(scope='module', autouse=True)
+# def miso_recipe_03(MISORecipe03,weth_token,uniswap_factory,farm_factory):
+#     miso_recipe_03 = MISORecipe03.deploy(weth_token,uniswap_factory,farm_factory, {"from":accounts[0]})
     
-    return miso_recipe_03
+#     return miso_recipe_03
 
 #####################################
 # Token Lock
@@ -477,3 +503,10 @@ def token_lock(TokenVault,fixed_token2):
     return token_lock
 
 
+#####################################
+#Documentation
+#####################################
+@pytest.fixture(scope='module', autouse=True)
+def document(Documents):
+    document = Documents.deploy({"from": accounts[0]})
+    return document

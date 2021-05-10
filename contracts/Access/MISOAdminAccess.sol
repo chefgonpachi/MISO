@@ -5,7 +5,7 @@ import "../OpenZeppelin/access/AccessControl.sol";
 
 contract MISOAdminAccess is AccessControl {
 
-    /// @notice Whether access is initialised.
+    /// @dev Whether access is initialised.
     bool private initAccess;
 
     /// @notice Events for adding and removing various roles.

@@ -6,22 +6,25 @@ import "../../interfaces/IMisoToken.sol";
 import "../OpenZeppelin/access/AccessControl.sol";
 
 
-// MISO Edits
-// Change this to access control, remove owner. 
-// Set the minter role as minter
 
 // SushiToken with Governance.
-contract SushiToken is AccessControl, ERC20, IMisoToken {
+contract SushiToken is IMisoToken, AccessControl, ERC20 {
+
+    /// @notice Miso template id for the token factory.
+    /// @dev For different token types, this must be incremented.
+    uint256 public constant override tokenTemplate = 3;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public override {
+    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public {
         _initERC20(_name, _symbol);
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         _setupRole(MINTER_ROLE, _owner);
         _mint(msg.sender, _initialSupply);
 
     }
+
+    function init(bytes calldata _data) external override payable {}
 
     function initToken(
         bytes calldata _data

@@ -167,14 +167,29 @@ def test_getHyperbolicAuctionInfo(miso_helper, hyperbolic_auction):
     print("hyperbolic_auction_info:", hyperbolic_auction_info)
 
 def test_getFarms(miso_helper, create_farm):
-    farms = miso_helper.getFarms(ZERO_ADDRESS)
+    farms = miso_helper.getFarms()
 
     print("farms:", farms)
 
-    assert 1==1
+def test_getFarmDetail(miso_helper, create_farm):
+    farm_info_user_0 = miso_helper.getFarmDetail(create_farm, accounts[0])
+    farm_info_user_1 = miso_helper.getFarmDetail(create_farm, accounts[1])
 
+    print("farm_info_user_0:", farm_info_user_0)
+    print("farm_info_user_1:", farm_info_user_1)
+
+def test_getUserPoolsInfos(miso_helper):
+    user_pool_infos = miso_helper.getUserPoolsInfos(accounts[0])
+
+    print("user_pools_infos:", user_pool_infos)
+
+def test_getUserMarketInfo(miso_helper, crowdsale):
+    crowdsale.commitEth(accounts[0], True, {"from": accounts[0], "value": 2*TENPOW18})
+    user_info = miso_helper.getUserMarketInfo(crowdsale, accounts[0])
+    print("user_info:", user_info)
+    
 @pytest.fixture(scope='function')
-def create_farm(MISOMasterChef, farm_factory, farm_template, fixed_token_cal, miso_access_controls, lp_token):
+def create_farm(MISOMasterChef, farm_factory, farm_template, fixed_token_cal, miso_access_controls, staking_token):
     rewards_per_block = 1 * TENPOW18
     # Define the start time relative to sales
     start_block =  len(chain) + 10
@@ -194,13 +209,22 @@ def create_farm(MISOMasterChef, farm_factory, farm_template, fixed_token_cal, mi
     assert "FarmCreated" in tx.events
     assert farm_factory.numberOfFarms() == 1
 
-    master_chef.addToken(150, lp_token, False, {'from': accounts[0]})
+    master_chef.addToken(150, staking_token, True, {'from': accounts[0]})
+
+    staking_token.approve(master_chef, 100*TENPOW18, {'from': accounts[1]})
+    master_chef.deposit(0, 100*TENPOW18, {'from': accounts[1]})
+    staking_token.approve(master_chef, 200*TENPOW18, {'from': accounts[2]})
+    master_chef.deposit(0, 200*TENPOW18, {'from': accounts[2]})
+
+    assert master_chef.poolLength() == 1
     
     after_deploy_balance_miso_dev = miso_dev.balance()
     after_deploy_balance_integrator = integratorFeeAccount.balance()
     
     assert before_deploy_balance_miso_dev==after_deploy_balance_miso_dev
     assert before_deploy_balance_integrator == after_deploy_balance_integrator
+
+    return master_chef
 
 
 #####################################
@@ -219,6 +243,29 @@ def reward_token(FixedToken):
 
     return reward_token
 
+
+
+#####################################
+# Staking Token
+######################################
+@pytest.fixture(scope='module', autouse=True)
+def staking_token(MintableToken):
+    staking_token = MintableToken.deploy({'from': accounts[0]})
+
+    name = "Staking Token"
+    symbol = "STAKE"
+    owner = accounts[0]
+
+    staking_token.initToken(name, symbol, owner, 1000 * TENPOW18, {'from': owner})
+    assert staking_token.name() == name
+    assert staking_token.symbol() == symbol
+
+    staking_token.mint(accounts[1], 1000 * TENPOW18, {'from': owner})
+    assert staking_token.balanceOf(accounts[1]) == 1000 * TENPOW18 
+    staking_token.mint(accounts[2], 200 * TENPOW18, {'from': owner})
+    assert staking_token.balanceOf(accounts[2]) == 200 * TENPOW18 
+
+    return staking_token
 
 
 #####################################

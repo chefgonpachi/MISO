@@ -21,7 +21,7 @@ contract UniswapV2Factory is IUniswapV2Factory {
         return allPairs.length;
     }
 
-    function pairCodeHash() external pure returns (bytes32) {
+    function pairCodeHash() external override pure returns (bytes32) {
         return keccak256(type(UniswapV2Pair).creationCode);
     }
 

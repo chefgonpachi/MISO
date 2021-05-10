@@ -31,7 +31,10 @@ def fixed_token_cal(FixedToken):
 @pytest.fixture(scope='function')
 def auction_factory_template(auction_factory,dutch_auction_template):
     #tx = auction_factory.addAuctionTemplate(dutch_auction_template, {"from": accounts[0]})
-    template_id = 1
+
+    template_type = 2  # Dutch Auction is 2
+    template_id = auction_factory.currentTemplateId(template_type)
+    
    # assert "AuctionTemplateAdded" in tx.events
     dutch_auction_template  =  auction_factory.getAuctionTemplate(template_id)
 
@@ -47,7 +50,8 @@ def crowdsale_template_2(Crowdsale):
 def crowdsale_factory_template(auction_factory,crowdsale_template):
    # tx = auction_factory.addAuctionTemplate(crowdsale_template, {"from": accounts[0]})
     #assert "AuctionTemplateAdded" in tx.events
-    template_id = 2
+    template_type = 1  # Crowdsale type is 1
+    template_id = auction_factory.currentTemplateId(template_type)
     
     crowdsale_template = auction_factory.getAuctionTemplate(template_id)
     assert auction_factory.getTemplateId(crowdsale_template) == template_id
@@ -57,7 +61,8 @@ def test_market_add_auction_template_twice(auction_factory,crowdsale_template,cr
         auction_factory.addAuctionTemplate(crowdsale_template,{"from": accounts[0]})
 
 def test_remove_auction_template(auction_factory,crowdsale_template):
-    template_id = 2
+    template_type = 1  # Crowdsale type is 1
+    template_id = auction_factory.currentTemplateId(template_type)
     auction_factory.removeAuctionTemplate(template_id,{"from":accounts[0]})
     return auction_factory
 

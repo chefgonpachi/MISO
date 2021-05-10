@@ -5,14 +5,17 @@ import "../../interfaces/IMisoToken.sol";
 
 contract FixedToken is ERC20, IMisoToken {
 
+    /// @notice Miso template id for the token factory.
+    /// @dev For different token types, this must be incremented.
+    uint256 public constant override tokenTemplate = 1;
     
     /// @dev First set the token variables. This can only be done once
-    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public override {
+    function initToken(string memory _name, string memory _symbol, address _owner, uint256 _initialSupply) public  {
         _initERC20(_name, _symbol);
         _mint(msg.sender, _initialSupply);
     }
+    function init(bytes calldata _data) external override payable {}
 
-    // TODO: remove owner
    function initToken(
         bytes calldata _data
     ) public override {

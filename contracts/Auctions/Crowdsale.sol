@@ -21,16 +21,18 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
+import "../../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
-contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
+contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
     using SafeMath for uint256;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
-    uint256 public constant marketTemplate = 1;
+    /// @dev For different marketplace types, this must be incremented.
+    uint256 public constant override marketTemplate = 1;
 
     /// @notice The placeholder ETH address.
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -71,7 +73,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     /// @notice The token being sold.
     address public auctionToken;
     /// @notice Address where funds are collected.
-    address payable private wallet;
+    address payable public wallet;
     /// @notice The currency the crowdsale accepts for payment. Can be ETH or token address.
     address public paymentCurrency;
     /// @notice Address that manages auction approvals.
@@ -94,6 +96,8 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     
     /// @notice Event for finalization of the crowdsale
     event AuctionFinalized();
+    /// @notice Event for cancellation of the auction.
+    event AuctionCancelled();
 
     /**
      * @notice Initializes main contract variables and transfers funds for the sale.
@@ -197,16 +201,16 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
             revertBecauseUserDidNotProvideAgreement();
         }
 
-        /// @notice Get ETH able to be committed.
+        /// @dev Get ETH able to be committed.
         uint256 ethToTransfer = calculateCommitment(msg.value);
 
-        /// @notice Accept ETH Payments.
+        /// @dev Accept ETH Payments.
         uint256 ethToRefund = msg.value.sub(ethToTransfer);
         if (ethToTransfer > 0) {
             _addCommitment(_beneficiary, ethToTransfer);
         }
 
-        /// @notice Return any ETH to be refunded.
+        /// @dev Return any ETH to be refunded.
         if (ethToRefund > 0) {
             _beneficiary.transfer(ethToRefund);
         }
@@ -239,7 +243,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
         }
         uint256 tokensToTransfer = calculateCommitment(_amount);
         if (tokensToTransfer > 0) {
-            _safeTransferFrom(paymentCurrency, _from, tokensToTransfer);
+            _safeTransferFrom(paymentCurrency, msg.sender, tokensToTransfer);
             _addCommitment(_from, tokensToTransfer);
         }
     }
@@ -254,9 +258,10 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
         view
         returns (uint256 committed)
     {
-        uint256 maxCommitment = uint256(marketInfo.totalTokens).mul(1e18).div(uint256(marketPrice.rate));
-        if (uint256(marketStatus.commitmentsTotal).add(_commitment) > maxCommitment) {
-            return maxCommitment.sub(uint256(marketStatus.commitmentsTotal));
+        uint256 tokens = _getTokenAmount(_commitment);
+        uint256 tokensCommited =_getTokenAmount(uint256(marketStatus.commitmentsTotal));
+        if ( tokensCommited.add(tokens) > uint256(marketInfo.totalTokens)) {
+            return _getTokenPrice(uint256(marketInfo.totalTokens).sub(tokensCommited));
         }
         return _commitment;
     }
@@ -277,8 +282,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
 
         commitments[_addr] = newCommitment;
 
-        /// @notice Update state.
-        // update state
+        /// @dev Update state.
         marketStatus.commitmentsTotal = uint128(uint256(marketStatus.commitmentsTotal).add(_commitment));
 
         emit AddedCommitment(_addr, _commitment);
@@ -293,7 +297,6 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      * @dev Withdraw tokens only after crowdsale ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
-    // GP: Think about moving to a safe transfer that considers the dust for the last withdraw
     function withdrawTokens(address payable beneficiary) public   nonReentrant  {    
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "Crowdsale: not finalized");
@@ -301,14 +304,14 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
             uint256 tokensToClaim = tokensClaimable(beneficiary);
             require(tokensToClaim > 0, "Crowdsale: no tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
-            _tokenPayment(auctionToken, beneficiary, tokensToClaim);
+            _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
             require(block.timestamp > uint256(marketInfo.endTime), "Crowdsale: auction has not finished yet");
             uint256 accountBalance = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
-            _tokenPayment(paymentCurrency, beneficiary, accountBalance);
+            _safeTokenPayment(paymentCurrency, beneficiary, accountBalance);
         }
     }
 
@@ -351,23 +354,18 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
             require(auctionEnded(), "Crowdsale: Has not finished yet"); 
-            _tokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
+            _safeTokenPayment(paymentCurrency, wallet, uint256(status.commitmentsTotal));
             /// @dev Transfer unsold tokens to wallet.
             uint256 soldTokens = _getTokenAmount(uint256(status.commitmentsTotal));
             uint256 unsoldTokens = uint256(info.totalTokens).sub(soldTokens);
             if(unsoldTokens > 0) {
-                _tokenPayment(auctionToken, wallet, unsoldTokens);
+                _safeTokenPayment(auctionToken, wallet, unsoldTokens);
             }
-        } else if ( block.timestamp <= uint256(info.startTime) ) {
-            /// @dev Cancelled Auction
-            /// @dev You can cancel the auction before it starts
-            require( uint256(status.commitmentsTotal) == 0, "Crowdsale: Funds already raised" );
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
             require(auctionEnded(), "Crowdsale: Has not finished yet"); 
-            _tokenPayment(auctionToken, wallet, uint256(info.totalTokens));
+            _safeTokenPayment(auctionToken, wallet, uint256(info.totalTokens));
         }
 
         status.finalized = true;
@@ -376,13 +374,39 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     }
 
     /**
+     * @notice Cancel Auction
+     * @dev Admin can cancel the auction before it starts
+     */
+    function cancelAuction() public   nonReentrant  
+    {
+        require(hasAdminRole(msg.sender));
+        MarketStatus storage status = marketStatus;
+        require(!status.finalized, "Crowdsale: already finalized");
+        require( uint256(status.commitmentsTotal) == 0, "Crowdsale: Funds already raised" );
+
+        _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
+
+        status.finalized = true;
+        emit AuctionCancelled();
+    }
+
+    function tokenPrice() public view returns (uint256) {
+        return _getTokenPrice(1e18);   
+    }
+
+    function _getTokenPrice(uint256 _amount) internal view returns (uint256) {
+        return _amount.mul(1e18).div(uint256(marketPrice.rate));   
+    }
+
+
+    /**
      * @notice Calculates the number of tokens to purchase.
      * @dev Override to extend the way in which ether is converted to tokens.
-     * @param amount Value in wei or token to be converted into tokens.
+     * @param _amount Value in wei or token to be converted into tokens.
      * @return tokenAmount Number of tokens that can be purchased with the specified amount.
      */
-    function _getTokenAmount(uint256 amount) internal view returns (uint256) {
-        return amount.mul(uint256(marketPrice.rate)).div(1e18);
+    function _getTokenAmount(uint256 _amount) internal view returns (uint256) {
+        return _amount.mul(uint256(marketPrice.rate)).div(1e18);
     }
 
     /**
@@ -406,11 +430,13 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      * @return auctionEnded True if successful or time has ended.
      */
     function auctionEnded() public view returns (bool) {
-        return block.timestamp > uint256(marketInfo.endTime) || _getTokenAmount(uint256(marketStatus.commitmentsTotal)) == uint256(marketInfo.totalTokens);
+        return block.timestamp > uint256(marketInfo.endTime) || 
+        _getTokenAmount(uint256(marketStatus.commitmentsTotal)) == uint256(marketInfo.totalTokens);
     }
 
     /**
-     * @return Returns true if market has been finalized
+     * @notice Checks if the sale has been finalised.
+     * @return bool True if sale has been finalised.
      */
     function finalized() public view returns (bool) {
         return marketStatus.finalized;
@@ -420,7 +446,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      * @return True if 7 days have passed since the end of the auction
     */
     function finalizeTimeExpired() public view returns (bool) {
-        return uint256(marketInfo.endTime) + 14 days < block.timestamp;
+        return uint256(marketInfo.endTime) + 7 days < block.timestamp;
     }
     
 
@@ -528,7 +554,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
     // Market Launchers
     //--------------------------------------------------------
 
-    function init(bytes calldata _data) external payable {
+    function init(bytes calldata _data) external override payable {
 
     }
 
@@ -536,7 +562,7 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
      * @notice Decodes and hands Crowdsale data to the initCrowdsale function.
      * @param _data Encoded data for initialization.
      */
-    function initMarket(bytes calldata _data) public {
+    function initMarket(bytes calldata _data) public override {
         (
         address _funder,
         address _token,
@@ -619,5 +645,9 @@ contract Crowdsale is MISOAccessControls, BoringBatchable, SafeTransfer, Documen
         bool 
     ) {
         return (auctionToken, marketInfo.startTime, marketInfo.endTime, marketStatus.finalized);
+    }
+
+    function getTotalTokens() external view returns(uint256) {
+        return uint256(marketInfo.totalTokens);
     }
 }

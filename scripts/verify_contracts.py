@@ -19,13 +19,15 @@ def verify(contract_id, container):
 def main():
 
     verify("miso_token_factory", MISOTokenFactory)
-    verify("miso_launcher", MISOLiquidityLauncher)
+    verify("miso_launcher", MISOLauncher)
     verify("mintable_token_template", MintableToken)
     verify("fixed_token_template", FixedToken)
     verify("sushi_token_template", SushiToken)
     verify("dutch_auction_template", DutchAuction)
     verify("crowdsale_template", Crowdsale)
-    verify("pool_liquidity_template", PoolLiquidity)
+    # verify("pool_liquidity_template", PoolLiquidity)
+    verify("post_auction_launcher_template", PoolLiquidity)
+
     verify("miso_market", MISOMarket)
     verify("weth_token", WETH9)
     verify("access_control", MISOAccessControls)

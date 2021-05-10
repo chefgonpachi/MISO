@@ -171,15 +171,15 @@ def test_getFarms(miso_helper, create_farm):
 
     print("farms:", farms)
 
-def test_getUserPoolInfo(miso_helper, create_farm):
-    user_pool_info_0 = miso_helper.getUserPoolInfo(accounts[0], create_farm, 0)
-    user_pool_info_1 = miso_helper.getUserPoolInfo(accounts[1], create_farm, 0)
+def test_getFarmDetail(miso_helper, create_farm):
+    farm_info_user_0 = miso_helper.getFarmDetail(create_farm, accounts[0])
+    farm_info_user_1 = miso_helper.getFarmDetail(create_farm, accounts[1])
 
-    print("user_pool_info_0:", user_pool_info_0)
-    print("user_pool_info_1:", user_pool_info_1)
+    print("farm_info_user_0:", farm_info_user_0)
+    print("farm_info_user_1:", farm_info_user_1)
 
-def test_getUserPoolsInfos(miso_helper, create_farm):
-    user_pool_infos = miso_helper.getUserPoolInfos(accounts[0], create_farm)
+def test_getUserPoolsInfos(miso_helper):
+    user_pool_infos = miso_helper.getUserPoolsInfos(accounts[0])
 
     print("user_pools_infos:", user_pool_infos)
 

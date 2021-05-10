@@ -1,16 +1,10 @@
 pragma solidity 0.6.12;
 
 interface IMisoFarm {
-    function initFarm(
-        address rewards,
-        uint256 rewardsPerBlock,
-        uint256 startBlock,
-        address devAddr,
-        address accessControls
-    ) external;
 
     function initFarm(
         bytes calldata data
     ) external;
+    function farmTemplate() external view returns (uint256);
 
 }

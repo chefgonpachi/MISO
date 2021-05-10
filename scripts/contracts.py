@@ -17,7 +17,7 @@ def load_accounts():
         accounts.add(
             'fa3c06c67426b848e6cef377a2dbd2d832d3718999fbe377236676c9216d8ec0')
 
-    if network.show_active() in ['bsc-main', 'bsc-test']:
+    if network.show_active() in ['bsc-main', 'bsc-test', 'bsc-fork-testnet']:
         # 0x24a74011101564cC754C64Ad8b260e98b63aBAd5
         accounts.add('3894dbdbcc8c341b8bfdb95322ed22e1e94cd2f0385d0d52b43509a98ec06000')
         # 0xd8B680B6FBdf1254cF91dF2e0CBe32E303dFfC32
@@ -40,7 +40,7 @@ def deploy_access_control(operator):
     if access_control_address == '':
         access_control = MISOAccessControls.deploy(
             {'from': accounts[0]}, publish_source=publish())
-        access_control.initAccessControls(operator, {'from': accounts[0]})
+        access_control.initAccessControls(accounts[0], {'from': accounts[0]})
         access_control.addOperatorRole(operator, {'from': accounts[0]})
     else:
         access_control = MISOAccessControls.at(access_control_address)
@@ -154,13 +154,13 @@ def deploy_pointlist_factory(pointlist_template, access_control, pointlist_fee):
     pointlist_factory_address = CONTRACTS[network.show_active(
     )]["pointlist_factory"]
     if pointlist_factory_address == '':
-        pointlist_factory = PointListFactory.deploy(
+        pointlist_factory = ListFactory.deploy(
             {"from": accounts[0]}, publish_source=publish())
-        tx = pointlist_factory.initPointListFactory(
+        tx = pointlist_factory.initListFactory(
             access_control, pointlist_template, pointlist_fee,  {"from": accounts[0]})
-        assert 'MisoInitPointListFactory' in tx.events
+        assert 'MisoInitListFactory' in tx.events
     else:
-        pointlist_factory = PointListFactory.at(pointlist_factory_address)
+        pointlist_factory = ListFactory.at(pointlist_factory_address)
     return pointlist_factory
 
 
@@ -250,16 +250,24 @@ def deploy_pool_liquidity_template():
     return pool_liquidity_template
 
 
-def deploy_miso_launcher(access_control, weth_token):
+def deploy_post_auction_template(weth_token):
+    post_auction_template_address = CONTRACTS[network.show_active()]["post_auction_template"]
+    if post_auction_template_address == '':
+        post_auction_template = PostAuctionLauncher.deploy(weth_token, {"from":accounts[0]}, publish_source=publish())
+    else:
+        post_auction_template = PostAuctionLauncher.at(post_auction_template_address)
+    return post_auction_template
+
+def deploy_miso_launcher(access_control, weth_token, bento_box):
     miso_launcher_address = CONTRACTS[network.show_active()]["miso_launcher"]
     if miso_launcher_address == '':
-        miso_launcher = MISOLiquidityLauncher.deploy(
+        miso_launcher = MISOLauncher.deploy(
             {"from": accounts[0]}, publish_source=publish())
-        miso_launcher.initMISOLiquidityLauncher(
-            access_control, weth_token, {"from": accounts[0]})
+        miso_launcher.initMISOLauncher(
+            access_control, weth_token, bento_box, {"from": accounts[0]})
 
     else:
-        miso_launcher = MISOLiquidityLauncher.at(miso_launcher_address)
+        miso_launcher = MISOLauncher.at(miso_launcher_address)
     return miso_launcher
 
 

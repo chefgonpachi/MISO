@@ -4,7 +4,7 @@ from brownie.convert import to_address
 import pytest
 from brownie import Contract
 from settings import *
-from test_pool_liquidity import deposit_eth, deposit_tokens
+# from test_pool_liquidity import deposit_eth, deposit_tokens
 
 # reset the chain after every test case
 @pytest.fixture(autouse=True)
@@ -29,13 +29,13 @@ def crowdsale_2(Crowdsale,mintable_token, fixed_token2):
     crowdsale = _crowdsale_helper(Crowdsale, mintable_token,TOKEN_QUANTITY, RATE,fixed_token2,operator)
     return crowdsale
 
-@pytest.fixture(scope='function', autouse=True)
-def crowdsale_3(Crowdsale,mintable_token,pool_liquidity):
-    operator = pool_liquidity
-    TOKEN_QUANTITY = CROWDSALE_TOKENS
-    RATE = CROWDSALE_RATE
-    crowdsale = _crowdsale_helper(Crowdsale, mintable_token,TOKEN_QUANTITY, RATE, ETH_ADDRESS,operator)
-    return crowdsale
+# @pytest.fixture(scope='function', autouse=True)
+# def crowdsale_3(Crowdsale,mintable_token,pool_liquidity):
+#     operator = pool_liquidity
+#     TOKEN_QUANTITY = CROWDSALE_TOKENS
+#     RATE = CROWDSALE_RATE
+#     crowdsale = _crowdsale_helper(Crowdsale, mintable_token,TOKEN_QUANTITY, RATE, ETH_ADDRESS,operator)
+#     return crowdsale
     
 # Crowdsale with a simple operator
 def _crowdsale_helper(Crowdsale, mintable_token, TOKENS_QUANTITY, RATE, PAYMENT_CURRENCY, operator):
@@ -131,9 +131,9 @@ def crowdsale_init_helper(Crowdsale, mintable_token, fixed_token2):
 def buy_tokens(crowdsale):
     _buy_tokens(crowdsale)
 
-@pytest.fixture(scope='function')
-def buy_tokens_3(crowdsale_3):
-    _buy_tokens(crowdsale_3)
+# @pytest.fixture(scope='function')
+# def buy_tokens_3(crowdsale_3):
+#     _buy_tokens(crowdsale_3)
 
 ############## Buy Tokens muitple times without reaching crowdsale goal #############################
 @pytest.fixture(scope='function')
@@ -172,33 +172,33 @@ def finalize(crowdsale, buy_tokens, mintable_token):
 def withdraw_tokens(crowdsale, mintable_token):
     _withdraw_tokens(crowdsale, mintable_token)
 
-####### Withdraw Tokens #############
-@pytest.fixture(scope='function')
-def withdraw_tokens_3(crowdsale_3, mintable_token):
-    _withdraw_tokens(crowdsale_3, mintable_token)
+# ####### Withdraw Tokens #############
+# @pytest.fixture(scope='function')
+# def withdraw_tokens_3(crowdsale_3, mintable_token):
+#     _withdraw_tokens(crowdsale_3, mintable_token)
 
 
 
 ##########################################
 ## PoolLiquidity Test
 ##########################################
-def test_finalize_and_launch_lp(crowdsale_3, pool_liquidity, mintable_token, buy_tokens_3, deposit_eth, deposit_tokens):
-    pool_liquidity.setAuction(crowdsale_3, {"from": accounts[0]})
-    assert crowdsale_3 == pool_liquidity.auction()
-    old_balance = accounts[4].balance()
-    chain.sleep(POOL_LAUNCH_DEADLINE+10)
-    crowdsale_balance = crowdsale_3.balance()
-    wallet = accounts[4]
-    amountRaised = crowdsale_3.marketStatus()[0]
-    rate = crowdsale_3.marketPrice()[0]
-    tokenBought = amountRaised * rate / TENPOW18
-    totalTokens = crowdsale_3.marketInfo()[2]
-    unsoldTokens = totalTokens - tokenBought
-    balance_before_finalized = mintable_token.balanceOf(wallet)
-    pool_liquidity.finalizeMarketAndLaunchLiquidityPool({"from": accounts[0]})
-    assert accounts[4].balance() == old_balance + crowdsale_balance
-    balance_after_finalized = mintable_token.balanceOf(wallet)
-    assert balance_after_finalized - balance_before_finalized == unsoldTokens
+# def test_finalize_and_launch_lp(crowdsale_3, pool_liquidity, mintable_token, buy_tokens_3, deposit_eth, deposit_tokens):
+#     pool_liquidity.setAuction(crowdsale_3, {"from": accounts[0]})
+#     assert crowdsale_3 == pool_liquidity.auction()
+#     old_balance = accounts[4].balance()
+#     chain.sleep(POOL_LAUNCH_DEADLINE+10)
+#     crowdsale_balance = crowdsale_3.balance()
+#     wallet = accounts[4]
+#     amountRaised = crowdsale_3.marketStatus()[0]
+#     rate = crowdsale_3.marketPrice()[0]
+#     tokenBought = amountRaised * rate / TENPOW18
+#     totalTokens = crowdsale_3.marketInfo()[2]
+#     unsoldTokens = totalTokens - tokenBought
+#     balance_before_finalized = mintable_token.balanceOf(wallet)
+#     pool_liquidity.finalizeMarketAndLaunchLiquidityPool({"from": accounts[0]})
+#     assert accounts[4].balance() == old_balance + crowdsale_balance
+#     balance_after_finalized = mintable_token.balanceOf(wallet)
+#     assert balance_after_finalized - balance_before_finalized == unsoldTokens
 
 
 #####################################
@@ -431,13 +431,13 @@ def test_crowdsale_withdraw_tokens_goal_reached(crowdsale, buy_tokens, mintable_
     pass
     
 
-################ Withdraw Token Test##########################
-def test_crowdsale_3_withdraw_tokens_after_finalize_expires(crowdsale_3, mintable_token, pool_liquidity):
-    crowdsale_3 = _buy_tokens(crowdsale_3)
-    chain.sleep(CROWDSALE_TIME + 14*24*3600)
-    tx = crowdsale_3.finalize({"from": pool_liquidity})
-    assert 'AuctionFinalized' in tx.events
-    _withdraw_tokens(crowdsale_3, mintable_token)
+# ################ Withdraw Token Test##########################
+# def test_crowdsale_3_withdraw_tokens_after_finalize_expires(crowdsale_3, mintable_token, pool_liquidity):
+#     crowdsale_3 = _buy_tokens(crowdsale_3)
+#     chain.sleep(CROWDSALE_TIME + 14*24*3600)
+#     tx = crowdsale_3.finalize({"from": pool_liquidity})
+#     assert 'AuctionFinalized' in tx.events
+#     _withdraw_tokens(crowdsale_3, mintable_token)
 
 ############### Withdraw Token Test##########################
 def test_crowdsale_withdraw_tokens_goal_not_reached(crowdsale, mintable_token, buy_token_multiple_times_goal_not_reached):

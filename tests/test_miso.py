@@ -38,139 +38,139 @@ def crowdsale_1(Crowdsale, auction_factory, token_1):
     token_1.approve(auction_factory, TOTAL_TOKENS_1/2, {"from": accounts[0]})
 
 
-def prepare_miso(miso_recipe_02, miso_access_controls, owner):
+# def prepare_miso(miso_recipe_02, miso_access_controls, owner):
 
-    operator = accounts[0]
-    wallet = accounts[1]
-    name = "Token"
-    symbol = "TKN"
-    tokensToMint = 1000 * TENPOW18
-    tokensToMarket = 200 * TENPOW18
+#     operator = accounts[0]
+#     wallet = accounts[1]
+#     name = "Token"
+#     symbol = "TKN"
+#     tokensToMint = 1000 * TENPOW18
+#     tokensToMarket = 200 * TENPOW18
 
-    startTime = chain.time() + 50
-    endTime = chain.time() + 1000
-    market_rate = 10 * TENPOW18
-    market_goal = 20 * TENPOW18
-    payment_currency = ETH_ADDRESS
+#     startTime = chain.time() + 50
+#     endTime = chain.time() + 1000
+#     market_rate = 10 * TENPOW18
+#     market_goal = 20 * TENPOW18
+#     payment_currency = ETH_ADDRESS
 
-    duration = 300  # seconds
-    launchwindow = POOL_LAUNCH_WINDOW
-    deadline = chain.time() + POOL_LAUNCH_DEADLINE
-    locktime = POOL_LAUNCH_LOCKTIME
-    tokensToLiquidity = 100 * TENPOW18
+#     duration = 300  # seconds
+#     launchwindow = POOL_LAUNCH_WINDOW
+#     deadline = chain.time() + POOL_LAUNCH_DEADLINE
+#     locktime = POOL_LAUNCH_LOCKTIME
+#     tokensToLiquidity = 100 * TENPOW18
 
-    # Create new Farm
-    rewards_per_block = 1 * TENPOW18
-    # Define the start time relative to sales
-    start_block = len(chain) + 10
-    dev_addr = wallet
-    tokensToFarm = 100 * TENPOW18
-    alloc_point = 10
-    integratorFeeAccount = accounts[1]
+#     # Create new Farm
+#     rewards_per_block = 1 * TENPOW18
+#     # Define the start time relative to sales
+#     start_block = len(chain) + 10
+#     dev_addr = wallet
+#     tokensToFarm = 100 * TENPOW18
+#     alloc_point = 10
+#     integratorFeeAccount = accounts[1]
 
-    txn = miso_recipe_02.prepareMiso(
-        name,
-        symbol,
-        miso_access_controls,
-        tokensToMint,
-        tokensToMarket,
-        payment_currency,
+#     txn = miso_recipe_02.prepareMiso(
+#         name,
+#         symbol,
+#         miso_access_controls,
+#         tokensToMint,
+#         tokensToMarket,
+#         payment_currency,
 
-        startTime,
-        endTime,
-        market_rate,
-        market_goal,
-        wallet,
-        operator,
-
-
-        deadline,
-        launchwindow,
-        locktime,
-        tokensToLiquidity,
-
-        rewards_per_block,
-        start_block,
-        dev_addr,
-        tokensToFarm,
-        alloc_point,
-        integratorFeeAccount, {'from': owner}
-    )
-
-    token, crowdsale, lp_token, pool_liquidity, farm = txn.return_value
-    return [token, crowdsale, lp_token, pool_liquidity, farm]
-
-# def
+#         startTime,
+#         endTime,
+#         market_rate,
+#         market_goal,
+#         wallet,
+#         operator,
 
 
-def test_prepare_miso(
-    FixedToken,
-    Crowdsale,
-    PoolLiquidity,
-    MISOMasterChef,
-    UniswapV2Pair,
-    token_factory,
-    fixed_token_template,
-    weth_token,
-    miso_recipe_02,
-    miso_access_controls
-):
-    token_1, crowdsale_1, lp_token_1, pool_liquidity_1, farm_1 = prepare_miso(
-        miso_recipe_02, miso_access_controls, accounts[0])
+#         deadline,
+#         launchwindow,
+#         locktime,
+#         tokensToLiquidity,
+
+#         rewards_per_block,
+#         start_block,
+#         dev_addr,
+#         tokensToFarm,
+#         alloc_point,
+#         integratorFeeAccount, {'from': owner}
+#     )
+
+#     token, crowdsale, lp_token, pool_liquidity, farm = txn.return_value
+#     return [token, crowdsale, lp_token, pool_liquidity, farm]
+
+# # def
+
+
+# def test_prepare_miso(
+#     FixedToken,
+#     Crowdsale,
+#     PoolLiquidity,
+#     MISOMasterChef,
+#     UniswapV2Pair,
+#     token_factory,
+#     fixed_token_template,
+#     weth_token,
+#     miso_recipe_02,
+#     miso_access_controls
+# ):
+#     token_1, crowdsale_1, lp_token_1, pool_liquidity_1, farm_1 = prepare_miso(
+#         miso_recipe_02, miso_access_controls, accounts[0])
     
-    token_1 = FixedToken.at(token_1)
-    crowdsale_1 = Crowdsale.at(crowdsale_1)
-    farm_1 = MISOMasterChef.at(farm_1)
-    lp_token_1 = UniswapV2Pair.at(lp_token_1)
+#     token_1 = FixedToken.at(token_1)
+#     crowdsale_1 = Crowdsale.at(crowdsale_1)
+#     farm_1 = MISOMasterChef.at(farm_1)
+#     lp_token_1 = UniswapV2Pair.at(lp_token_1)
 
-    # Crowdsale
-    assert token_1.balanceOf(crowdsale_1) == 200 * TENPOW18
+#     # Crowdsale
+#     assert token_1.balanceOf(crowdsale_1) == 200 * TENPOW18
 
-    buyer_1 = accounts[4]
-    amount_1 = 10 * TENPOW18
-    buyer_2 = accounts[2]
-    amount_2 = 5.5 * TENPOW18
-    buyer_3 = accounts[3]
-    amount_3 = 4.5 * TENPOW18
+#     buyer_1 = accounts[4]
+#     amount_1 = 10 * TENPOW18
+#     buyer_2 = accounts[2]
+#     amount_2 = 5.5 * TENPOW18
+#     buyer_3 = accounts[3]
+#     amount_3 = 4.5 * TENPOW18
 
-    assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
-    pool_liquidity_1 = PoolLiquidity.at(pool_liquidity_1)
-    pool_liquidity_1.setAuction(crowdsale_1, {"from": accounts[0]})
+#     # assert token_1.balanceOf(pool_liquidity_1) == 100 * TENPOW18
+#     # pool_liquidity_1 = PoolLiquidity.at(pool_liquidity_1)
+#     # pool_liquidity_1.setAuction(crowdsale_1, {"from": accounts[0]})
 
-    chain.sleep(50)
+#     chain.sleep(50)
 
-    crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_1, amount_1)
-    crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_2, amount_2)
-    crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_3, amount_3)
-    assert crowdsale_1.auctionSuccessful() == True
+#     crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_1, amount_1)
+#     crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_2, amount_2)
+#     crowdsale_1 = _buy_token_helper(crowdsale_1, buyer_3, amount_3)
+#     assert crowdsale_1.auctionSuccessful() == True
 
-    # # Pool Liquidity
+#     # # Pool Liquidity
 
-    # chain.sleep(POOL_LAUNCH_DEADLINE)
-    # pool_liquidity_1.finalizeMarketAndLaunchLiquidityPool(
-    #     {"from": accounts[0]}
-    # )
-    # assert weth_token.balanceOf(lp_token_1) == amount_1 + amount_2 + amount_3
-    # assert token_1.balanceOf(lp_token_1) == 100 * TENPOW18
-    # assert crowdsale_1.balance() == 0
+#     # chain.sleep(POOL_LAUNCH_DEADLINE)
+#     # pool_liquidity_1.finalizeMarketAndLaunchLiquidityPool(
+#     #     {"from": accounts[0]}
+#     # )
+#     # assert weth_token.balanceOf(lp_token_1) == amount_1 + amount_2 + amount_3
+#     # assert token_1.balanceOf(lp_token_1) == 100 * TENPOW18
+#     # assert crowdsale_1.balance() == 0
 
-    # chain.sleep(POOL_LAUNCH_LOCKTIME)
+#     # chain.sleep(POOL_LAUNCH_LOCKTIME)
 
-    # lp_amount = pool_liquidity_1.withdrawLPTokens({'from': accounts[0]}).return_value
+#     # lp_amount = pool_liquidity_1.withdrawLPTokens({'from': accounts[0]}).return_value
 
-    # lp_token_1.transfer(accounts[2], 10*TENPOW18, {'from': accounts[1]})
-    # lp_token_1.transfer(accounts[3], 10*TENPOW18, {'from': accounts[1]})
-    # lp_token_1.transfer(accounts[4], 10*TENPOW18, {'from': accounts[1]})
+#     # lp_token_1.transfer(accounts[2], 10*TENPOW18, {'from': accounts[1]})
+#     # lp_token_1.transfer(accounts[3], 10*TENPOW18, {'from': accounts[1]})
+#     # lp_token_1.transfer(accounts[4], 10*TENPOW18, {'from': accounts[1]})
 
-    # # Farm
+#     # # Farm
 
-    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[2]})
-    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[3]})
-    # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[4]})
+#     # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[2]})
+#     # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[3]})
+#     # lp_token_1.approve(farm_1, 10*TENPOW18, {'from': accounts[4]})
 
-    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[2]})
-    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[3]})
-    # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[4]})
+#     # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[2]})
+#     # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[3]})
+#     # farm_1.deposit(0, 10*TENPOW18, {'from': accounts[4]})
     
 
 def test_dutch_auction(FixedToken, auction_factory, dutch_auction_template, fixed_token_template, token_factory):
@@ -232,4 +232,3 @@ def test_dutch_auction(FixedToken, auction_factory, dutch_auction_template, fixe
     assert "MarketCreated" in tx.events
 
 
-# def crowdsale_process(crowdsale):

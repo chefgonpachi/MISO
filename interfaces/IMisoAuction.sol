@@ -24,4 +24,5 @@ interface IMisoAuction {
 
     function finalize() external;
     function tokenPrice() external view returns (uint256);
+    function getTotalTokens() external view returns (uint256);
 }

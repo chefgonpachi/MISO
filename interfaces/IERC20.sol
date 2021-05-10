@@ -1,4 +1,3 @@
-
 pragma solidity 0.6.12;
 
 interface IERC20 {
@@ -10,11 +9,9 @@ interface IERC20 {
     function symbol() external view returns (string memory);
     function decimals() external view returns (uint8);
 
-    // transfer and transferFrom intentionally missing, replaced with safeTransfers
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    /// @notice EIP 2612
     function permit(
         address owner,
         address spender,
@@ -25,4 +22,3 @@ interface IERC20 {
         bytes32 s
     ) external;
 }
-

@@ -25,18 +25,20 @@ def main():
             mintable_token_template, {'from': operator})
 
     # Setup MISO Market
+    bento_box = deploy_bento_box()
+
     crowdsale_template = deploy_crowdsale_template()
     dutch_auction_template = deploy_dutch_auction_template()
     miso_market = deploy_miso_market(
         access_control, [dutch_auction_template, crowdsale_template])
     uniswap_factory = deploy_uniswap_factory()
 
-    # MISOLiquidityLauncher
+    # MISOLauncher
     weth_token = deploy_weth_token()
 
     pool_liquidity_template = deploy_pool_liquidity_template()
-    miso_launcher = deploy_miso_launcher(access_control, weth_token)
-    if miso_launcher.launcherTemplateId() == 0:
+    miso_launcher = deploy_miso_launcher(access_control, weth_token, bento_box)
+    if miso_launcher.getLiquidityTemplateIndex(0) == ZERO_ADDRESS:
         miso_launcher.addLiquidityLauncherTemplate(
             pool_liquidity_template, {"from": accounts[0]})
 
@@ -48,7 +50,6 @@ def main():
             masterchef_template, {"from": accounts[0]})
 
     # Create mintable for testing
-
     recipe_02 = MISORecipe02.deploy(
         miso_token_factory,
         weth_token,

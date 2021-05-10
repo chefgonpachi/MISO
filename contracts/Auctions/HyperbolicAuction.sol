@@ -37,11 +37,11 @@ pragma experimental ABIEncoderV2;
 
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
+import "../Utils/BoringMath.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
 import "../../interfaces/IMisoMarket.sol";
@@ -50,8 +50,10 @@ import "../../interfaces/IMisoMarket.sol";
 /// @notice Attribution to dutchswap.com
 
 contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
-    using SafeMath for uint256;
     using BoringERC20 for IERC20;
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
 
     // MISOMarket template id.
     /// @dev For different marketplace types, this must be incremented.
@@ -155,11 +157,11 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
             require(IERC20(_paymentCurrency).decimals() > 0, "HyperbolicAuction: Payment currency is not ERC20");
         }
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
-        marketInfo.totalTokens = uint128(_totalTokens);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
+        marketInfo.totalTokens = BoringMath.to128(_totalTokens);
 
-        marketPrice.minimumPrice = uint128(_minimumPrice);
+        marketPrice.minimumPrice = BoringMath.to128(_minimumPrice);
 
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
@@ -173,7 +175,7 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
         uint256 _duration = _endTime - _startTime;
         uint256 _alpha = _duration.mul(_minimumPrice);
         require (_alpha > 0);
-        marketPrice.alpha = uint128(_alpha);
+        marketPrice.alpha = BoringMath.to128(_alpha);
 
         _safeTransferFrom(_token, _funder, _totalTokens);
     }
@@ -344,7 +346,7 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
         }
 
         commitments[_addr] = newCommitment;
-        status.commitmentsTotal = uint128(uint256(status.commitmentsTotal).add(_commitment));
+        status.commitmentsTotal = BoringMath.to128(uint256(status.commitmentsTotal).add(_commitment));
         emit AddedCommitment(_addr, _commitment);
     }
 
@@ -530,8 +532,8 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
         require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start price");
         require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
         
         emit AuctionTimeUpdated(_startTime,_endTime);
     }
@@ -545,7 +547,7 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
         require(_minimumPrice > 0, "HyperbolicAuction: minimum price must be greater than 0"); 
         require(marketStatus.commitmentsTotal == 0, "HyperbolicAuction: auction cannot have already started");
 
-        marketPrice.minimumPrice = uint128(_minimumPrice);
+        marketPrice.minimumPrice = BoringMath.to128(_minimumPrice);
 
         emit AuctionPriceUpdated(_minimumPrice);
     }

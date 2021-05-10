@@ -11,15 +11,20 @@ pragma solidity 0.6.12;
 //
 //----------------------------------------------------------------------------------
 
+
+import "./Access/MISOAccessControls.sol";
+import "./Utils/BoringMath.sol";
+import "./Utils/SafeTransfer.sol";
 import "../interfaces/IMisoMarket.sol";
 import "../interfaces/IERC20.sol";
-import "./Access/MISOAccessControls.sol";
-import "./Utils/SafeTransfer.sol";
-
 import "../interfaces/IBentoBoxFactory.sol";
 
 
 contract MISOMarket is SafeTransfer {
+
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
@@ -117,7 +122,7 @@ contract MISOMarket is SafeTransfer {
             accessControls.hasAdminRole(msg.sender),
             "MISOMarket: Sender must be operator"
         );
-        marketFees.minimumFee = uint128(_amount);
+        marketFees.minimumFee = BoringMath.to128(_amount);
     }
 
     /**
@@ -144,7 +149,7 @@ contract MISOMarket is SafeTransfer {
         );
         /// @dev this is out of 1000, ie 25% = 250
         require(_amount <= 1000, "MISOMarket: Percentage is out of 1000");
-        marketFees.integratorFeePct = uint32(_amount);
+        marketFees.integratorFeePct = BoringMath.to32(_amount);
     }
 
     /**
@@ -215,7 +220,7 @@ contract MISOMarket is SafeTransfer {
 
         /// @dev Deploy using the BentoBox factory. 
         newMarket = bentoBox.deploy(auctionTemplate, "", false);
-        auctionInfo[address(newMarket)] = Auction(true, uint64(_templateId), uint128(auctions.length));
+        auctionInfo[address(newMarket)] = Auction(true, BoringMath.to64(_templateId), BoringMath.to128(auctions.length));
         auctions.push(address(newMarket));
         emit MarketCreated(msg.sender, address(newMarket), auctionTemplate);
         if (misoFee > 0) {

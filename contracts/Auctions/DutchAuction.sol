@@ -15,10 +15,10 @@ pragma experimental ABIEncoderV2;
 
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/BoringBatchable.sol";
+import "../Utils/BoringMath.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
@@ -28,7 +28,9 @@ import "../../interfaces/IMisoMarket.sol";
 /// @notice Attribution to dutchswap.com
 
 contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
-    using SafeMath for uint256;
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -131,12 +133,12 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
             require(IERC20(_paymentCurrency).decimals() > 0, "DutchAuction: Payment currency is not ERC20");
         }
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
-        marketInfo.totalTokens = uint128(_totalTokens);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
+        marketInfo.totalTokens = BoringMath.to128(_totalTokens);
 
-        marketPrice.startPrice = uint128(_startPrice);
-        marketPrice.minimumPrice = uint128(_minimumPrice);
+        marketPrice.startPrice = BoringMath.to128(_startPrice);
+        marketPrice.minimumPrice = BoringMath.to128(_minimumPrice);
 
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
@@ -293,8 +295,8 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
         MarketInfo memory _marketInfo = marketInfo;
         MarketPrice memory _marketPrice = marketPrice;
 
-        uint256 numerator = uint256(_marketPrice.startPrice).sub(uint256(_marketPrice.minimumPrice));
-        uint256 denominator = uint256(_marketInfo.endTime).sub(uint256(_marketInfo.startTime));
+        uint256 numerator = uint256(_marketPrice.startPrice.sub(_marketPrice.minimumPrice));
+        uint256 denominator = uint256(_marketInfo.endTime.sub(_marketInfo.startTime));
         return numerator / denominator;
     }
 
@@ -392,7 +394,7 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
         }
         
         commitments[_addr] = newCommitment;
-        status.commitmentsTotal = uint128(uint256(status.commitmentsTotal).add(_commitment));
+        status.commitmentsTotal = BoringMath.to128(uint256(status.commitmentsTotal).add(_commitment));
         emit AddedCommitment(_addr, _commitment);
     }
 
@@ -537,8 +539,8 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
         require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
         require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
         
         emit AuctionTimeUpdated(_startTime,_endTime);
     }
@@ -554,8 +556,8 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
         require(_minimumPrice > 0, "DutchAuction: minimum price must be greater than 0"); 
         require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
-        marketPrice.startPrice = uint128(_startPrice);
-        marketPrice.minimumPrice = uint128(_minimumPrice);
+        marketPrice.startPrice = BoringMath.to128(_startPrice);
+        marketPrice.minimumPrice = BoringMath.to128(_minimumPrice);
 
         emit AuctionPriceUpdated(_startPrice,_minimumPrice);
     }

@@ -16,6 +16,11 @@ library BoringMath {
         require(b == 0 || (c = a * b) / b == a, "BoringMath: Mul Overflow");
     }
 
+    function div(uint256 a, uint256 b) internal pure returns (uint256 c) {
+        require(b > 0, "BoringMath: Div zero");
+        c = a / b;
+    }
+
     function to128(uint256 a) internal pure returns (uint128 c) {
         require(a <= uint128(-1), "BoringMath: uint128 Overflow");
         c = uint128(a);
@@ -30,6 +35,12 @@ library BoringMath {
         require(a <= uint32(-1), "BoringMath: uint32 Overflow");
         c = uint32(a);
     }
+
+    function to16(uint256 a) internal pure returns (uint16 c) {
+        require(a <= uint16(-1), "BoringMath: uint16 Overflow");
+        c = uint16(a);
+    }
+
 }
 
 /// @notice A library for performing overflow-/underflow-safe addition and subtraction on uint128.
@@ -61,6 +72,17 @@ library BoringMath32 {
     }
 
     function sub(uint32 a, uint32 b) internal pure returns (uint32 c) {
+        require((c = a - b) <= a, "BoringMath: Underflow");
+    }
+}
+
+/// @notice A library for performing overflow-/underflow-safe addition and subtraction on uint32.
+library BoringMath16 {
+    function add(uint16 a, uint16 b) internal pure returns (uint16 c) {
+        require((c = a + b) >= b, "BoringMath: Add Overflow");
+    }
+
+    function sub(uint16 a, uint16 b) internal pure returns (uint16 c) {
         require((c = a - b) <= a, "BoringMath: Underflow");
     }
 }

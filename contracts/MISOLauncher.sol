@@ -13,13 +13,18 @@ pragma solidity 0.6.12;
 
 
 import "./Utils/SafeTransfer.sol";
+import "./Utils/BoringMath.sol";
+import "./Access/MISOAccessControls.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IMisoLiquidity.sol";
-import "./Access/MISOAccessControls.sol";
 import "../interfaces/IBentoBoxFactory.sol";
 
 
 contract MISOLauncher is SafeTransfer {
+
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
 
     /// @notice Responsible for access rights to the contract.
     MISOAccessControls public accessControls;
@@ -116,7 +121,7 @@ contract MISOLauncher is SafeTransfer {
             accessControls.hasAdminRole(msg.sender),
             "MISOLauncher: Sender must be operator"
         );
-        launcherFees.minimumFee = uint128(_amount);
+        launcherFees.minimumFee = BoringMath.to128(_amount);
     }
 
     /**
@@ -130,7 +135,7 @@ contract MISOLauncher is SafeTransfer {
         );
         /// @dev this is out of 1000, ie 25% = 250
         require(_amount <= 1000, "MISOLauncher: Percentage is out of 1000");
-        launcherFees.integratorFeePct = uint32(_amount);
+        launcherFees.integratorFeePct = BoringMath.to32(_amount);
     }
 
     /**
@@ -212,7 +217,7 @@ contract MISOLauncher is SafeTransfer {
         }
         /// @dev Deploy using the BentoBox factory. 
         launcher = bentoBox.deploy(launcherTemplate, "", false);
-        launcherInfo[address(launcher)] = Launcher(true, uint64(_templateId), uint128(launchers.length));
+        launcherInfo[address(launcher)] = Launcher(true, BoringMath.to64(_templateId), BoringMath.to128(launchers.length));
         launchers.push(address(launcher));
         emit LauncherCreated(msg.sender, address(launcher), launcherTemplates[_templateId]);
         if (misoFee > 0) {

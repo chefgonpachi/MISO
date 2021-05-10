@@ -14,10 +14,10 @@ pragma experimental ABIEncoderV2;
 
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/BoringBatchable.sol";
+import "../Utils/BoringMath.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
@@ -28,7 +28,10 @@ import "../../interfaces/IMisoMarket.sol";
 
 
 contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents, ReentrancyGuard  {
-    using SafeMath for uint256;
+
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -118,11 +121,11 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
             require(IERC20(_paymentCurrency).decimals() > 0, "BatchAuction: Payment currency is not ERC20");
         }
 
-        marketStatus.minimumCommitmentAmount = uint128(_minimumCommitmentAmount);
+        marketStatus.minimumCommitmentAmount = BoringMath.to128(_minimumCommitmentAmount);
         
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
-        marketInfo.totalTokens = uint128(_totalTokens);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
+        marketInfo.totalTokens = BoringMath.to128(_totalTokens);
 
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
@@ -210,7 +213,7 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
             require(IPointList(pointList).hasPoints(_addr, newCommitment));
         }
         commitments[_addr] = newCommitment;
-        marketStatus.commitmentsTotal = uint128(uint256(marketStatus.commitmentsTotal).add(_commitment));
+        marketStatus.commitmentsTotal = BoringMath.to128(uint256(marketStatus.commitmentsTotal).add(_commitment));
         emit AddedCommitment(_addr, _commitment);
     }
 
@@ -409,8 +412,8 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
 
         require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
         
         emit AuctionTimeUpdated(_startTime,_endTime);
     }
@@ -424,7 +427,7 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
 
         require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
 
-        marketStatus.minimumCommitmentAmount = uint128(_minimumCommitmentAmount);
+        marketStatus.minimumCommitmentAmount = BoringMath.to128(_minimumCommitmentAmount);
 
         emit AuctionPriceUpdated(_minimumCommitmentAmount);
     }

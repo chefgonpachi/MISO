@@ -14,11 +14,11 @@ pragma experimental ABIEncoderV2;
 
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
-import "../OpenZeppelin/math/SafeMath.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
 import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
+import "../Utils/BoringMath.sol";
 import "../Utils/Documents.sol";
 import "../../interfaces/IPointList.sol";
 import "../../interfaces/IMisoMarket.sol";
@@ -27,7 +27,9 @@ import "../../interfaces/IMisoMarket.sol";
 /// @notice Attribution to dutchswap.com
 
 contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
-    using SafeMath for uint256;
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
     using BoringERC20 for IERC20;
 
     /// @notice MISOMarket template id for the factory contract.
@@ -141,12 +143,12 @@ contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTran
             require(IERC20(_paymentCurrency).decimals() > 0, "Crowdsale: Payment currency is not ERC20");
         }
 
-        marketPrice.rate = uint128(_rate);
-        marketPrice.goal = uint128(_goal);
+        marketPrice.rate = BoringMath.to128(_rate);
+        marketPrice.goal = BoringMath.to128(_goal);
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
-        marketInfo.totalTokens = uint128(_totalTokens);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
+        marketInfo.totalTokens = BoringMath.to128(_totalTokens);
 
         auctionToken = _token;
         paymentCurrency = _paymentCurrency;
@@ -283,7 +285,7 @@ contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTran
         commitments[_addr] = newCommitment;
 
         /// @dev Update state.
-        marketStatus.commitmentsTotal = uint128(uint256(marketStatus.commitmentsTotal).add(_commitment));
+        marketStatus.commitmentsTotal = BoringMath.to128(uint256(marketStatus.commitmentsTotal).add(_commitment));
 
         emit AddedCommitment(_addr, _commitment);
     }
@@ -512,8 +514,8 @@ contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTran
 
         require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
 
-        marketInfo.startTime = uint64(_startTime);
-        marketInfo.endTime = uint64(_endTime);
+        marketInfo.startTime = BoringMath.to64(_startTime);
+        marketInfo.endTime = BoringMath.to64(_endTime);
         
         emit AuctionTimeUpdated(_startTime,_endTime);
     }
@@ -530,8 +532,8 @@ contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTran
 
         require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
 
-        marketPrice.rate = uint128(_rate);
-        marketPrice.goal = uint128(_goal);
+        marketPrice.rate = BoringMath.to128(_rate);
+        marketPrice.goal = BoringMath.to128(_goal);
 
 
         emit AuctionPriceUpdated(_rate,_goal);

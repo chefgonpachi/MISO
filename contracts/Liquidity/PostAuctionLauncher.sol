@@ -14,8 +14,8 @@ pragma solidity 0.6.12;
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
-import "../Utils/SafeMathPlus.sol";
 import "../Utils/SafeTransfer.sol";
+import "../Utils/BoringMath.sol";
 import "../UniswapV2/UniswapV2Library.sol";
 import "../UniswapV2/interfaces/IUniswapV2Pair.sol";
 import "../UniswapV2/interfaces/IUniswapV2Factory.sol";
@@ -24,8 +24,14 @@ import "../../interfaces/IERC20.sol";
 import "../../interfaces/IMisoAuction.sol";
 
 
+
 contract PostAuctionLauncher is MISOAccessControls, SafeTransfer, ReentrancyGuard {
-    using SafeMathPlus for uint256;
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
+    using BoringMath64 for uint64;
+    using BoringMath32 for uint32;
+    using BoringMath16 for uint16;
+
 
     /// @notice Number of seconds per day.
     uint256 private constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -114,8 +120,8 @@ contract PostAuctionLauncher is MISOAccessControls, SafeTransfer, ReentrancyGuar
         tokenPair = UniswapV2Library.pairFor(_factory, address(token1), address(token2), pairCodeHash);
    
         wallet = _wallet;
-        launcherInfo.liquidityPercent = uint16(_liquidityPercent);
-        launcherInfo.locktime = uint32(_locktime);
+        launcherInfo.liquidityPercent = BoringMath.to16(_liquidityPercent);
+        launcherInfo.locktime = BoringMath.to32(_locktime);
 
         uint256 initalTokenAmount = market.getTotalTokens().mul(_liquidityPercent).div(LIQUIDITY_PRECISION);
         _safeTransferFrom(address(token2), msg.sender, initalTokenAmount);
@@ -218,11 +224,11 @@ contract PostAuctionLauncher is MISOAccessControls, SafeTransfer, ReentrancyGuar
         _safeTransfer(address(token1), tokenPair, token1Amount);
         _safeTransfer(address(token2), tokenPair, token2Amount);
         liquidity = IUniswapV2Pair(tokenPair).mint(address(this));
-        launcherInfo.liquidityAdded = uint128(uint256(launcherInfo.liquidityAdded).add(liquidity));
+        launcherInfo.liquidityAdded = BoringMath.to128(uint256(launcherInfo.liquidityAdded).add(liquidity));
 
         /// @dev if unlock time not yet set, add it.
         if (launcherInfo.unlock == 0 ) {
-            launcherInfo.unlock = uint64(block.timestamp + uint256(launcherInfo.locktime));
+            launcherInfo.unlock = BoringMath.to64(block.timestamp + uint256(launcherInfo.locktime));
         }
         emit LiquidityAdded(liquidity);
     }

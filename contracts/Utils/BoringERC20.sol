@@ -1,5 +1,5 @@
 pragma solidity 0.6.12;
-import "../../interfaces/IERC20.sol";
+import "../interfaces/IERC20.sol";
 
 // solhint-disable avoid-low-level-calls
 

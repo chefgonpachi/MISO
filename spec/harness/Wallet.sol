@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-contract Receiver {
+contract Wallet {
 
     fallback() external payable {}
     function sendTo() external payable returns (bool) { return true; }

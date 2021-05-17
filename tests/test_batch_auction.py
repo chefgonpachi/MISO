@@ -269,7 +269,7 @@ def batch_auction_pay_by_token(BatchAuction,fixed_token_payment_currency, fixed_
     start_time = chain.time() + 10
     end_time = start_time - 10
     
-    with reverts("BatchAuction: end time must be older than start price"):
+    with reverts("BatchAuction: end time must be older than start time"):
         batch_auction_pay_by_token.initAuction(
         funder,
         fixed_token_cal,

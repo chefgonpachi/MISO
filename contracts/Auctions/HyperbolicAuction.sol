@@ -1,28 +1,7 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-//
-//  Hyperbolic Auction V1.3
-//   Copyright (c) 2020 DutchSwap.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// ------------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
+                   
 //----------------------------------------------------------------------------------
 //    I n s t a n t
 //
@@ -33,7 +12,34 @@ pragma experimental ABIEncoderV2;
 //  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
 //
 //----------------------------------------------------------------------------------
-
+//
+// Chef Gonpachi's Hyperbolic Auction
+////
+// A declining price auction with fair price discovery on a hyperbolic curve.
+//
+// Inspired by DutchSwap's Dutch Auctions
+// https://github.com/deepyr/DutchSwap
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// The above copyright notice and this permission notice shall be included 
+// in all copies or substantial portions of the Software.
+//
+// Made for Sushi.com 
+// 
+// Enjoy. (c) Chef Gonpachi, Kusatoshi, SSMikazu 2021 
+// <https://github.com/chefgonpachi/MISO/>
+//
+// ---------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-3.0-or-later                        
+// ---------------------------------------------------------------------
 
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
@@ -43,8 +49,8 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/Documents.sol";
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IMisoMarket.sol";
+import "../interfaces/IPointList.sol";
+import "../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
@@ -147,7 +153,7 @@ contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, 
         require(_endTime < 10000000000, "HyperbolicAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "HyperbolicAuction: start time is before current time");
         require(_totalTokens > 0,"HyperbolicAuction: total tokens must be greater than zero");
-        require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start price");
+        require(_endTime > _startTime, "HyperbolicAuction: end time must be older than start time");
         require(_minimumPrice > 0, "HyperbolicAuction: minimum price must be greater than 0"); 
         require(_wallet != address(0), "HyperbolicAuction: wallet is the zero address");
         require(_admin != address(0), "HyperbolicAuction: admin is the zero address");

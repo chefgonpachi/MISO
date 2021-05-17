@@ -1,9 +1,9 @@
 pragma solidity 0.6.12;
 
-import "../../interfaces/IGnosisProxyFactory.sol";
-import "../../interfaces/ISafeGnosis.sol";
 import "../Access/MISOAccessControls.sol";
-import "../../interfaces/IERC20.sol";
+import "../interfaces/IGnosisProxyFactory.sol";
+import "../interfaces/ISafeGnosis.sol";
+import "../interfaces/IERC20.sol";
 
 
 contract GnosisSafeFactory {

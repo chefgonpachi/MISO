@@ -1,10 +1,7 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "../../interfaces/IERC20.sol";
-import "../../interfaces/IMisoTokenFactory.sol";
 import "../Access/MISOAccessControls.sol";
-
 
 //==================
 //    Uniswap V2       
@@ -64,6 +61,19 @@ contract DocumentHepler {
 //==================
 //     Tokens
 //==================
+
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+}
+
+interface IMisoTokenFactory {
+    function getTokens() external view returns (address[] memory);
+    function numberOfTokens() external view returns (uint256);
+} 
 
 contract TokenHelper {
     struct TokenInfo {

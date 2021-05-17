@@ -1,9 +1,22 @@
 pragma solidity 0.6.12;
 
-import "../../interfaces/IMisoToken.sol";
+import "../OpenZeppelin/access/AccessControl.sol";
 import "./ERC20/ERC20Burnable.sol";
 import "./ERC20/ERC20Pausable.sol";
-import "../OpenZeppelin/access/AccessControl.sol";
+import "../interfaces/IMisoToken.sol";
+
+// ---------------------------------------------------------------------
+//
+// From the MISO Token Factory
+//
+// Made for Sushi.com 
+// 
+// Enjoy. (c) Chef Gonpachi 2021 
+// <https://github.com/chefgonpachi/MISO/>
+//
+// ---------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-3.0-or-later                        
+// ---------------------------------------------------------------------
 
 contract MintableToken is AccessControl, ERC20Burnable, ERC20Pausable, IMisoToken {
     

@@ -10,7 +10,7 @@ pragma solidity 0.6.12;
 
 import "../OpenZeppelin/math/SafeMath.sol";
 import "./MISOAccessControls.sol";
-import "../../interfaces/IPointList.sol";
+import "../interfaces/IPointList.sol";
 
 
 contract PointList is IPointList, MISOAccessControls {

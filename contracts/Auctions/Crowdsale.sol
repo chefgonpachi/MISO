@@ -11,7 +11,34 @@ pragma experimental ABIEncoderV2;
 //  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
 //
 //----------------------------------------------------------------------------------
-
+//
+// Chef Gonpachi's Crowdsale
+//
+// A fixed price token swap contract. 
+//
+// Inspired by the Open Zeppelin crowsdale and delta.financial
+// https://github.com/OpenZeppelin/openzeppelin-contracts
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// The above copyright notice and this permission notice shall be included 
+// in all copies or substantial portions of the Software.
+//
+// Made for Sushi.com 
+// 
+// Enjoy. (c) Chef Gonpachi, Kusatoshi, SSMikazu 2021 
+// <https://github.com/chefgonpachi/MISO/>
+//
+// ---------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-3.0-or-later                        
+// ---------------------------------------------------------------------
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
@@ -20,11 +47,9 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/Documents.sol";
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IMisoMarket.sol";
+import "../interfaces/IPointList.sol";
+import "../interfaces/IMisoMarket.sol";
 
-/// @notice Attribution to delta.financial
-/// @notice Attribution to dutchswap.com
 
 contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
     using BoringMath for uint256;
@@ -529,12 +554,11 @@ contract Crowdsale is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTran
         require(hasAdminRole(msg.sender));
         require(_goal > 0, "Crowdsale: goal is 0");
         require(_rate > 0, "Crowdsale: rate is 0");
-
         require(marketStatus.commitmentsTotal == 0, "Crowdsale: auction cannot have already started");
+        require(_getTokenAmount(_goal) <= uint256(marketInfo.totalTokens), "Crowdsale: minimum target exceeds hard cap");
 
         marketPrice.rate = BoringMath.to128(_rate);
         marketPrice.goal = BoringMath.to128(_goal);
-
 
         emit AuctionPriceUpdated(_rate,_goal);
     }

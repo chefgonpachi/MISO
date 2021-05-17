@@ -1,11 +1,11 @@
 pragma solidity 0.6.12;
 
 import "../OpenZeppelin/math/SafeMath.sol";
-import "../../interfaces/IERC20.sol";
-import "../../interfaces/IWETH9.sol";
-import "../../interfaces/IMisoCrowdsale.sol";
-import "../../interfaces/ISushiToken.sol";
-import "../../interfaces/IMisoLauncher.sol";
+import "../interfaces/IERC20.sol";
+import "../interfaces/IWETH9.sol";
+import "../interfaces/IMisoCrowdsale.sol";
+import "../interfaces/ISushiToken.sol";
+import "../interfaces/IMisoLauncher.sol";
 
 // MVP for preparing a MISO set menu
 

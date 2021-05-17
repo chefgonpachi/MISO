@@ -12,7 +12,34 @@ pragma experimental ABIEncoderV2;
 //  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
 //
 //----------------------------------------------------------------------------------
-
+//
+// Chef Gonpachi's Dutch Auction
+//
+// A declining price auction with fair price discovery. 
+//
+// Inspired by DutchSwap's Dutch Auctions
+// https://github.com/deepyr/DutchSwap
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// The above copyright notice and this permission notice shall be included 
+// in all copies or substantial portions of the Software.
+//
+// Made for Sushi.com 
+// 
+// Enjoy. (c) Chef Gonpachi, Kusatoshi, SSMikazu 2021 
+// <https://github.com/chefgonpachi/MISO/>
+//
+// ---------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-3.0-or-later                        
+// ---------------------------------------------------------------------
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
@@ -21,8 +48,8 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IMisoMarket.sol";
+import "../interfaces/IPointList.sol";
+import "../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
@@ -536,7 +563,7 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
         require(_startTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
-        require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
+        require(_endTime > _startTime, "DutchAuction: end time must be older than start time");
         require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
 
         marketInfo.startTime = BoringMath.to64(_startTime);

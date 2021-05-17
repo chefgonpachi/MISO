@@ -11,7 +11,34 @@ pragma experimental ABIEncoderV2;
 //  'mMm'        ':MMmm'         'mMm:  II:  'sSSSSSSSSSSSSS'     'oOOOOOOOOOOOO'  
 //
 //----------------------------------------------------------------------------------
-
+//
+// Chef Gonpachi's Crowdsale
+//
+// A fixed price token swap contract. 
+//
+// Inspired by the Open Zeppelin crowsdale and delta.financial
+// https://github.com/OpenZeppelin/openzeppelin-contracts
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// The above copyright notice and this permission notice shall be included 
+// in all copies or substantial portions of the Software.
+//
+// Made for Sushi.com 
+// 
+// Enjoy. (c) Chef Gonpachi, Kusatoshi, SSMikazu 2021 
+// <https://github.com/chefgonpachi/MISO/>
+//
+// ---------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-3.0-or-later                        
+// ---------------------------------------------------------------------
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
@@ -20,8 +47,8 @@ import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IMisoMarket.sol";
+import "../interfaces/IPointList.sol";
+import "../interfaces/IMisoMarket.sol";
 
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
@@ -112,7 +139,7 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
         require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_endTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
-        require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
+        require(_endTime > _startTime, "BatchAuction: end time must be older than start time");
         require(_totalTokens > 0,"BatchAuction: total tokens must be greater than zero");
         require(_admin != address(0), "BatchAuction: admin is the zero address");
         require(_wallet != address(0), "BatchAuction: wallet is the zero address");
@@ -408,7 +435,7 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
         require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_endTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
-        require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
+        require(_endTime > _startTime, "BatchAuction: end time must be older than start time");
 
         require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
 

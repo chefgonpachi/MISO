@@ -2,7 +2,7 @@
 
 pragma solidity 0.6.12;
 
-import "./IERC20.sol";
+import "../../../interfaces/IERC20.sol";
 import "../../math/SafeMath.sol";
 import "../../utils/Address.sol";
 
@@ -20,11 +20,13 @@ library SafeERC20 {
     using Address for address;
 
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+        // 0xa9059cbb = bytes4(keccak256("transfer(address,uint256)"))
+        _callOptionalReturn(token, abi.encodeWithSelector(0xa9059cbb, to, value));
     }
 
     function safeTransferFrom(IERC20 token, address from, address to, uint256 value) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+        // 0x23b872dd = bytes4(keccak256("transferFrom(address,address,uint256)"))
+        _callOptionalReturn(token, abi.encodeWithSelector(0x23b872dd, from, to, value));
     }
 
     /**

@@ -1,6 +1,6 @@
 
 pragma solidity 0.6.12;
-import "../../interfaces/IMasterContract.sol";
+import "../interfaces/IMasterContract.sol";
 
 // solhint-disable no-inline-assembly
 

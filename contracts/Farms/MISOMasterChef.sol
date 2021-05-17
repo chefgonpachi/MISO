@@ -13,14 +13,14 @@ pragma solidity 0.6.12;
 //----------------------------------------------------------------------------------
 
 
-// import "../../interfaces/IERC20.sol";
+import "../interfaces/IERC20.sol";
 import "../OpenZeppelin/token/ERC20/SafeERC20.sol";
 import "../OpenZeppelin/utils/EnumerableSet.sol";
 import "../OpenZeppelin/math/SafeMath.sol";
 import "../OpenZeppelin/access/Ownable.sol";
 
 import "../Access/MISOAccessControls.sol";
-import "../../interfaces/IMisoFarm.sol";
+import "../interfaces/IMisoFarm.sol";
 import "../Utils/SafeTransfer.sol";
 
 
@@ -76,13 +76,17 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
     uint256 public devPercentage;
     // Tips owed to develpers.
     uint256 public tips;
-
+    // uint256 public devPaid;
+    
     // Block number when bonus tokens period ends.
     uint256 public bonusEndBlock;
     // Reward tokens created per block.
     uint256 public rewardsPerBlock;
     // Bonus muliplier for early rewards makers.
     uint256 public bonusMultiplier;
+    // Total rewards debt.
+    uint256 public totalRewardDebt;
+
     // MISOFarmFactory template id
     uint256 public constant override farmTemplate = 1;
     // For initial setup
@@ -206,15 +210,25 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
+        uint256 remaining = blocksRemaining();
+        uint multiplier = 0;
+        if (remaining == 0) {
+            return 0;
+        } 
         if (_to <= bonusEndBlock) {
-            return _to.sub(_from).mul(bonusMultiplier);
+            multiplier = _to.sub(_from).mul(bonusMultiplier);
         } else if (_from >= bonusEndBlock) {
-            return _to.sub(_from);
+            multiplier = _to.sub(_from);
         } else {
-            return bonusEndBlock.sub(_from).mul(bonusMultiplier).add(
+            multiplier = bonusEndBlock.sub(_from).mul(bonusMultiplier).add(
                 _to.sub(bonusEndBlock)
             );
         }
+
+        if (multiplier > remaining ) {
+            multiplier = remaining;
+        }
+        return multiplier;
     }
 
     // View function to see pending tokens on frontend.
@@ -255,6 +269,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         if (devPercentage > 0) {
             tips = tips.add(rewardsAccum.mul(devPercentage).div(1000));
         }
+        totalRewardDebt = totalRewardDebt.add(rewardsAccum);
         pool.accRewardsPerShare = pool.accRewardsPerShare.add(rewardsAccum.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
@@ -267,6 +282,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accRewardsPerShare).div(1e12).sub(user.rewardDebt);
             if(pending > 0) {
+                totalRewardDebt = totalRewardDebt.sub(pending);
                 safeRewardsTransfer(msg.sender, pending);
             }
         }
@@ -286,6 +302,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         updatePool(_pid);
         uint256 pending = user.amount.mul(pool.accRewardsPerShare).div(1e12).sub(user.rewardDebt);
         if(pending > 0) {
+            totalRewardDebt = totalRewardDebt.sub(pending);
             safeRewardsTransfer(msg.sender, pending);
         }
         if(_amount > 0) {
@@ -317,10 +334,25 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         }
     }
 
+    function tokensRemaining() public view returns(uint256) {
+        return rewards.balanceOf(address(this));
+    }
+
+    function tokenDebt() public view returns(uint256) {
+        return  totalRewardDebt.add(tips);
+    }
+
+
     // Returns the number of blocks remaining with the current rewards balance
     function blocksRemaining() public view returns (uint256){
-        uint256 rewardsBal = rewards.balanceOf(address(this));
+        if (tokensRemaining() <= tokenDebt()) {
+            return 0;
+        }
+        uint256 rewardsBal = tokensRemaining().sub(tokenDebt()) ;
         if (rewardsPerBlock > 0) {
+            if (devPercentage > 0) {
+                rewardsBal = rewardsBal.mul(1000).div(devPercentage.add(1000));
+            }
             return rewardsBal / rewardsPerBlock;
         } else {
             return 0;

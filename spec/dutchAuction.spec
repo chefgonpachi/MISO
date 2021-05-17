@@ -13,14 +13,12 @@ using Receiver as receiver
 
 /*
  * Declaration of methods that are used in the rules.
- * envfree indicate that the method is not dependent on the environment
- * (msg.value, msg.sender).
+ * envfree indicates that the method is not dependent on the environment, eg:
+ * msg.value, msg.sender, etc.
  * Methods that are not declared here are assumed to be dependent on env.
  */
 methods {
-	tokenPrice() returns (uint256) 
-	priceFunction() returns (uint256) 
-
+	
 	// envfree methods
 	commitments(address) returns (uint256) envfree
 	claimed(address) returns (uint256) envfree
@@ -29,6 +27,9 @@ methods {
 	tokenBalanceOf(address, address) returns (uint256) envfree
 	getCommitmentsTotal() returns (uint256) envfree
 	getTotalTokens() returns (uint256) envfree
+	isFinalized() returns (bool) envfree
+	isInitialized() returns (bool) envfree
+	 
 
 	// IERC20 methods to be called to one of the tokens (DummyERC201, DummyWeth)
 	balanceOf(address) => DISPATCHER(true) 
@@ -36,23 +37,17 @@ methods {
 	transferFrom(address from, address to, uint256 amount) => DISPATCHER(true)
 	transfer(address to, uint256 amount) => DISPATCHER(true)
 	permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) => NONDET
-
-	// weth specific methods
-	deposit() => DISPATCHER(true)
-	withdraw(uint256 amount) => DISPATCHER(true)
 	decimals() => DISPATCHER(true)
-
+	
 	// receiver if weth
 	sendTo() => DISPATCHER(true)
-
-	// eth transfer
-	transfer(uint256 amount) => DISPATCHER(true)
 
 	// IPointList
 	hasPoints(address account, uint256 amount) => NONDET
 }
 
-definition MAX_UNSIGNED_INT() returns uint256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+definition MAX_UNSIGNED_INT() returns uint256 =
+ 			0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
 // a ghost function that tracks the sum of all commitments
 ghost sumCommitments() returns uint256 {
@@ -71,12 +66,27 @@ hook Sload uint256 commit commitments[KEY uint a] STORAGE {
 
 invariant commitmentsTotal()
 	sumCommitments() == getCommitmentsTotal()
+	{
+		preserved withdrawTokens() with (env e) {
+			require isOpen(e);
+		}
 
-//Since we assume the following property in other rules we make to sure this is always true
+		preserved withdrawTokens(address a) with (env e) {
+			require isOpen(e);
+		}
+	}
+
+invariant integrityOfTokensClaimable(address user, env e) 
+	((commitments(user) == 0) => (tokensClaimable(e, user) == 0)) &&
+	(tokensClaimable(e, user) <= commitments(user) * getStartPrice(e) * 1000000000000000000)
+	
+
+// Since we assume the following property in other rules we make to sure this is always true
 rule initState(method f) filtered 
-		{f-> (f.selector == initMarket(bytes).selector ||
-			f.selector == initAuction(address,address,uint256,uint256,uint256,address,uint256,uint256,address,address,address).selector)}
-{
+		{f -> (f.selector == initMarket(bytes).selector ||
+			f.selector == initAuction(address, address, uint256, uint256,
+									  uint256, address, uint256, uint256,
+									  address, address, address).selector)} {
 	env e;
 	uint64 _startTime;
     uint64 _endTime;
@@ -89,7 +99,7 @@ rule initState(method f) filtered
 
 	_startTime, _endTime, _totalTokens = marketInfo(e);
 	_startPrice, _minimumPrice = marketPrice(e);
-    assert ( _startTime < _endTime  && _minimumPrice > 0 && _startPrice > _minimumPrice);
+    assert (_startTime < _endTime  && _minimumPrice > 0 && _startPrice > _minimumPrice);
 	
 }
 
@@ -101,17 +111,16 @@ rule marketInfoAndPriceUnmodifiable(method f) {
 	uint128 _startPrice;
     uint128 _minimumPrice;
 	uint128 commitmentsTotal;
-	// todo - check init flag
-    // bool _initialized; 
-    bool finalized;
+	bool finalized;
     bool usePointList;
     _startTime, _endTime, _totalTokens = marketInfo(e);
 	_startPrice, _minimumPrice = marketPrice(e);
-    // commitmentsTotal, _initialized, finalized, usePointList  = marketStatus(e);
-
+    
 	calldataarg args;
 	require (f.selector != initMarket(bytes).selector &&
-			f.selector != initAuction(address,address,uint256,uint256,uint256,address,uint256,uint256,address,address,address).selector);
+			f.selector != initAuction(address, address, uint256, uint256,
+									  uint256, address, uint256, uint256, 
+									  address, address, address).selector);
 	f(e,args);
 	
 	uint64 startTime_;
@@ -119,48 +128,25 @@ rule marketInfoAndPriceUnmodifiable(method f) {
     uint128 totalTokens_;
 	uint128 startPrice_;
     uint128 minimumPrice_;
-    // bool initialized_; 
     startTime_, endTime_, totalTokens_ = marketInfo(e);
 	startPrice_, minimumPrice_ = marketPrice(e);
-	// commitmentsTotal, initialized_, finalized, usePointList  = marketStatus(e);
 	
-	assert _startTime == startTime_ &&
+	assert 	_totalTokens == totalTokens_ &&
+			( getCommitmentsTotal() > 0 => (_startPrice == startPrice_ && 
+			_minimumPrice == minimumPrice_  &&
 			_endTime == endTime_ &&
-			_totalTokens == totalTokens_ &&
-			_startPrice == startPrice_ &&
-			_minimumPrice == minimumPrice_ ;
-			
-		//	&& _initialized == initialized_ ; 
+			_startTime == startTime_ )); 		
+		
 }
 
-rule tokenPriceIncreasesMonotonically(method f) {
-	env e1;
-	env e2;
-	assumeInitState();
-	require e1.block.timestamp <= e2.block.timestamp;
-	uint256 _tokenPrice = tokenPrice(e1);
-	uint256 _commitsTotal = getCommitmentsTotal(); 
-	uint256 _totalTokens = getTotalTokens();
 
-	calldataarg args;
-	f(e1, args);
-
-	uint256 tokenPrice_ = tokenPrice(e2);
-	uint256 commitsTotal_ = getCommitmentsTotal(); 
-	uint256 totalTokens_ = getTotalTokens();
-
-	assert (_tokenPrice <= tokenPrice_);
-}
 
 rule preserveTotalAssetsOnCommit(address user, uint256 amount, method f) {
 	env e;
 
-	require paymentCurrency() == wethTokenImpl || paymentCurrency() == tokenA ||
-			paymentCurrency() == tokenB;
-
 	require user == e.msg.sender;
 
-	require e.msg.sender != currentContract; // Ask about this (Nurit)
+	require e.msg.sender != currentContract; 
 
 	uint256 _userPaymentCurrencyBalance = tokenBalanceOf(paymentCurrency(), user);
 	uint256 _userCommitments = commitments(user);
@@ -173,6 +159,7 @@ rule preserveTotalAssetsOnCommit(address user, uint256 amount, method f) {
 	if (f.selector == commitTokens(uint256, bool).selector) {
 		commitTokens(e, possibleCommitment, true);
 	} else {
+		require user == receiver;
 		commitEth(e, user, true);
 	}
 
@@ -189,33 +176,40 @@ rule preserveTotalAssetsOnCommit(address user, uint256 amount, method f) {
 	}
 }
 
-// rule auctionSuccessfulWithdraw() {
-// 	require e.block.timestamp > marketInfo.endTime; // both are uints but might be of different sizes (Check with Nurit)
+rule auctionSuccessfulWithdraw() {
+	env e;
 
-// 	// after closing
-// 	if (auctionSuccessful()) {
-// 		// Need to define commitmentsToAuctionTokens (Check with Nurit)
-// 		assert (auctionToken.balanceOf(user) == userAuctionTokenBalace + commitmentsToAuctionTokens(possibleCommitment));
-// 	} else {
-// 		assert (auctionToken.balanceOf(user) == userAuctionTokenBalance &&
-// 				tokenBalanceOf(paymentCurrency(), user) == userPaymentCurrencyBalance);
-// 	}
-// }
+	require auctionToken() != paymentCurrency();
+
+	require auctionSuccessful(e) == true;
+
+	require e.msg.sender == receiver;
+
+	uint256 _userPaymentCurrencyBalance = tokenBalanceOf(paymentCurrency(), e.msg.sender);
+	uint256 _userAuctionTokenBalance = tokenBalanceOf(auctionToken(), e.msg.sender);
+	uint256 _userClaimed = claimed(e.msg.sender);
+	uint256 claimableTokens = tokensClaimable(e, e.msg.sender);
+
+	withdrawTokens(e);
+
+	uint256 userPaymentCurrencyBalance_ = tokenBalanceOf(paymentCurrency(), e.msg.sender);
+	uint256 userAuctionTokenBalance_ = tokenBalanceOf(auctionToken(), e.msg.sender);
+	uint256 userClaimed_ = claimed(e.msg.sender);
+
+	assert(_userPaymentCurrencyBalance == userPaymentCurrencyBalance_);
+	assert(userAuctionTokenBalance_ == _userAuctionTokenBalance + claimableTokens);
+	assert(userClaimed_ == _userClaimed + claimableTokens);
+}
 
 rule auctionUnsuccessfulWithdraw() {
 	env e;
 
-	require paymentCurrency() == wethTokenImpl || paymentCurrency() == tokenA ||
-			paymentCurrency() == tokenB;
-
 	require auctionSuccessful(e) == false;
 
-	require e.msg.sender != currentContract; // Ask about this (Nurit)
+	require e.msg.sender != currentContract;
 
 	uint256 _userPaymentCurrencyBalance = tokenBalanceOf(paymentCurrency(), e.msg.sender);
 	uint256 _userCommitments = commitments(e.msg.sender);
-	// Ask Nurit about claimed (They don't update claimed,
-	// but since the auction is unsuccessful, it might not matter)
 
 	withdrawTokens(e);
 
@@ -228,74 +222,209 @@ rule auctionUnsuccessfulWithdraw() {
 
 rule noChangeToOthersAssets(method f, address other, address from) {
 	env e;
+	assumeInitState();
+	require e.msg.sender != other && other == receiver;
 
-	// TODO: (Make less contraint)
-	// other's paymentToken can only go up
-	// other's auctionToken can only go up
-	// other's commitments can only go up
-	// other's claimed can not change
-	require e.msg.sender != other && other != receiver;
-
+	require paymentCurrency() != auctionToken();
+	uint256 _otherPaymentCurrencyBalance = tokenBalanceOf(paymentCurrency(), other);
+	uint256 _otherAuctionTokenBalance = tokenBalanceOf(auctionToken(), other);
 	uint256 _otherCommitment = commitments(other);
 	uint256 _otherClaimed = claimed(other);
 
 	uint256 amount;
 	callFunction(e.msg.sender, from, receiver, amount, f);
 
+	uint256 otherPaymentCurrencyBalance_ = tokenBalanceOf(paymentCurrency(), other);
+	uint256 otherAuctionTokenBalance_ = tokenBalanceOf(auctionToken(), other);
 	uint256 otherCommitment_ = commitments(other);
 	uint256 otherClaimed_ = claimed(other);
 
-	assert (_otherCommitment == otherCommitment_ && _otherClaimed == otherClaimed_);
+	assert(_otherPaymentCurrencyBalance <= otherPaymentCurrencyBalance_,
+		    "other's payment balance decreased");
+
+	// if other is receiver, it is expected that after withdraw, their
+	// commitment decreases and claimed increases
+	if (f.selector == withdrawTokens(address).selector ) {
+		assert(_otherCommitment >= otherCommitment_, "other's commitment increased");
+		assert(_otherClaimed <= otherClaimed_, "other's claimed didn't update");
+		assert(_otherAuctionTokenBalance <= otherAuctionTokenBalance_,
+		       "other's auction balance decreased");
+	} else {
+		assert(_otherCommitment <= otherCommitment_, "other's commitment decreased");
+		assert(_otherClaimed == otherClaimed_, "other's claimed changed");
+		assert(_otherAuctionTokenBalance <= otherAuctionTokenBalance_,
+		       "other's auction balance changed");
+	}
 }
 
-// additivity of commitTokens? commitEth? (Ask Nurit)
-rule additivityOfaddCommitment(address bidder, uint256 x, uint256 y, method f) 
-				filtered {f -> (f.selector == commitEth(address,bool).selector ||
-								f.selector == commitTokensFrom(address,uint256,bool).selector) } 
-	{
-	address sender;
-	address beneficiary;
 
-	require paymentCurrency() == wethTokenImpl || paymentCurrency() == tokenA ||
-			paymentCurrency() == tokenB;
-
-	storage initStorage = lastStorage;
-
-	callFunction(sender, bidder, beneficiary, x, f);
-	callFunction(sender, bidder, beneficiary, y, f);
-
-	uint256 splitScenarioCommitment = commitments(bidder);
-	uint256 splitScenarioBiddersBalanceOf = tokenBalanceOf(paymentCurrency(), bidder);
-
+/*
+rule additivityOfCommitEth(address user, address beneficiary, uint256 x, uint256 y) {
+	env ex;
+	env ey;
+	env exy;
+	bool agreement;
+		
 	require x + y <= MAX_UNSIGNED_INT();
 	uint256 sum = x + y;
-	callFunction(sender, bidder, beneficiary, sum, f) at initStorage;
+
+	require user != currentContract;
+	require ex.msg.sender == user && ey.msg.sender == user && exy.msg.sender == user;
+	require ex.msg.value == x && ey.msg.sender == y && exy.msg.sender == sum;
+	require beneficiary == receiver;
+
+	storage initStorage = lastStorage;
 	
-	uint256 sumScenarioCommitment = commitments(bidder);
-	uint256 sumScenarioBiddersBalanceOf = tokenBalanceOf(paymentCurrency(), bidder);
+	commitEth(ex, beneficiary, agreement);
+	commitEth(ey, beneficiary, agreement);
+	
+	
+	uint256 splitScenarioCommitment = commitments(beneficiary);
+	uint256 splitScenarioSenderBalanceOf = tokenBalanceOf(paymentCurrency(), user);
+
+	
+	commitEth(exy, beneficiary, agreement) at initStorage;
+	
+	uint256 sumScenarioCommitment = commitments(beneficiary);
+	uint256 sumScenarioSenderBalanceOf = tokenBalanceOf(paymentCurrency(), user);
 
 	assert(splitScenarioCommitment == sumScenarioCommitment, 
 		   "addCommitment not additive on commitment");
 
-	assert(splitScenarioBiddersBalanceOf == sumScenarioBiddersBalanceOf, 
-		   "addCommitment not additive on bidder's balanceOf");
+	assert(splitScenarioSenderBalanceOf == sumScenarioSenderBalanceOf, 
+		   "addCommitment not additive on sender's balanceOf");
+	
 }
+*/
 
-rule auctionSuccessfulStaysTrue(method f) {
+rule additivityOfCommitTokensFrom(uint256 x, uint256 y,
+								  address from, bool agreement) {
 	env e;
 
-	require (auctionSuccessful(e));
+	require e.msg.sender != currentContract;
+
+	storage initStorage = lastStorage;
+	
+	commitTokensFrom(e, from, x, agreement);
+	commitTokensFrom(e, from, y, agreement);
+	
+	uint256 splitScenarioCommitment = commitments(from);
+	uint256 splitScenarioSenderBalanceOf = tokenBalanceOf(paymentCurrency(), e.msg.sender);
+	uint256 splitTotalCommitments = getCommitmentsTotal();
+
+	require x + y <= MAX_UNSIGNED_INT();
+	uint256 sum = x + y;
+	commitTokensFrom(e, from, sum, agreement) at initStorage;
+	uint256 sumTotalCommitments = getCommitmentsTotal();
+	
+	uint256 sumScenarioCommitment = commitments(from);
+	uint256 sumScenarioSenderBalanceOf = tokenBalanceOf(paymentCurrency(), e.msg.sender);
+
+	assert(splitScenarioCommitment == sumScenarioCommitment, 
+		   "addCommitment not additive on commitment");
+
+	assert(splitScenarioSenderBalanceOf == sumScenarioSenderBalanceOf, 
+		   "addCommitment not additive on sender's balanceOf");
+	
+	assert(splitTotalCommitments == sumTotalCommitments, 
+		   "addCommitment not additive on totalCommitments");
+	
+}
+
+rule auctionSuccessfulSteadyState(method f) {
+	env e;
+	assumeInitState();
+	uint256 tokenPriceBefore = tokenPrice(e);
+	uint256 clearingPriceBefore = clearingPrice(e);
+	uint256 commitmentsBefore = getCommitmentsTotal();
+	
+	require (isInitialized() && auctionSuccessful(e)  && getCommitmentsTotal() > 0 );
 
 	calldataarg args;
 	f(e,args);
+	uint256 tokenPriceAfter = tokenPrice(e);
+	uint256 clearingPriceAfter = clearingPrice(e);
+	uint256 commitmentsAfter = getCommitmentsTotal();
 
-	assert (auctionSuccessful(e));
+	assert (auctionSuccessful(e) && clearingPriceAfter == clearingPriceBefore && commitmentsAfter == commitmentsBefore);
 }
+
+rule noCommitmentsBeforeOpen(method f) 
+				filtered {f -> (f.selector == commitEth(address,bool).selector ||
+								f.selector == commitTokens(uint256,bool).selector) } 
+{
+	env e;
+	address sender;
+	address user; 
+	uint256 amount;
+	bool b;
+	require (commitments(user) == 0);
+	if (f.selector == commitEth(address,bool).selector) {
+		require (e.msg.sender == user && e.msg.value == amount);
+		commitEth(e, user ,b);
+	}
+	else  {
+		require (e.msg.sender == user);
+		commitTokens(e, amount, b);
+	}
+	uint64 startTime_;
+    uint64 endTime_;
+    uint128 totalTokens_;
+
+	startTime_, endTime_, totalTokens_ = marketInfo(e);
+	assert ( commitments(user) > 0 => e.block.timestamp >= startTime_);
+}
+
+/* this rule is timing out */
+/*
+rule noFrontRunningOnWithdraw(method f) 
+		// this methods can cause the withdraw to fail, since the auction can be now successful or finalized
+		filtered { f-> (f.selector !=  commitEth(address,bool).selector &&
+						f.selector !=  commitTokensFrom(address,uint256,bool).selector &&
+						f.selector !=  commitTokens(uint256,bool).selector  &&
+						f.selector !=  finalize().selector )}
+	
+{
+	env e;
+	env eF;
+	calldataarg argsF;
+	uint64 startTime_;
+    uint64 endTime_;
+    uint128 totalTokens_;
+
+	startTime_, endTime_, totalTokens_ = marketInfo(e);
+	assumeInitState();
+	uint256 commitments_ = commitments(e.msg.sender);
+	address other;
+	require( other != e.msg.sender);
+	require (eF.msg.sender != currentContract && e.msg.sender != currentContract);
+	require (eF.msg.sender != e.msg.sender || f.selector != withdrawTokens().selector );
+	require (commitments_ <= getCommitmentsTotal() );
+	require( commitments_ > 0 => e.block.timestamp >= startTime_ );
+	require( commitments_ > 0);
+	storage initStorage = lastStorage;
+	
+	//first scenario: user can call withdrawTokens
+	withdrawTokens(e);
+
+	//second scenario: someone else calls another function (or same user calls another function beside withdraw) 
+	if (f.selector != withdrawTokens(address).selector) {
+		withdrawTokens(eF, other) at initStorage;
+	}
+	else {
+		f(eF,argsF) at initStorage;
+	}
+	//Verify that user can call withdrawTokens
+	withdrawTokens@withrevert(e);
+	assert !lastReverted;
+}
+*/
+
+
 
 //////////////////////////////////////////////////////////////////////
 //                         Helper Functions                         //
 //////////////////////////////////////////////////////////////////////
-
 function callFunction(address sender, address from, address beneficiary,
 			          uint256 amount, method f) {
 	env e;
@@ -319,15 +448,16 @@ function callFunction(address sender, address from, address beneficiary,
 }
 
 function assumeInitState() {
-		env e;
-	uint128 startPrice;
-    uint128 minimumPrice;
-	uint64 startTime;
-    uint64 endTime;
-    uint128 totalTokens;
+	env e;
+	uint128 startPrice__;
+    uint128 minimumPrice__;
+	uint64 startTime__;
+    uint64 endTime__;
+    uint128 totalTokens__;
 
-	startTime, endTime, totalTokens = marketInfo(e);
-	startPrice, minimumPrice = marketPrice(e);
+	startTime__, endTime__, totalTokens__ = marketInfo(e);
+	startPrice__, minimumPrice__ = marketPrice(e);
 	
-	require (startTime < endTime && minimumPrice > 0 && startPrice > minimumPrice);
+	require (startTime__ < endTime__ && minimumPrice__ > 0 && startPrice__ > minimumPrice__ && isInitialized());
 }
+

@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
-import "../../interfaces/IPointList.sol";
-import "../../interfaces/IERC20.sol";
+import "../interfaces/IPointList.sol";
+import "../interfaces/IERC20.sol";
 
 /**
  * @notice TokenPointList - MISO Point List that references a given `token` balance to return approvals.

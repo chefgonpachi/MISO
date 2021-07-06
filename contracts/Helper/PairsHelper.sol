@@ -1,12 +1,8 @@
 
 pragma solidity 0.6.12;
 
-interface IERC20 {
-    function allowance(address spender, address owner)
-        external
-        view
-        returns (uint256);
-}
+import "../interfaces/IERC20.sol";
+
 
 interface IUniswapV2Factory {
     function getPair(address tokenA, address tokenB)

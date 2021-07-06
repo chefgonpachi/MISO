@@ -3,4 +3,4 @@ certoraRun contracts/Auctions/DutchAuction.sol \
 	--solc solc6.12 \
 	--cache dutchAuctionPrice  \
 	--settings -assumeUnwindCond \
-	--cloud  --msg "dutch auction price function : all rules $2"
+	--cloud  --msg "dutch auction price function : all rules"

@@ -15,7 +15,7 @@ import "../interfaces/IMisoToken.sol";
 // <https://github.com/chefgonpachi/MISO/>
 //
 // ---------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
+// SPDX-License-Identifier: GPL-3.0                        
 // ---------------------------------------------------------------------
 
 contract MintableToken is AccessControl, ERC20Burnable, ERC20Pausable, IMisoToken {

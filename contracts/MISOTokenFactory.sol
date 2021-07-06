@@ -36,7 +36,7 @@ pragma solidity 0.6.12;
 // <https://github.com/chefgonpachi/MISO/>
 //
 // ---------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
+// SPDX-License-Identifier: GPL-3.0                        
 // ---------------------------------------------------------------------
 
 
@@ -44,10 +44,7 @@ import "./Utils/CloneFactory.sol";
 import "./interfaces/IMisoToken.sol";
 import "./Access/MISOAccessControls.sol";
 import "./Utils/SafeTransfer.sol";
-
-interface IERC20 {
-    function balanceOf(address account) external view returns (uint256);
-}
+import "./interfaces/IERC20.sol";
 
 contract MISOTokenFactory is CloneFactory, SafeTransfer{
     

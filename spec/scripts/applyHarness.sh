@@ -10,7 +10,7 @@ perl -0777 -i -pe 's/\.\.\/Utils\/Documents\.sol/\.\.\/\.\.\/spec\/harness\/Docu
 # virtualize private function
 perl -0777 -i -pe 's/\) private view /\) internal virtual view /g' contracts/Auctions/DutchAuction.sol
 
-#change eth transfer
+# change eth transfer
 perl -0777 -i -pe 's/_beneficiary.transfer\(/_safeTokenPayment\(paymentCurrency,_beneficiary,/g' contracts/Auctions/DutchAuction.sol
 # virtualize public function
 perl -0777 -i -pe 's/public view returns/public virtual view returns/g' contracts/Auctions/DutchAuction.sol

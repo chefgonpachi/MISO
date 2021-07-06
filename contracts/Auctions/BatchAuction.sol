@@ -12,12 +12,9 @@ pragma experimental ABIEncoderV2;
 //
 //----------------------------------------------------------------------------------
 //
-// Chef Gonpachi's Crowdsale
+// Chef Gonpachi's Batch Auction
 //
-// A fixed price token swap contract. 
-//
-// Inspired by the Open Zeppelin crowsdale and delta.financial
-// https://github.com/OpenZeppelin/openzeppelin-contracts
+// An auction where contributions are swaped for a batch of tokens pro-rata
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,7 +34,7 @@ pragma experimental ABIEncoderV2;
 // <https://github.com/chefgonpachi/MISO/>
 //
 // ---------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
+// SPDX-License-Identifier: GPL-3.0                        
 // ---------------------------------------------------------------------
 
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
@@ -259,7 +256,8 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
      * @return Token price.
      */
     function tokenPrice() public view returns (uint256) {
-        return uint256(marketStatus.commitmentsTotal).mul(1e18).div(uint256(marketInfo.totalTokens));
+        return uint256(marketStatus.commitmentsTotal)
+            .mul(1e18).div(uint256(marketInfo.totalTokens));
     }
 
 
@@ -338,14 +336,19 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
     /**
      * @notice How many tokens the user is able to claim.
      * @param _user Auction participant address.
-     * @return Tokens left to claim.
+     * @return  claimerCommitment Tokens left to claim.
      */
-    function tokensClaimable(address _user) public view returns (uint256) {
+    function tokensClaimable(address _user) public view returns (uint256 claimerCommitment) {
         if (commitments[_user] == 0) return 0;
-        uint256 tokensAvailable = _getTokenAmount(commitments[_user]);
-        return tokensAvailable.sub(claimed[_user]);
-    }
+        uint256 unclaimedTokens = IERC20(auctionToken).balanceOf(address(this));
+        claimerCommitment = _getTokenAmount(commitments[_user]);
+        claimerCommitment = claimerCommitment.sub(claimed[_user]);
 
+        if(claimerCommitment > unclaimedTokens){
+            claimerCommitment = unclaimedTokens;
+        }
+    }
+    
     /**
      * @notice Checks if raised more than minimum amount.
      * @return True if tokens sold greater than or equals to the minimum commitment amount.
@@ -435,7 +438,7 @@ contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, Safe
         require(_startTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_endTime < 10000000000, "BatchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "BatchAuction: start time is before current time");
-        require(_endTime > _startTime, "BatchAuction: end time must be older than start time");
+        require(_endTime > _startTime, "BatchAuction: end time must be older than start price");
 
         require(marketStatus.commitmentsTotal == 0, "BatchAuction: auction cannot have already started");
 

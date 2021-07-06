@@ -364,6 +364,7 @@ contract MISOMasterChef is IMisoFarm, MISOAccessControls, SafeTransfer {
         require(msg.sender == devaddr, "dev: wut?");
         require(tips > 0, "dev: broke");
         uint256 claimable = tips;
+        // devPaid = devPaid.add(claimable);
         tips = 0;
         safeRewardsTransfer(devaddr, claimable);
     }

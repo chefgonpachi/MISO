@@ -13,7 +13,7 @@ import "../interfaces/IMisoToken.sol";
 // <https://github.com/chefgonpachi/MISO/>
 //
 // ---------------------------------------------------------------------
-// SPDX-License-Identifier: GPL-3.0-or-later                        
+// SPDX-License-Identifier: GPL-3.0                        
 // ---------------------------------------------------------------------
 
 contract FixedToken is ERC20, IMisoToken {

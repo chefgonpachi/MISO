@@ -1,6 +1,8 @@
 pragma solidity 0.6.12;
 
-// simplified version for easy of verification  
+/**
+ * Simplified version for easy of verification using Certora Prover.
+ */
 interface ISimpleERC20 {
     function approve(address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -9,12 +11,10 @@ interface ISimpleERC20 {
 
 interface Receiver {
     function sendTo() external payable returns (bool);
-    }
+}
 
 contract SafeTransfer {
-
     address private constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
    
     function _safeTokenPayment(
         address _token,
@@ -31,7 +31,6 @@ contract SafeTransfer {
     function _safeApprove(address token, address to, uint value) internal {
         ISimpleERC20(token).approve(to, value);
     }
-
 
     function _safeTransfer(
         address token,
@@ -57,6 +56,4 @@ contract SafeTransfer {
         bool success = Receiver(to).sendTo{value:value}();
         require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
-
-
 }

@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
+/**
+ * Dummy Weth token.
+ */
 contract DummyWeth {
     uint256 t;
+    
     mapping(address => uint256) b;
     mapping(address => mapping(address => uint256)) a;
 

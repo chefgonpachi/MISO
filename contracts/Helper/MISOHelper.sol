@@ -72,6 +72,7 @@ interface IERC20 {
 
 interface IMisoTokenFactory {
     function getTokens() external view returns (address[] memory);
+    function tokens(uint256) external view returns (address);
     function numberOfTokens() external view returns (uint256);
 } 
 
@@ -240,17 +241,55 @@ contract FarmHelper is BaseHelper, TokenHelper {
         for (uint256 i = 0; i < numberOfFarms; i++) {
             address farmAddr = farmFactory.farms(i);
             uint256 templateId = farmFactory.getTemplateId(farmAddr);
-            IFarm farm = IFarm(farmAddr);
-
-            infos[i].addr = address(farm);
-            infos[i].templateId = templateId;
-            infos[i].rewardsPerBlock = farm.rewardsPerBlock();
-            infos[i].bonusMultiplier = farm.bonusMultiplier();
-            infos[i].rewardToken = getTokenInfo(farm.rewards());
-            infos[i].pools = getPools(farmAddr);
+            infos[i] = _farmInfo(farmAddr);
         }
 
         return infos;
+    }
+
+    function getFarms(
+        uint256 pageSize,
+        uint256 pageNbr,
+        uint256 offset
+    ) public view returns(FarmInfo[] memory) {
+        uint256 numberOfFarms = farmFactory.numberOfFarms();
+        uint256 startIdx = (pageNbr * pageSize) + offset;
+        uint256 endIdx = startIdx + pageSize;
+
+        FarmInfo[] memory infos;
+
+        if (endIdx > numberOfFarms) {
+            endIdx = numberOfFarms;
+        }
+        if(endIdx < startIdx) {
+            return infos;
+        }
+        infos = new FarmInfo[](endIdx - startIdx);
+
+        for (uint256 farmIdx = 0; farmIdx + startIdx < endIdx; farmIdx++) {
+            address farmAddr = farmFactory.farms(farmIdx + startIdx);
+            infos[farmIdx] = _farmInfo(farmAddr);
+        }
+
+        return infos;
+    }
+
+    function getFarms(
+        uint256 pageSize,
+        uint256 pageNbr
+    ) public view returns(FarmInfo[] memory) {
+        return getFarms(pageSize, pageNbr, 0);
+    }
+
+    function _farmInfo(address _farmAddr) private view returns(FarmInfo memory farmInfo) {
+            IFarm farm = IFarm(_farmAddr);
+
+            farmInfo.addr = _farmAddr;
+            farmInfo.templateId = farmFactory.getTemplateId(_farmAddr);
+            farmInfo.rewardsPerBlock = farm.rewardsPerBlock();
+            farmInfo.bonusMultiplier = farm.bonusMultiplier();
+            farmInfo.rewardToken = getTokenInfo(farm.rewards());
+            farmInfo.pools = getPools(_farmAddr);
     }
 
     function getFarmDetail(address _farm, address _user) 
@@ -329,6 +368,8 @@ interface IBaseAuction {
 interface IMisoMarketFactory {
     function getMarketTemplateId(address _auction) external view returns(uint64);
     function getMarkets() external view returns(address[] memory);
+    function numberOfAuctions() external view returns(uint256);
+    function auctions(uint256) external view returns(address);
 }
 
 interface IMisoMarket {
@@ -487,30 +528,66 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         bool isAdmin;
     }
 
+    function getMarkets(
+        uint256 pageSize,
+        uint256 pageNbr,
+        uint256 offset
+    ) public view returns (MarketBaseInfo[] memory) {
+        uint256 marketsLength = market.numberOfAuctions();
+        uint256 startIdx = (pageNbr * pageSize) + offset;
+        uint256 endIdx = startIdx + pageSize;
+        MarketBaseInfo[] memory infos;
+        if (endIdx > marketsLength) {
+            endIdx = marketsLength;
+        }
+        if(endIdx < startIdx) {
+            return infos;
+        }
+        infos = new MarketBaseInfo[](endIdx - startIdx);
+
+        for (uint256 marketIdx = 0; marketIdx + startIdx < endIdx; marketIdx++) {
+            address marketAddress = market.auctions(marketIdx + startIdx);
+            infos[marketIdx] = _getMarketInfo(marketAddress);
+        }
+
+        return infos;
+    }
+
+    function getMarkets(
+        uint256 pageSize,
+        uint256 pageNbr
+    ) public view returns (MarketBaseInfo[] memory) {
+        return getMarkets(pageSize, pageNbr, 0);
+    }
+
     function getMarkets() public view returns (MarketBaseInfo[] memory) {
         address[] memory markets = market.getMarkets();
         MarketBaseInfo[] memory infos = new MarketBaseInfo[](markets.length);
 
         for (uint256 i = 0; i < markets.length; i++) {
-            
-            uint64 templateId = market.getMarketTemplateId(markets[i]);
+            MarketBaseInfo memory marketInfo = _getMarketInfo(markets[i]);
+            infos[i] = marketInfo;
+        }
+
+        return infos;
+    }
+
+    function _getMarketInfo(address _marketAddress) private view returns (MarketBaseInfo memory marketInfo) {
+            uint64 templateId = market.getMarketTemplateId(_marketAddress);
             address auctionToken;
             uint64 startTime;
             uint64 endTime;
             bool finalized;
-            (auctionToken, startTime, endTime, finalized) = IBaseAuction(markets[i])
+            (auctionToken, startTime, endTime, finalized) = IBaseAuction(_marketAddress)
                 .getBaseInformation();
             TokenInfo memory tokenInfo = getTokenInfo(auctionToken);
 
-            infos[i].addr = markets[i];
-            infos[i].templateId = templateId;
-            infos[i].startTime = startTime;
-            infos[i].endTime = endTime;
-            infos[i].finalized = finalized;
-            infos[i].tokenInfo = tokenInfo;
-        }
-
-        return infos;
+            marketInfo.addr = _marketAddress;
+            marketInfo.templateId = templateId;
+            marketInfo.startTime = startTime;
+            marketInfo.endTime = endTime;
+            marketInfo.finalized = finalized;
+            marketInfo.tokenInfo = tokenInfo;  
     }
 
     function getCrowdsaleInfo(address _crowdsale) public view returns (CrowdsaleInfo memory) {
@@ -518,7 +595,6 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         CrowdsaleInfo memory info;
 
         info.addr = address(crowdsale);
-        info.paymentCurrency = crowdsale.paymentCurrency();
         (info.commitmentsTotal, info.finalized, info.usePointList) = crowdsale.marketStatus();
         (info.startTime, info.endTime, info.totalTokens) = crowdsale.marketInfo();
         (info.rate, info.goal) = crowdsale.marketPrice();
@@ -545,7 +621,6 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         DutchAuctionInfo memory info;
 
         info.addr = address(dutchAuction);
-        // info.paymentCurrency = dutchAuction.paymentCurrency();
         (info.startTime, info.endTime, info.totalTokens) = dutchAuction.marketInfo();
         (info.startPrice, info.minimumPrice) = dutchAuction.marketPrice();
         (info.auctionSuccessful) = dutchAuction.auctionSuccessful();
@@ -575,7 +650,6 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         BatchAuctionInfo memory info;
         
         info.addr = address(batchAuction);
-        info.paymentCurrency = batchAuction.paymentCurrency();
         (info.startTime, info.endTime, info.totalTokens) = batchAuction.marketInfo();
         (info.auctionSuccessful) = batchAuction.auctionSuccessful();
         (
@@ -604,7 +678,6 @@ contract MarketHelper is BaseHelper, TokenHelper, DocumentHepler {
         HyperbolicAuctionInfo memory info;
 
         info.addr = address(hyperbolicAuction);
-        info.paymentCurrency = hyperbolicAuction.paymentCurrency();
         (info.startTime, info.endTime, info.totalTokens) = hyperbolicAuction.marketInfo();
         (info.minimumPrice, info.alpha) = hyperbolicAuction.marketPrice();
         (info.auctionSuccessful) = hyperbolicAuction.auctionSuccessful();
@@ -669,6 +742,39 @@ contract MISOHelper is MarketHelper, FarmHelper {
         infos = getTokensInfo(tokens);
 
         return infos;
+    }
+
+    function getTokens(
+        uint256 pageSize,
+        uint256 pageNbr,
+        uint256 offset
+    ) public view returns(TokenInfo[] memory) {
+        uint256 tokensLength = tokenFactory.numberOfTokens();
+
+        uint256 startIdx = (pageNbr * pageSize) + offset;
+        uint256 endIdx = startIdx + pageSize;
+        TokenInfo[] memory infos;
+        if (endIdx > tokensLength) {
+            endIdx = tokensLength;
+        }
+        if(endIdx < startIdx) {
+            return infos;
+        }
+        infos = new TokenInfo[](endIdx - startIdx);
+
+        for (uint256 tokenIdx = 0; tokenIdx + startIdx < endIdx; tokenIdx++) {
+            address tokenAddress = tokenFactory.tokens(tokenIdx + startIdx);
+            infos[tokenIdx] = getTokenInfo(tokenAddress);
+        }
+
+        return infos;
+    }
+
+    function getTokens(
+        uint256 pageSize,
+        uint256 pageNbr
+    ) public view returns(TokenInfo[] memory) {
+        return getTokens(pageSize, pageNbr, 0);
     }
 
 }

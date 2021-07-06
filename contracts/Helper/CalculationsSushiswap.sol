@@ -1,6 +1,9 @@
 
 pragma solidity 0.6.12;
 
+import "../interfaces/IERC20.sol";
+
+
 interface PriceRouter {
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external
@@ -23,11 +26,6 @@ interface Pair {
             uint112,
             uint32
         );
-}
-
-interface IERC20 {
-    function decimals() external view returns (uint8);
-    function balanceOf(address account) external view returns (uint256);
 }
 
 

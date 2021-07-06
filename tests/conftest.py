@@ -95,6 +95,23 @@ def fixed_token2(FixedToken):
 
     return fixed_token
 
+
+#####################################
+# USDC for Launcher
+######################################
+
+@pytest.fixture(scope='module', autouse=True)
+def usdc_token(USDC):
+    usdc_token = USDC.deploy({'from': accounts[0]})
+    name = "USDC Token"
+    symbol = "USDC"
+    owner = accounts[0]
+
+    usdc_token.initToken(name, symbol, owner,USDC_TOKENS, {'from': owner})
+
+    return usdc_token
+
+
 #####################################
 # FixedToken for Dutch Auction with Lists
 ######################################

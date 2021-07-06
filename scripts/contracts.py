@@ -10,12 +10,12 @@ def load_accounts():
         accounts.load("miso")
     # add accounts if active network is goerli
     if network.show_active() in ['goerli', 'ropsten', 'kovan', 'rinkeby']:
-        # 0x2A40019ABd4A61d71aBB73968BaB068ab389a636
+        # 0x525398B78D82e54D769Ea0292fef51E20B495665
         accounts.add(
-            '4ca89ec18e37683efa18e0434cd9a28c82d461189c477f5622dae974b43baebf')
-        # 0x1F3389Fc75Bf55275b03347E4283f24916F402f7
+            'ca18a05140a5c5cebe5c711f84b3f1124907a3c6d1835e1c99d337cc7c7b3900')
+        # 0x02042c8A7DF7703F8d236A66B324bf9F0316A23c
         accounts.add(
-            'fa3c06c67426b848e6cef377a2dbd2d832d3718999fbe377236676c9216d8ec0')
+            'ca18a05140a5c5cebe5c711f84b3f1124907a3c6d1835e1c99d337cc7c7b3901')
 
     if network.show_active() in ['bsc-main', 'bsc-test', 'bsc-fork-testnet']:
         # 0x24a74011101564cC754C64Ad8b260e98b63aBAd5

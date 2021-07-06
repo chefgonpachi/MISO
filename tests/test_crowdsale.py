@@ -104,13 +104,14 @@ def _withdraw_tokens(crowdsale, mintable_token):
 
 def _buy_token_helper(crowdsale, token_buyer, amount):
     eth_to_transfer = amount
+    rate = crowdsale.marketPrice()[0]
     commitments_before = crowdsale.commitments(token_buyer) 
     tokens_claimable_before = crowdsale.tokensClaimable(token_buyer) 
     tx = crowdsale.commitEth(token_buyer, True, {'from': token_buyer, 'value': eth_to_transfer})
     assert 'AddedCommitment' in tx.events  
     commitments_after = crowdsale.commitments(token_buyer)
     # print("crowdsale.commitments(token_buyer):", crowdsale.commitments(token_buyer))
-    tokens_claimable_after = tokens_claimable_before + eth_to_transfer * crowdsale.marketPrice()[0] / TENPOW18
+    tokens_claimable_after = tokens_claimable_before + eth_to_transfer * TENPOW18 / rate
     assert commitments_before+eth_to_transfer == commitments_after
     assert tokens_claimable_after == crowdsale.tokensClaimable(token_buyer)
     return crowdsale
@@ -141,7 +142,8 @@ def buy_token_multiple_times_goal_not_reached(crowdsale):
     totalAmountRaised = 0
     beneficiary = accounts[1]
     eth_to_transfer = 2 * TENPOW18
-    tokens_to_beneficiary = eth_to_transfer * crowdsale.marketPrice()[0] / TENPOW18
+    rate = crowdsale.marketPrice()[0] 
+    tokens_to_beneficiary = eth_to_transfer * TENPOW18 / rate
     totalAmountRaised += eth_to_transfer
 
     crowdsale = _buy_token_helper(crowdsale, beneficiary, eth_to_transfer)
@@ -150,7 +152,7 @@ def buy_token_multiple_times_goal_not_reached(crowdsale):
 
     beneficiary = accounts[2]
     eth_to_transfer = 2 * TENPOW18
-    tokens_to_beneficiary = eth_to_transfer * crowdsale.marketPrice()[0]/ TENPOW18
+    tokens_to_beneficiary = eth_to_transfer *  TENPOW18 / rate
     totalAmountRaised += eth_to_transfer
     crowdsale = _buy_token_helper(crowdsale, beneficiary, eth_to_transfer)
     assert crowdsale.marketStatus()[0] == totalAmountRaised
@@ -248,7 +250,7 @@ def test_crowdsale_finalize(crowdsale, buy_tokens, mintable_token):
     wallet = accounts[4]
     amountRaised = crowdsale.marketStatus()[0]
     rate = crowdsale.marketPrice()[0]
-    tokenBought = amountRaised * rate / TENPOW18
+    tokenBought = amountRaised * TENPOW18 /  rate
     totalTokens = crowdsale.marketInfo()[2]
     unsoldTokens = totalTokens - tokenBought
     balance_before_finalized = mintable_token.balanceOf(wallet)
@@ -271,7 +273,7 @@ def test_crowdsale_finalize_goal_not_reached(crowdsale, mintable_token, buy_toke
     wallet = accounts[4]
     amountRaised = crowdsale.marketStatus()[0]
     rate = crowdsale.marketPrice()[0]
-    tokenBought = amountRaised * rate / TENPOW18
+    tokenBought = amountRaised * TENPOW18 /  rate
     totalTokens = crowdsale.marketInfo()[2]
     unsoldTokens = totalTokens - tokenBought
     balance_before_finalized = mintable_token.balanceOf(wallet)
@@ -309,9 +311,9 @@ def test_crowdsale_init_goal_greater_than_total_tokens(crowdsale_init_helper, mi
     wallet = accounts[4]
     goal = 10*TENPOW18
     total_token = 100 * TENPOW18
-    rate = 100 * TENPOW18
+    rate = 0.01 * TENPOW18
     mintable_token.approve(crowdsale_init_helper, AUCTION_TOKENS, {"from": accounts[0]})
-    with reverts("Crowdsale: goal should be equal to or lower than total tokens or equal"):
+    with reverts("Crowdsale: goal should be equal to or lower than total tokens"):
         crowdsale_init_helper.initCrowdsale(accounts[0], mintable_token, ETH_ADDRESS, total_token, start_time, end_time, rate, goal, operator,ZERO_ADDRESS, wallet, {"from": accounts[0]})
 
     
@@ -476,7 +478,7 @@ def test_crowdsale_commitTokensExtra(crowdsale):
     token_buyer =  accounts[2]
     rate = crowdsale.marketPrice()[0]
     total_tokens = crowdsale.marketInfo()[2]
-    max_commitmend = total_tokens/rate
+    max_commitmend = total_tokens * rate / TENPOW18
     eth_to_transfer = max_commitmend + 1 * TENPOW18
 
     calculated_commitment = crowdsale.calculateCommitment(eth_to_transfer)

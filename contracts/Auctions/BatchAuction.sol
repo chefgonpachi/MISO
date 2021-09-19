@@ -40,7 +40,6 @@ pragma experimental ABIEncoderV2;
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
-import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/Documents.sol";
@@ -51,7 +50,7 @@ import "../interfaces/IMisoMarket.sol";
 /// @notice Attribution to dutchswap.com
 
 
-contract BatchAuction is  IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents, ReentrancyGuard  {
+contract BatchAuction is  IMisoMarket, MISOAccessControls, SafeTransfer, Documents, ReentrancyGuard  {
 
     using BoringMath for uint256;
     using BoringMath128 for uint128;

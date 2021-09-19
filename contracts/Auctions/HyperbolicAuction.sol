@@ -45,7 +45,6 @@ pragma experimental ABIEncoderV2;
 import "../OpenZeppelin/utils/ReentrancyGuard.sol";
 import "../Access/MISOAccessControls.sol";
 import "../Utils/SafeTransfer.sol";
-import "../Utils/BoringBatchable.sol";
 import "../Utils/BoringERC20.sol";
 import "../Utils/BoringMath.sol";
 import "../Utils/Documents.sol";
@@ -55,7 +54,7 @@ import "../interfaces/IMisoMarket.sol";
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
-contract HyperbolicAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeTransfer, Documents , ReentrancyGuard  {
+contract HyperbolicAuction is IMisoMarket, MISOAccessControls, SafeTransfer, Documents , ReentrancyGuard  {
     using BoringERC20 for IERC20;
     using BoringMath for uint256;
     using BoringMath128 for uint128;
